@@ -25,3 +25,5 @@ Imports:
     tidyr,
     furrr,
     stats
+URL: https://github.com/GForb/ProfacSims
+BugReports: https://github.com/GForb/ProfacSims/issues
