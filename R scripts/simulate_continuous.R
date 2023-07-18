@@ -2,6 +2,7 @@ library(tidyr)
 library(dplyr)
 library(furrr)
 library(tictoc)
+library(ProfacSims)
 plan("multisession")
 
 set.seed = 123123

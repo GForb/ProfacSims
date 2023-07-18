@@ -54,7 +54,7 @@ sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size
     dplyr::mutate(
       metric = dplyr::case_when(metric == "var_u" ~ "bias_var_u",
                          TRUE ~ metric),
-      est = dplyr::case_when(metric == "bias_var_u" ~ est-sigma_u,
+      est = dplyr::case_when(metric == "bias_var_u" ~ est-sigma_u^2,
                      TRUE ~ est),
       rng_state = dplyr::case_when(dplyr::row_number() ==1 ~ list(.Random.seed),
                                      TRUE  ~ list(NA)))
