@@ -15,7 +15,7 @@ ipdma_simulation <- function(...) {
     tidyr::unnest_wider(args) |>
     tidyr::unnest_wider(sigma) |>
     dplyr::rename(sigma_u = u, sigma_e = e) |>
-    dplyr::mutate(error_sigma_u = case_when(metric == "var_u" ~ est - (sigma_u^2),
+    dplyr::mutate(error_var_u = case_when(metric == "var_u" ~ est - (sigma_u^2),
                                            TRUE ~ NA))
 
 
