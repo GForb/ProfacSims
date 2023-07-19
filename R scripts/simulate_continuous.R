@@ -1,3 +1,4 @@
+install_github("GForb/ProfacSims")
 library(tidyr)
 library(dplyr)
 library(furrr)
@@ -29,6 +30,6 @@ toc()
 file_name <- paste("sim_results", format(lubridate::now(), "%y-%m-%d_%H-%M"), sep = "_")
 save(sim_results_new, file = here::here("Results/", file_name))
 
-plot.sim_results(sim_results_new)
+ProfacSims:::plot.sim_results(sim_results_new)
 
 
