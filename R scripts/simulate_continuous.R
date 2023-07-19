@@ -1,4 +1,4 @@
-install_github("GForb/ProfacSims")
+install_github("GForb/ProfacSims", upgrade= "never")
 library(tidyr)
 library(dplyr)
 library(furrr)
@@ -18,7 +18,7 @@ sim_params <- list(
                                   ProfacSims:::model_lmm_random_int_ml)),
   study_sample_size_train = c(50, 200, 1000),
   study_sample_size_test = 5000,
-  sigma = list(c(ICC = 0.3, R2 = 0.7), c(c(ICC = 0.05, R2 = 0.7)), c(c(ICC = 0, R2 = 0.7)))
+  sigma = list(c(ICC = 0.3, R2 = 0.25), c(c(ICC = 0.05, R2 = 0.25)), c(c(ICC = 0, R2 = 0.25)))
 )
 
 
@@ -29,7 +29,24 @@ toc()
 
 file_name <- paste("sim_results", format(lubridate::now(), "%y-%m-%d_%H-%M"), sep = "_")
 save(sim_results_new, file = here::here("Results/", file_name))
+file_name <- paste("sim_results_r2-25_nrep100", format(lubridate::now(), "%y-%m-%d_%H-%M"), sep = "_")
+save(sim_results_new, file = here::here("Results/", file_name))
 
 ProfacSims:::plot.sim_results(sim_results_new)
 
+
+summaries <- sim_results_new |>
+  sim_results_lazy_stack() |>
+  select(metric, what, value, ICC, R2, study_sample_size_train, n_studies, model) |>
+  group_by(across(c(-value))) |>
+  summarise(mean = mean(value), n = sum(!is.na(value)))
+
+summaries |>
+  rename(value = mean) |>
+  ProfacSims:::plot.sim_results(stack = FALSE)
+
+summaries |>
+  filter(model != "lm") |>
+  rename(value = mean) |>
+  ProfacSims:::plot.sim_results(stack = FALSE)
 
