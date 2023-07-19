@@ -11,7 +11,15 @@ ipdma_simulation <- function(...) {
   sim_params <- do.call(tidyr::expand_grid, params_list)
   results <- furrr::future_pmap(.l = sim_params, .f = do_simulation, .options = furrr::furrr_options(seed=TRUE), .progress = TRUE)
   results_df <- do.call(rbind, results)
-  results_df <- results_df |> tidyr::unnest_wider(args)
+  results_df <- results_df |>
+    tidyr::unnest_wider(args) |>
+    tidyr::unnest_wider(sigma) |>
+    dplyr::rename(sigma_u = u, sigma_e = e) |>
+    dplyr::mutate(error_sigma_u = case_when(metric == "var_u" ~ est - (sigma_u^2),
+                                           TRUE ~ NA))
+
+
+
   class(results_df) <-  c("sim_results", class(results_df))
   return(results_df)
 }
@@ -52,10 +60,6 @@ sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size
   results <- sim_rep(model_function_list, evaluate_performance = evaluate_performance_continuous, train_data = train_data, test_data = test_data)
   results <- results |>
     dplyr::mutate(
-      metric = dplyr::case_when(metric == "var_u" ~ "bias_var_u",
-                         TRUE ~ metric),
-      est = dplyr::case_when(metric == "bias_var_u" ~ est-sigma_u^2,
-                     TRUE ~ est),
       rng_state = dplyr::case_when(dplyr::row_number() ==1 ~ list(.Random.seed),
                                      TRUE  ~ list(NA)))
   return(results)

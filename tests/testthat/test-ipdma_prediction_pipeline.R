@@ -93,7 +93,7 @@ test_that("ipdma_simulation", {
     nreps = 1,
     sim_rep_fun = list(sim_rep_continuous),
     n_studies = c(5, 10),
-    model_function_list = list(list(model_lm_fixed_int, model_lm)),
+    model_function_list = list(list(model_lm_fixed_int, model_lmm_random_int_ml)),
     study_sample_size_train = c(50),
     study_sample_size_test = 500,
     sigma = list(c(ICC = 0.3, R2 = 0.7), c(c(ICC = 0, R2 = 0.7)))
@@ -103,6 +103,7 @@ test_that("ipdma_simulation", {
 
 
   expect_equal(nrow(sim_results_test), 32)
+  expect_equal(ncol(sim_results_test), 20)
 
 })
 
