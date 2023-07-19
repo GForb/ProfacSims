@@ -9,7 +9,9 @@
 ipdma_simulation <- function(...) {
   params_list <- list(...)
   sim_params <- do.call(tidyr::expand_grid, params_list)
+
   results <- furrr::future_pmap(.l = sim_params, .f = do_simulation, .options = furrr::furrr_options(seed=TRUE), .progress = TRUE)
+
   results_df <- do.call(rbind, results)
   results_df <- results_df |>
     tidyr::unnest_wider(args) |>

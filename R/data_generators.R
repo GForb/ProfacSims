@@ -60,6 +60,9 @@ generate_cbcl <- function(n = c(100, 100, 100, 100, 100, 158, 197)) {
 }
 
 get_sigmas <- function(sigma2_x, beta, n_predictors, ICC, R2) {
+  if(ICC >= R2) {
+    stop("R2 must be higher than the ICC")
+  }
   R2_ <- (1-R2)/R2
   pred_var <- sigma2_x*n_predictors*beta^2
   if(ICC == 0){

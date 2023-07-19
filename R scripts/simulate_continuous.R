@@ -18,7 +18,7 @@ sim_params <- list(
                                   ProfacSims:::model_lmm_random_int_ml)),
   study_sample_size_train = c(50, 200, 1000),
   study_sample_size_test = 5000,
-  sigma = list(c(ICC = 0.3, R2 = 0.25), c(c(ICC = 0.05, R2 = 0.25)), c(c(ICC = 0, R2 = 0.25)))
+  sigma = list(c(ICC = 0.3, R2 = 0.4), c(c(ICC = 0.05, R2 = 0.4)), c(c(ICC = 0, R2 = 0.4)))
 )
 
 
