@@ -21,6 +21,20 @@ sim_params <- list(
   sigmas = list(c(ICC = 0.3, R2 = 0.4), c(c(ICC = 0.05, R2 = 0.4)), c(c(ICC = 0, R2 = 0.4)))
 )
 
+sim_params <- list(
+  nreps = 1,
+  sim_rep_fun = list(ProfacSims:::sim_rep_continuous_new_test_studies),
+  n_studies = c(4, 8, 16, 32 ,64),
+  model_function_list = list(list(ProfacSims:::model_lm_fixed_int,
+                                  ProfacSims:::model_lm,
+                                  ProfacSims:::model_lmm_random_int_reml,
+                                  ProfacSims:::model_lmm_random_int_ml)),
+  study_sample_size_train = c(50, 200, 1000),
+  study_sample_size_test = 5000,
+  sigmas = list(c(ICC = 0.3, R2 = 0.4), c(c(ICC = 0.05, R2 = 0.4)), c(c(ICC = 0, R2 = 0.4))),
+  intercept_est_sample_size = 10,
+  n_studies_test = 100
+)
 
 
 tic()
@@ -56,10 +70,7 @@ summaries |>
 # - have sample size for estimating new study intercepts
 # - Have separate data for estimating intercepts and predictions
 
-
-
 # Add confidence intervals to plot
+# Plot tau not tau-squared
 
 # Explore surrogate modelling - check paper, what is aim,
-
-# Better model names

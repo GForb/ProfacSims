@@ -81,7 +81,7 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2) {
   return(list(u = sqrt(sigma2_u), e = sqrt(sigma2_e), beta = beta))
 }
 
-generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, train_data = NULL) {
+generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercepts_data = NULL, min_study_id = 1) {
   #Needs args:  n_studies, sample_szies, icc, out_prop (binary)
   # Fixed args: R-squared, number of predictors
   sigma_e <- sigmas$e
@@ -89,11 +89,11 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
   sigma_u <- sigmas$u
 
   total_n <- n_studies*study_sample_size
-  if(is.null(train_data)){
+  if(is.null(intercepts_data)){
     study_intercepts <-  rnorm(n_studies, sd = sigma_u)
-    intercepts <- data.frame(studyid = 1:n_studies, study_intercept = study_intercepts)
+    intercepts <- data.frame(studyid = min_study_id:n_studies+min_study_id-1, study_intercept = study_intercepts)
   } else {
-    intercepts <- train_data[,c("studyid", "study_intercept")] |> unique()
+    intercepts <- intercepts_data[,c("studyid", "study_intercept")] |> unique()
   }
 
   data <-  intercepts[rep(seq_len(nrow(intercepts)), study_sample_size), ]

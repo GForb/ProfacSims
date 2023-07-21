@@ -4,7 +4,6 @@
 
 # generic function for an ipdma prediciton modelling simulation
 
-# or make not generic...
 
 ipdma_simulation <- function(...) {
   params_list <- list(...)
@@ -56,7 +55,7 @@ sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size
   seed <- .Random.seed
 
   train_data <- generate_continuous(n_studies = n_studies, study_sample_size = study_sample_size_train, sigmas = sigmas)
-  test_data <- generate_continuous(n_studies, study_sample_size_test, sigmas = sigmas, train_data = train_data)
+  test_data <- generate_continuous(n_studies, study_sample_size_test, sigmas = sigmas, intercepts_data = train_data)
   results <- sim_rep(model_function_list, evaluate_performance = evaluate_performance_continuous, train_data = train_data, test_data = test_data)
   results <- results |>
     dplyr::mutate(
@@ -65,6 +64,41 @@ sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size
   return(results)
 }
 
+sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigmas,  intercept_est_sample_size = NULL, n_studies_test = n_studies) {
+  train_data <- generate_continuous(n_studies = n_studies, study_sample_size = study_sample_size_train, sigmas = sigmas)
+
+  test_data_intercept_est <- generate_continuous(n_studies_test, intercept_est_sample_size, sigmas = sigmas, min_study_id = n_studies+1)
+  test_data_intercept_est$int_est = TRUE
+  test_data <- generate_continuous(n_studies_test, study_sample_size_test, sigmas = sigmas, intercepts_data = test_data_intercept_est, min_study_id = n_studies+1)
+  test_data$int_est = FALSE
+  test_data <- dplyr::bind_rows(test_data_intercept_est, test_data)
+
+  results <- sim_rep(model_function_list, evaluate_performance = evaluate_performance_continuous_new_studies, train_data = train_data, test_data = test_data)
+  results <- results |>
+    dplyr::mutate(
+      rng_state = dplyr::case_when(dplyr::row_number() ==1 ~ list(.Random.seed),
+                                   TRUE  ~ list(NA)))
+  return(results)
+
+
+}
+
+sim_rep_new <- function(data_function, data_args, model_function_list, performance_function, performance_funciton_args) {
+  seed <- .Random.seed
+
+  data <- do.call(data_function, data_args)
+  models <- lapply(
+    model_function_list,
+    function(x) x(data)
+  )
+  results <- do.call(performance_function, c(list(models = models), performance_funciton_args))
+
+  dplyr::mutate(
+    rng_state = dplyr::case_when(dplyr::row_number() ==1 ~ list(.Random.seed),
+                                 TRUE  ~ list(NA)),
+    data_args = data_args)
+  return(results)
+}
 
 
 sim_rep <- function(model_function_list, evaluate_performance, train_data, test_data) {

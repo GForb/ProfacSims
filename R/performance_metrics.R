@@ -111,10 +111,24 @@ evaluate_performance_continuous_old <- function(test_data, model) {
 }
 
 
-evaluate_performance_continuous <- function(test_data, model) {
+evaluate_performance_continuous <- function(test_data, model, new_studies = FALSE) {
   outcome <- names(stats::model.frame(model))[1]
-  observed_outcome <- test_data[, outcome]
-  predicted_lp <- predict(model, newdata = test_data)
+
+
+  if(new_studies){
+    intercepts <- predict_intercepts(model, test_data[int_est = TRUE,], cluster_var = "studyid")
+
+    # merge intercepts onto test data
+    test_data <- test_data[int_est = FALSE,]
+    test_data <- dplyr::left_join(test_data, intercepts, by = "studyid")
+    observed_outcome <- test_data[, outcome]
+    predicted_lp <- predict_fixed(model, newdata = test_data)
+    predicted_lp <- predicted_lp + test_data$pred_intercept
+  } else {
+    observed_outcome <- test_data[, outcome]
+    predicted_lp <- predict(model, newdata = test_data)
+  }
+
   rbind(
     metric_calib_slope_cont(predicted_lp, observed_outcome),
     metric_calib_itl_cont(predicted_lp, observed_outcome),
@@ -123,5 +137,9 @@ evaluate_performance_continuous <- function(test_data, model) {
   )
 }
 
+
+evaluate_performance_continuous_new_studies <- function(test_data, model) {
+  evaluate_performance_continuous(test_data, model, new_studies = TRUE)
+}
 
 

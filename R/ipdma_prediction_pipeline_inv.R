@@ -2,7 +2,7 @@ sim_rep_continuous_inv <- function(model_function_list, n_studies, study_sample_
   .Random.seed <- sim_rep$rng_state[1]
 
   train_data <- generate_continuous(n_studies, study_sample_size_train, sigma_e, sigma_u)
-  test_data <- generate_continuous(n_studies, study_sample_size_test, sigma_e, sigma_u, train_data = train_data)
+  test_data <- generate_continuous(n_studies, study_sample_size_test, sigma_e, sigma_u, intercepts_data = train_data)
   models_list <- list()
   for(model in model_function_list){
     new_model <- list(model(train_data))

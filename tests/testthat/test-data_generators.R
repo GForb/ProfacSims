@@ -13,11 +13,6 @@ test_that("get_sigmas", {
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
   expect_equal(sigmas$e^2 + sigmas$u^2 + 12*sigmas$beta^2, 1)
 
-
-
-  expect_equal(nrow(train_data), 500)
-
-
 })
 
 
@@ -36,7 +31,7 @@ test_that("generate_continuous", {
     n_studies = 10,
     study_sample_size = 50,
     sigmas = sigmas,
-    train_data = train_data
+    intercepts_data = train_data
   )
 
   expect_equal(nrow(test_data), 500)

@@ -9,7 +9,7 @@ test_that("ipdma_prediction_pipeline", {
     n_studies = 10,
     study_sample_size = 50,
     sigmas= sigmas,
-    train_data = train_data
+    intercepts_data = train_data
   )
   cont_results <- ipdma_prediction_pipeline(
     train_data <- train_data,
@@ -41,7 +41,7 @@ test_that("sim_rep", {
     n_studies = 10,
     study_sample_size = 50,
     sigmas= sigmas,
-    train_data = train_data
+    intercepts_data = train_data
   )
   sim_results <- sim_rep(list(model_lm_fixed_int, model_lm),
           train_data = train_data,
