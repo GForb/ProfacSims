@@ -59,12 +59,12 @@ generate_cbcl <- function(n = c(100, 100, 100, 100, 100, 158, 197)) {
   return(data)
 }
 
-get_sigmas <- function(sigma2_x, beta, n_predictors, ICC, R2) {
+get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2) {
   if(ICC >= R2) {
     stop("R2 must be higher than the ICC")
   }
   R2_ <- (1-R2)/R2
-  pred_var <- sigma2_x*n_predictors*beta^2
+  pred_var <- sigma2_x*n_predictors # calculate with beta = 1
   if(ICC == 0){
     sigma2_u = 0
     sigma2_e = R2_*pred_var
@@ -73,16 +73,20 @@ get_sigmas <- function(sigma2_x, beta, n_predictors, ICC, R2) {
     sigma2_u <- R2_*pred_var/(ICC_- R2_)
     sigma2_e <- ICC_*sigma2_u
   }
-
-  return(list(u = sqrt(sigma2_u), e = sqrt(sigma2_e)))
+  total_var = sigma2_u + sigma2_e + pred_var
+  scale = 1/(total_var)
+  sigma2_u <- sigma2_u*scale
+  sigma2_e <- sigma2_e*scale
+  beta <- sqrt(scale)
+  return(list(u = sqrt(sigma2_u), e = sqrt(sigma2_e), beta = beta))
 }
 
-generate_continuous <- function(n_studies, study_sample_size, sigma_e, sigma_u, train_data = NULL) {
+generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, train_data = NULL) {
   #Needs args:  n_studies, sample_szies, icc, out_prop (binary)
   # Fixed args: R-squared, number of predictors
-
-  n_predictors <- 12
-  beta <- 1/sqrt(n_predictors)
+  sigma_e <- sigmas$e
+  beta <- sigmas$beta
+  sigma_u <- sigmas$u
 
   total_n <- n_studies*study_sample_size
   if(is.null(train_data)){
@@ -103,7 +107,6 @@ generate_continuous <- function(n_studies, study_sample_size, sigma_e, sigma_u, 
   return(data)
 }
 attr(generate_continuous, "n_predictors") = 12
-attr(generate_continuous, "beta") = 1/sqrt(12)
 
 generate_binary <- function(n) {
   n_predictors <- 12

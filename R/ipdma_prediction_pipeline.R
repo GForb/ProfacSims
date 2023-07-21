@@ -15,9 +15,9 @@ ipdma_simulation <- function(...) {
   results_df <- do.call(rbind, results)
   results_df <- results_df |>
     tidyr::unnest_wider(args) |>
-    tidyr::unnest_wider(sigma) |>
+    tidyr::unnest_wider(sigmas) |>
     dplyr::rename(sigma_u = u, sigma_e = e) |>
-    dplyr::mutate(error_var_u = case_when(metric == "var_u" ~ est - (sigma_u^2),
+    dplyr::mutate(error_var_u = dplyr::case_when(metric == "var_u" ~ est - (sigma_u^2),
                                            TRUE ~ NA))
 
 
@@ -29,16 +29,15 @@ ipdma_simulation <- function(...) {
 
 do_simulation <- function(nreps, sim_rep_fun, ...) {
   args <- list(...)
-  if (!is.null(args$sigma)){
-    ICC = args$sigma["ICC"]
-    R2 = args$sigma["R2"]
+  if (!is.null(args$sigmas)){
+    ICC = args$sigmas["ICC"]
+    R2 = args$sigmas["R2"]
     sigmas <- get_sigmas(
       sigma2_x = 1,
-      beta = attr(generate_continuous, "beta"),
       n_predictors = attr(generate_continuous, "n_predictors"),
       ICC = ICC,
       R2 = R2)
-     args$sigma <- sigmas
+    args$sigmas <- sigmas
   }
   loop_fun <- function(rep_number, args){
     results <- do.call(sim_rep_fun, args)
@@ -53,12 +52,11 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   return(results_df)
 }
 
-sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigma) {
+sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigmas) {
   seed <- .Random.seed
-  sigma_e <- sigma$e
-  sigma_u <- sigma$u
-  train_data <- generate_continuous(n_studies, study_sample_size_train, sigma_e, sigma_u)
-  test_data <- generate_continuous(n_studies, study_sample_size_test, sigma_e, sigma_u, train_data = train_data)
+
+  train_data <- generate_continuous(n_studies = n_studies, study_sample_size = study_sample_size_train, sigmas = sigmas)
+  test_data <- generate_continuous(n_studies, study_sample_size_test, sigmas = sigmas, train_data = train_data)
   results <- sim_rep(model_function_list, evaluate_performance = evaluate_performance_continuous, train_data = train_data, test_data = test_data)
   results <- results |>
     dplyr::mutate(

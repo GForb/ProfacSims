@@ -1,16 +1,14 @@
 test_that("ipdma_prediction_pipeline", {
-  sigmas <- get_sigmas(1, 1/12, 12, 0.3, 0.7)
+  sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
   train_data <- generate_continuous(
     n_studies = 10,
     study_sample_size = 50,
-    sigma_e = sigmas$e,
-    sigma_u = sigmas$u
+    sigmas = sigmas
   )
   test_data = generate_continuous(
     n_studies = 10,
     study_sample_size = 50,
-    sigma_e = sigmas$e,
-    sigma_u = sigmas$u,
+    sigmas= sigmas,
     train_data = train_data
   )
   cont_results <- ipdma_prediction_pipeline(
@@ -32,19 +30,17 @@ test_that("ipdma_prediction_pipeline", {
 
 
 test_that("sim_rep", {
-  sigmas <- get_sigmas(1, 1/12, 12, 0.3, 0.7)
+  sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
 
   train_data <- generate_continuous(
     n_studies = 10,
     study_sample_size = 50,
-    sigma_e = sigmas$e,
-    sigma_u = sigmas$u
+    sigmas= sigmas
   )
   test_data = generate_continuous(
     n_studies = 10,
     study_sample_size = 50,
-    sigma_e = sigmas$e,
-    sigma_u = sigmas$u,
+    sigmas= sigmas,
     train_data = train_data
   )
   sim_results <- sim_rep(list(model_lm_fixed_int, model_lm),
@@ -60,14 +56,14 @@ test_that("sim_rep", {
 
 
 test_that("sim_rep_continuous", {
-  sigmas <- get_sigmas(1, 1/12, 12, 0.3, 0.7)
+  sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
 
   sim_results <- sim_rep_continuous(
     list(model_lm_fixed_int, model_lm),
     n_studies = 10,
     study_sample_size_train = 500,
     study_sample_size_test = 5000,
-    sigma = sigmas
+    sigmas = sigmas
   )
   expect_equal(nrow(sim_results), 8)
 
@@ -81,7 +77,7 @@ test_that("do_simulation", {
                 model_function_list = list(model_lm_fixed_int, model_lm),
                 study_sample_size_train = 50,
                 study_sample_size_test = 500,
-                sigma = c(ICC = 0.3, R2 = 0.7))
+                sigmas = c(ICC = 0.3, R2 = 0.7))
   expect_equal(nrow(sim_results_test), 8)
 
 })
@@ -96,14 +92,14 @@ test_that("ipdma_simulation", {
     model_function_list = list(list(model_lm_fixed_int, model_lmm_random_int_ml)),
     study_sample_size_train = c(50),
     study_sample_size_test = 500,
-    sigma = list(c(ICC = 0.3, R2 = 0.7), c(c(ICC = 0, R2 = 0.7)))
+    sigmas = list(c(ICC = 0.3, R2 = 0.7), c(c(ICC = 0, R2 = 0.7)))
   )
 
   sim_results_test <- do.call(ipdma_simulation, sim_params)
 
 
   expect_equal(nrow(sim_results_test), 32)
-  expect_equal(ncol(sim_results_test), 20)
+  expect_equal(ncol(sim_results_test), 21)
 
 })
 

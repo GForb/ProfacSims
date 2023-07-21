@@ -21,26 +21,26 @@ model_logistic_cbcl_test <- function(data) {
 
 model_lm <- function(data) {
   model <- stats::lm("y ~ x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12", data = data)
-  attr(model, "name") <- "lm"
+  attr(model, "name") <- "Not adjusting for study"
   return(model)
 
 }
 
 model_lm_fixed_int<- function(data) {
   model <- stats::lm("y ~ studyid + x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 ", data = data)
-  attr(model, "name") <- "lm_fixed_int"
+  attr(model, "name") <- "Fixed intercept"
   return(model)
 }
 
 model_lmm_random_int_reml <- function(data) {
   model <- lme4::lmer("y ~ x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12+ (1|studyid)", data = data)
-  attr(model, "name") <- "lmm_random_int_reml"
+  attr(model, "name") <- "Random intercetp - REML"
   return(model)
 }
 
 model_lmm_random_int_ml <- function(data) {
   model <- lme4::lmer("y ~ x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12+ (1|studyid)", data = data, REML = FALSE)
-  attr(model, "name") <- "lmm_random_int_ml"
+  attr(model, "name") <- "Random intercetp - ML"
   return(model)
 }
 

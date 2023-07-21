@@ -3,8 +3,8 @@ set.seed(1234)
 match_length <- function(vec) {
   c(vec, rep(NA, 1000-length(vec)))
 }
-sigmas <- get_sigmas(1, 1/sqrt(12), n_predictors = 12, ICC = 0.3, R2 = 0.7)
-data <- generate_continuous(10,100,sigma_e = sigmas$e, sigma_u = sigmas$u)
+sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
+data <- generate_continuous(10,100,sigmas)
 test_data <- generate_continuous(10,100,sigma_e = sigmas$e, sigma_u = sigmas$u, train_data = data)
 test_data_na_y <-test_data
 test_data_na_y$y <- NA

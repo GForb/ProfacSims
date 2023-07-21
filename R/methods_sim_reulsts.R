@@ -7,7 +7,7 @@ plot.sim_results <- function(sim_results, stack = TRUE) {
                                                    model == "lmm_random_int_ml" ~ n_studies*2^0.21))
 
   if(stack){
-    sim_results_stacked <- sim_results_lazy_stack(sim_results)
+    sim_results_stacked <- sim_results_lazy_stack(sim_results_mod)
   } else {
     sim_results_stacked <- sim_results_mod
   }
