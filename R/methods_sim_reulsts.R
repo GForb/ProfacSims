@@ -1,4 +1,4 @@
-plot.sim_results <- function(sim_results, stack = TRUE) {
+plot.sim_results <- function(sim_results, stack = TRUE, CI = FALSE) {
 
   sim_results_mod <- sim_results |>
     dplyr::mutate(n_studies_mod = dplyr::case_when(model == "lm" ~ n_studies*2^-0.21,
@@ -11,7 +11,7 @@ plot.sim_results <- function(sim_results, stack = TRUE) {
   } else {
     sim_results_stacked <- sim_results_mod
   }
-  sim_results_stacked |>
+  plot <- sim_results_stacked |>
     ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
     ggplot2::geom_point() +
     ggplot2::facet_grid(cols = ggplot2::vars(ICC,study_sample_size_train), rows = ggplot2::vars(metric, what), scales = "free_y", switch = "y") +
@@ -22,6 +22,10 @@ plot.sim_results <- function(sim_results, stack = TRUE) {
       caption ="Performance is pooled study level model performance \n
                  Tau-Squared is the between study variance in model performance"
       )
+  if(CI){
+    plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(ymin=ll, ymax=ul))
+  }
+  return(plot)
 }
 
 sim_results_lazy_stack <- function(sim_results) {

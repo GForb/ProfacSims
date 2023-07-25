@@ -116,10 +116,11 @@ evaluate_performance_continuous <- function(test_data, model, new_studies = FALS
 
 
   if(new_studies){
-    intercepts <- predict_intercepts(model, test_data[int_est = TRUE,], cluster_var = "studyid")
+    intercept_data <- test_data |> dplyr::filter(int_est == TRUE)
+    intercepts <- predict_intercepts(model,intercept_data , cluster_var = "studyid")
 
-    # merge intercepts onto test data
-    test_data <- test_data[int_est = FALSE,]
+        # merge intercepts onto test data
+    test_data <- test_data |> dplyr::filter(int_est == FALSE)
     test_data <- dplyr::left_join(test_data, intercepts, by = "studyid")
     observed_outcome <- test_data[, outcome]
     predicted_lp <- predict_fixed(model, newdata = test_data)

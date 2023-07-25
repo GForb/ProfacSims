@@ -51,6 +51,30 @@ test_that("sim_rep", {
   expect_equal(nrow(sim_results), 8)
   expect_equal(ncol(sim_results), 9)
 
+
+  test_data = generate_continuous_new_studies(
+    n_studies = 10,
+    n_studies_int_est = 10,
+    study_sample_size = 50,
+    sigmas= sigmas,
+    intercepts_data = NULL,
+    min_study_id = 11
+  )
+
+  sim_results <- sim_rep(list(model_lm_fixed_int, model_lmm_random_int_reml),
+          evaluate_performance = evaluate_performance_continuous_new_studies,
+          train_data = train_data, test_data = test_data)
+
+  model <-  model_lmm_random_int_reml(train_data)
+  get_rand_int(model, test_data)
+
+  evaluate_performance_continuous_new_studies(test_data, model)
+  get_performance_by_study(test_data, model, evaluate_performance_continuous_new_studies)
+
+
+  expect_equal(nrow(sim_results), 8)
+  expect_equal(ncol(sim_results), 9)
+
 })
 
 
@@ -68,6 +92,23 @@ test_that("sim_rep_continuous", {
   expect_equal(nrow(sim_results), 8)
 
 })
+
+test_that("sim_rep_continuous_new_test_studies", {
+  sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
+
+  sim_results <- sim_rep_continuous_new_test_studies(
+    list(model_lmm_random_int_ml, model_lm, model_lm_fixed_int),
+    n_studies = 10,
+    study_sample_size_train = 500,
+    study_sample_size_test = 5000,
+    sigmas = sigmas,
+    intercept_est_sample_size = 10,
+    n_studies_test = 10
+  )
+  expect_equal(nrow(sim_results), 12)
+
+})
+
 
 
 test_that("do_simulation", {

@@ -8,7 +8,7 @@
 ipdma_simulation <- function(...) {
   params_list <- list(...)
   sim_params <- do.call(tidyr::expand_grid, params_list)
-
+  print(sim_params)
   results <- furrr::future_pmap(.l = sim_params, .f = do_simulation, .options = furrr::furrr_options(seed=TRUE), .progress = TRUE)
 
   results_df <- do.call(rbind, results)
@@ -73,7 +73,9 @@ sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies,
   test_data$int_est = FALSE
   test_data <- dplyr::bind_rows(test_data_intercept_est, test_data)
 
-  results <- sim_rep(model_function_list, evaluate_performance = evaluate_performance_continuous_new_studies, train_data = train_data, test_data = test_data)
+  results <- sim_rep(model_function_list,
+                     evaluate_performance = evaluate_performance_continuous_new_studies,
+                     train_data = train_data, test_data = test_data)
   results <- results |>
     dplyr::mutate(
       rng_state = dplyr::case_when(dplyr::row_number() ==1 ~ list(.Random.seed),
