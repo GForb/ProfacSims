@@ -59,27 +59,38 @@ generate_cbcl <- function(n = c(100, 100, 100, 100, 100, 158, 197)) {
   return(data)
 }
 
-get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2) {
+get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0) {
   if(ICC >= R2) {
     stop("R2 must be higher than the ICC")
   }
-  R2_ <- (1-R2)/R2
-  pred_var <- sigma2_x*n_predictors # calculate with beta = 1
-  if(ICC == 0){
-    sigma2_u = 0
-    sigma2_e = R2_*pred_var
-  } else {
-    ICC_ = (1-ICC)/ICC
-    sigma2_u <- R2_*pred_var/(ICC_- R2_)
-    sigma2_e <- ICC_*sigma2_u
+  R2_ <- R2/(1-R2)
+
+  # calcualte scaled so that sigma2_u+sigma2_e=1
+  sigma2_u = ICC
+  sigma2_e = 1-ICC
+  pred_var = sigma2_u*R2_+sigma2_e*R2_-sigma2_u/(1-R2)
+  int_R2 = int_pred_corr^2
+  # variance of an individual x is used to give beta_int
+  if(ICC==0){
+    beta_int = 0
+  } else{
+    beta_int = sqrt(int_R2*sigma2_x/(sigma2_u*(1+int_R2)))
   }
-  total_var = sigma2_u + sigma2_e + pred_var
-  scale = 1/(total_var)
-  sigma2_u <- sigma2_u*scale
-  sigma2_e <- sigma2_e*scale
-  beta <- sqrt(scale)
-  return(list(u = sqrt(sigma2_u), e = sqrt(sigma2_e), beta = beta))
+
+  # the total variance of the sum of predictors is sum_var_x
+  sum_var_x <- n_predictors*sigma2_x + n_predictors^2*beta_int^2*sigma2_u
+
+  # set beta_x to give the needed total predictor variance
+  beta_x =  sqrt(pred_var/sum_var_x)
+
+
+  pred_var <- sigma2_x*n_predictors # calculate with beta = 1
+
+  return(list(u = sqrt(sigma2_u), e = sqrt(sigma2_e), beta_x = beta_x, beta_int = beta_int))
 }
+
+
+
 
 
 generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercept_est_sample_size, intercepts_data=NULL, min_study_id = 1) {
@@ -96,8 +107,9 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
   #Needs args:  n_studies, sample_szies, icc, out_prop (binary)
   # Fixed args: R-squared, number of predictors
   sigma_e <- sigmas$e
-  beta <- sigmas$beta
+  beta <- sigmas$beta_x
   sigma_u <- sigmas$u
+  beta_int = sigmas$beta_int
 
   total_n <- n_studies*study_sample_size
   if(is.null(intercepts_data)){
@@ -108,8 +120,8 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
   }
 
   data <-  intercepts[rep(seq_len(nrow(intercepts)), study_sample_size), ]
+  predictors <- generate_predictors(total_n, n_predictors, data$study_intercept, beta_int)
 
-  predictors <- generate_predictors(total_n, n_predictors)
   data <- cbind(data, predictors)
   data$lp <- generate_linear_predictor(predictors, beta)
   data$error = rnorm(total_n, 0, sigma_e)
@@ -143,11 +155,16 @@ generate_binary <- function(n) {
   return(data)
 }
 
-
-generate_predictors <- function(n, parameters) {
-  X <- rnorm(n * parameters)
-  X <- matrix(X, nrow = n, ncol = parameters)
-  colnames(X) <- paste0("x", 1:parameters)
+# Total variance of a single predictor is 1/n_predictors
+# This gives the total variance of predictors to be 1
+# Formulas for beta_int and sigma2_err_x are derived form fromulas for r-squared and total variance
+# For any predictor total var = 1/n_predictors. Therefore error var = 1/n_predictors=beta_int^
+generate_predictors <- function(n, n_predictors, intercepts, beta_int) {
+  sigma2_err_x = 1
+  X_error <- rnorm(n * n_predictors, sd = sqrt(sigma2_err_x))
+  X <- matrix(X_error, nrow = n, ncol = n_predictors)
+  X <- X + beta_int*intercepts
+  colnames(X) <- paste0("x", 1:n_predictors)
   return(X)
 }
 

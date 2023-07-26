@@ -118,7 +118,9 @@ test_that("do_simulation", {
                                     model_function_list = list(model_lm_fixed_int, model_lm),
                                     study_sample_size_train = 50,
                                     study_sample_size_test = 500,
-                                    sigmas = c(ICC = 0.3, R2 = 0.7))
+                                    ICC = 0.3,
+                                    R2 = 0.7,
+                                    int_pred_corr = 0)
   expect_equal(nrow(sim_results_test), 8)
 
 })
@@ -134,13 +136,15 @@ test_that("ipdma_simulation", {
     model_function_list = list(list(model_lm_fixed_int, model_lmm_random_int_ml)),
     study_sample_size_train = c(50),
     study_sample_size_test = 500,
-    sigmas = list(c(ICC = 0.3, R2 = 0.7), c(c(ICC = 0, R2 = 0.7)))
+    ICC = c(0, 0.3),
+    R2 = c(0.5, 0.7),
+    int_pred_corr = c(0, 0.5)
   )
 
   sim_results_test <- do.call(ipdma_simulation, sim_params)
 
 
-  expect_equal(nrow(sim_results_test), 32)
-  expect_equal(ncol(sim_results_test), 21)
+  expect_equal(nrow(sim_results_test), 128)
+  expect_equal(ncol(sim_results_test), 23)
 
 })

@@ -27,16 +27,19 @@ ipdma_simulation <- function(...) {
 
 do_simulation <- function(nreps, sim_rep_fun, ...) {
   args <- list(...)
-  if (!is.null(args$sigmas)){
-    ICC = args$sigmas["ICC"]
-    R2 = args$sigmas["R2"]
+
+  ICC <-  args$ICC
+  R2 <- args$R2
+  int_pred_corr <- args$int_pred_corr
+
     sigmas <- get_sigmas(
       sigma2_x = 1,
       n_predictors = attr(generate_continuous, "n_predictors"),
       ICC = ICC,
-      R2 = R2)
+      R2 = R2,
+      int_pred_corr = int_pred_corr)
     args$sigmas <- sigmas
-  }
+    args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr")==FALSE]
   loop_fun <- function(rep_number, args){
     results <- do.call(sim_rep_fun, args)
     results |> dplyr::mutate(args = list(args), rep_number = rep_number)
@@ -44,8 +47,9 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   results_list <- lapply(1:nreps, loop_fun, args = args)
 
   results_df <- do.call(rbind, results_list)
-  if(exists("ICC")) results_df$ICC = ICC
-  if(exists("R2")) results_df$R2 = R2
+  results_df$ICC = ICC
+  results_df$R2 = R2
+  results_df$int_pred_corr = int_pred_corr
 
   return(results_df)
 }
