@@ -49,7 +49,7 @@ test_that("sim_rep", {
                          evaluate_performance = evaluate_performance_continuous
   )
   expect_equal(nrow(sim_results), 8)
-  expect_equal(ncol(sim_results), 9)
+  expect_equal(ncol(sim_results), 10)
 
 
   test_data = generate_continuous_new_studies(
@@ -65,15 +65,11 @@ test_that("sim_rep", {
                          evaluate_performance = evaluate_performance_continuous_new_studies,
                          train_data = train_data, test_data = list(test_data))
 
-  model <-  model_lmm_random_int_reml(train_data)
-  get_rand_int(model, test_data)
 
-  evaluate_performance_continuous_new_studies(test_data, model)
-  get_performance_by_study(test_data, model, evaluate_performance_continuous_new_studies)
 
 
   expect_equal(nrow(sim_results), 8)
-  expect_equal(ncol(sim_results), 9)
+  expect_equal(ncol(sim_results), 10)
 
 })
 

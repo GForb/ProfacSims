@@ -15,6 +15,7 @@ ipdma_prediction_pipeline <- function(test_data, model, evaluate_performance) {
   metrics <- unique(by_study_performacne$metric)
   results_list <- lapply(metrics, meta_analyse_performance, by_study_performacne = by_study_performacne)
   results_df <- dplyr::bind_rows(results_list)
+  results_df$test_ss=sum(test_data$int_est)
   return(results_df)
 }
 
