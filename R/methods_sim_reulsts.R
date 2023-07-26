@@ -1,10 +1,12 @@
 plot.sim_results <- function(sim_results, stack = TRUE, CI = FALSE) {
 
   sim_results_mod <- sim_results |>
-    dplyr::mutate(n_studies_mod = dplyr::case_when(model == "lm" ~ n_studies*2^-0.21,
-                                                   model == "lm_fixed_int" ~ n_studies*2^-0.07,
-                                                   model == "lmm_random_int_reml" ~ n_studies*2^0.07,
-                                                   model == "lmm_random_int_ml" ~ n_studies*2^0.21))
+    dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Not adjusting for study" ~ n_studies*2^-0.21,
+                                                   model == "Fixed intercept" ~ n_studies*2^-0.07,
+                                                   model == "Random intercetp - REML" ~ n_studies*2^0.07,
+                                                   model == "Random intercetp - ML" ~ n_studies*2^0.21),
+                  model_est_method = paste(model, ", Est. n:", intercept_est_sample_size)) |>
+    mutate(model_est_method=factor(model_est_method))
 
   if(stack){
     sim_results_stacked <- sim_results_lazy_stack(sim_results_mod)
@@ -12,7 +14,7 @@ plot.sim_results <- function(sim_results, stack = TRUE, CI = FALSE) {
     sim_results_stacked <- sim_results_mod
   }
   plot <- sim_results_stacked |>
-    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
+    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model_est_method)) +
     ggplot2::geom_point() +
     ggplot2::facet_grid(cols = ggplot2::vars(ICC,study_sample_size_train), rows = ggplot2::vars(metric, what), scales = "free_y", switch = "y") +
     ggplot2::scale_x_continuous(trans='log2') +
@@ -41,3 +43,19 @@ sim_results_lazy_stack <- function(sim_results) {
   sim_results_stacked <- dplyr::bind_rows(sim_results_mod_est, sim_results_mod_tau2, sim_results_mod_error_var_u)
   return(sim_results_stacked)
 }
+
+robust_t_test <- function(x) {
+  CI <- c(NA, NA)
+  try(CI <- t.test(x)$conf.int, silent = TRUE)
+  return(CI)
+}
+
+get_summaries <- function(sim_results) {
+  summaries <- sim_results |>
+    sim_results_lazy_stack() |>
+    dplyr::select(metric, what, value, ICC, R2, study_sample_size_train, n_studies, model, sigma_u, sigma_e, intercept_est_sample_size) |>
+    dplyr::group_by(across(c(-value))) |>
+    dplyr::summarise(mean = mean(value), ll = robust_t_test(value)[1], ul = robust_t_test(value)[2],  n = sum(!is.na(value)), sigma_u = mean(sigma_u), sigma_e = mean(sigma_e))
+  return(summaries)
+}
+
