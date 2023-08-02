@@ -17,6 +17,7 @@ test_that("model_evaluate_pipeline", {
     evaluate_performance = evaluate_performance_continuous,
     fit_model = model_lm_fixed_int)
   expect_equal(nrow(cont_results), 4)
+  expect_vector(dplyr::filter(cont_results, metric == "var_u")$betas[[1]])
 
   binary_results <- model_evaluate_pipeline(
     train_data = generate_cbcl(),
@@ -49,7 +50,7 @@ test_that("sim_rep", {
                          evaluate_performance = evaluate_performance_continuous
   )
   expect_equal(nrow(sim_results), 8)
-  expect_equal(ncol(sim_results), 10)
+  expect_equal(ncol(sim_results), 11)
 
 
   test_data = generate_continuous_new_studies(
@@ -69,7 +70,7 @@ test_that("sim_rep", {
 
 
   expect_equal(nrow(sim_results), 8)
-  expect_equal(ncol(sim_results), 10)
+  expect_equal(ncol(sim_results), 11)
 
 })
 
@@ -141,6 +142,6 @@ test_that("ipdma_simulation", {
 
 
   expect_equal(nrow(sim_results_test), 128)
-  expect_equal(ncol(sim_results_test), 23)
+  expect_equal(ncol(sim_results_test), 25)
 
 })

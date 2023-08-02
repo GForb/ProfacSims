@@ -19,7 +19,7 @@ robust_t_test <- function(x) {
 get_summaries <- function(sim_results) {
   summaries <- sim_results |>
     sim_results_lazy_stack() |>
-    dplyr::select(metric, what, value, ICC, R2, study_sample_size_train, n_studies, model, sigma_u, sigma_e) |>
+    dplyr::select(metric, what, value, ICC, R2, study_sample_size_train, n_studies, model, sigma_u, sigma_e, test_ss) |>
     dplyr::group_by(across(c(-value))) |>
     dplyr::summarise(mean = mean(value), ll = robust_t_test(value)[1], ul = robust_t_test(value)[2],  n = sum(!is.na(value)), sigma_u = mean(sigma_u), sigma_e = mean(sigma_e))
   return(summaries)

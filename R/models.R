@@ -55,6 +55,13 @@ get_var_u <- function(model) {
   return(var_u)
 }
 
+get_betas <- function(model) {
+  betas = NA
+  try({
+    betas <- coef(model)
+  })
+  return(betas)
+}
 
 predict_random_int_blup <- function(model, newdata) {
   outcome <-names(model@frame)[1]

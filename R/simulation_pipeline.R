@@ -112,9 +112,9 @@ model_evaluate_pipeline <- function(fit_model, train_data, test_data_list, evalu
   model <- fit_model(train_data)
   results_list <- lapply(test_data_list, ipdma_prediction_pipeline, model = model, evaluate_performance = evaluate_performance)
   results_df <- dplyr::bind_rows(results_list)
-
-  var_u <- data.frame(metric = "var_u", est = get_var_u(model))
-  results_df <- dplyr::bind_rows(results_df, var_u)
+  betas <- get_betas(model)
+  model_est <- tibble::tibble(metric = "var_u", est = get_var_u(model), betas = list(betas))
+  results_df <- dplyr::bind_rows(results_df, model_est)
 
   results_df$model <- attr(model, "name")
   return(results_df)
