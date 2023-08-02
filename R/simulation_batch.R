@@ -1,5 +1,5 @@
 
-run_simualtions_in_batches <- function(sim_params, n_batches, filepath) {
+run_simualtions_in_batches <- function(sim_params, n_batches) {
   file_names = ""
   for(i in 1:n_batches){
 
@@ -8,7 +8,7 @@ run_simualtions_in_batches <- function(sim_params, n_batches, filepath) {
 
     sim_results <- do.call(ProfacSims:::ipdma_simulation, sim_params)
     file_name <- paste("sim_results", i, sep = "")
-    save(sim_results, file = here::here(filepath, file_name))
+    save(sim_results, file = here::here("Results/HolidayBatch", file_name))
 
 
     print(paste("Batch", i, "complete"))
@@ -18,7 +18,7 @@ run_simualtions_in_batches <- function(sim_params, n_batches, filepath) {
   sim_results_combined <- load(file = here::here("Results/HolidayBatch", 'sim_results1'))
 
   for(i in 2:n_batches){
-    sim_results <- load(file = here::here(filepath, paste("sim_results", i, sep = "")))
+    sim_results <- load(file = here::here("Results/HolidayBatch", paste("sim_results", i, sep = "")))
     sim_results <- sim_results |> mutate(batch_no = i)
     sim_results_combined <- dplyr::bind_rows(sim_results_combined, sim_results)
   }

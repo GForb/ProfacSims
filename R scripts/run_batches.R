@@ -3,6 +3,7 @@ install_github("GForb/ProfacSims", upgrade= "never")
 
 library(ProfacSims)
 library(furrr)
+library(tictoc)
 
 sim_params <- list(
   nreps = 20,
@@ -39,4 +40,6 @@ sim_params <- list(
   n_studies_test = 20
 )
 
+tic()
 ProfacSims:::run_simualtions_in_batches(sim_params = sim_params, n_batches = 2,filepath = "Results/HolidayBatch")
+toc()
