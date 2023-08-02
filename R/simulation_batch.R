@@ -2,8 +2,7 @@
 run_simualtions_in_batches <- function(sim_params, n_batches, filepath) {
   file_names = ""
   for(i in 1:n_batches){
-    rm(list = ls(all.names = TRUE))
-    gc()
+
     plan("multisession")
 
 
@@ -13,6 +12,8 @@ run_simualtions_in_batches <- function(sim_params, n_batches, filepath) {
 
 
     print(paste("Batch", i, "complete"))
+    rm(list = ls(all.names = TRUE))
+    gc()
   }
   sim_results_combined <- load(file = here::here(filepath, 'sim_results1'))
 
