@@ -15,14 +15,5 @@ run_simualtions_in_batches <- function(sim_params, n_batches) {
     rm(list = ls(all.names = TRUE))
     gc()
   }
-  sim_results_combined <- load(file = here::here("Results/HolidayBatch", 'sim_results1'))
-
-  for(i in 2:n_batches){
-    sim_results <- load(file = here::here("Results/HolidayBatch", paste("sim_results", i, sep = "")))
-    sim_results <- sim_results |> mutate(batch_no = i)
-    sim_results_combined <- dplyr::bind_rows(sim_results_combined, sim_results)
-  }
-  save(sim_results_combined, file = here::here("Results/HolidayBatch", "combined_results"))
-  return(sim_results_combined)
 }
 
