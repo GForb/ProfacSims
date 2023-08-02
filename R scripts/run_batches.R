@@ -39,4 +39,4 @@ sim_params <- list(
   n_studies_test = 20
 )
 
-run_simualtions_in_batches(sim_params = sim_params, n_batches = 2,filepath = "Results/HolidayBatch")
+ProfacSims:::run_simualtions_in_batches(sim_params = sim_params, n_batches = 2,filepath = "Results/HolidayBatch")
