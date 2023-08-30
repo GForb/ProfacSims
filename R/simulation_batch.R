@@ -7,8 +7,8 @@ run_simualtions_in_batches <- function(sim_params, n_batches) {
 
 
     sim_results <- do.call(ProfacSims:::ipdma_simulation, sim_params)
-    file_name <- paste("sim_results", i, sep = "")
-    save(sim_results, file = here::here("Results/HolidayBatch", file_name))
+    file_name <- paste("sim_results", i, ".RDS", sep = "")
+    saveRDS(sim_results, file = here::here("Results/HolidayBatch", file_name))
 
 
     print(paste("Batch", i, "complete"))

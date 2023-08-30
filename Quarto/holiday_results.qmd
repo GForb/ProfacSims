@@ -1,0 +1,67 @@
+---
+title: "Holiday Results"
+format: html
+editor: visual
+---
+
+## Intro
+
+Quatro doc Showing results of simulations run over my holiday. New addition was calcualtion of bias for beta covariates to investiage why we are seeing no impact on performance from random effects models when we introduce level 2 endogenity.
+
+Simulaiton scenarios:
+
+
+### Set up
+Load libraries and connect to SQL database containing results.
+
+```{r}
+library(tidyverse)
+library(DBI)
+library(RSQLite)
+library(here)
+
+# Connecting to database
+db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
+
+```
+
+## Simulation scenarios run
+```{r, echo = FALSE}
+scenarios <- dbGetQuery(db,
+            "SELECT  DISTINCT n_studies, ICC, R2, study_sample_size_train , int_pred_corr
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023'  AND metric = 'var_u'"
+)
+n_studies <- paste(scenarios$n_studies |> unique(), collapse = ", ")
+study_sample_size <- paste(scenarios$study_sample_size_train |> unique(), collapse = ", ")
+ICC <- paste(scenarios$ICC |> unique(), collapse = ", ")
+R2 <- paste(scenarios$R2 |> unique(), collapse = ", ")
+int_pred_corr <- paste(scenarios$int_pred_corr |> unique(), collapse = ", ")
+tibble(Parameter = c("N studies", "Study sample size", "ICC", "R2", "Intercept-predictor corr"), Values = c(n_studies, study_sample_size, ICC, R2, int_pred_corr))
+
+```
+## Bias in beta
+
+```{r}
+data <- dbGetQuery(db,
+           "SELECT n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, beta_mean_error, beta_x, sigma_e, sigma_u
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023' AND metric = 'var_u'"
+)
+
+# plot n
+summaries <- data |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model) |> 
+  summarise(est = mean(beta_mean_error), 
+            ll = robust_t_test(beta_mean_error)[1], 
+            ul = robust_t_test(beta_mean_error)[2],  
+            n = sum(!is.na(beta_mean_error)),
+            beta_x = mean(beta_x))
+
+
+summaries_n <- summaries |> 
+  select(-est) |> 
+  rename(est = n) |> 
+  plot_results_by_model()
+
+```
