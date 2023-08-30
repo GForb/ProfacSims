@@ -1,10 +1,10 @@
 plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
   data <- data |> add_n_studies_mod(model_offset)
-
+  data <- data |> rename(study_n = sample_size_train_study)
   plot <- data |>
     ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(cols = ggplot2::vars(R2, study_sample_size_train),
+    ggplot2::facet_grid(cols = ggplot2::vars(R2, study_n),
                         rows = ggplot2::vars(int_pred_corr, ICC),
                         scales = "free_y",
                         switch = "y",
