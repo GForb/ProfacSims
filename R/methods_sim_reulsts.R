@@ -8,7 +8,7 @@ plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
                         rows = ggplot2::vars(int_pred_corr, ICC),
                         scales = "free_y",
                         switch = "y",
-                        ggplot2::labeller= label_context) +
+                        ggplot2::labeller= "label_both") +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",
