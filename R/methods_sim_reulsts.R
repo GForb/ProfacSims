@@ -20,12 +20,11 @@ plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
 
 
 add_n_studies_mod <- function(data, model_offset) {
-  data |> dplyr::mutate(n_studies_mod = dplyr::case_when(model == "lm" ~ n_studies*2^(-model_offset*3/2),
-                                                 model == "lm_fixed_int" ~ n_studies*2^(-model_offset*1/2),
-                                                 model == "lmm_random_int_reml" ~ n_studies*2^(model_offset*1/2),
-                                                 model == "lmm_random_int_ml" ~ n_studies*2^(-model_offset*3/2)))
+  data |> dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Not adjusting for study" ~ n_studies*2^(-model_offset*3/2),
+                                                 model == "Fixed intercept" ~ n_studies*2^(-model_offset*1/2),
+                                                 model == "Random intercetp - REML" ~ n_studies*2^(model_offset*1/2),
+                                                 model == "Random intercetp - ML" ~ n_studies*2^(-model_offset*3/2)))
 }
-
 
 
 
