@@ -4,7 +4,7 @@ plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
   plot <- data |>
     ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(cols = ggplot2::vars(ICC, study_sample_size_train), rows = ggplot2::vars(int_pred_corr, R2), scales = "free_y", switch = "y") +
+    ggplot2::facet_grid(cols = ggplot2::vars(ICC, study_sample_size_train), rows = ggplot2::vars(int_pred_corr, R2, ICC), scales = "free_y", switch = "y") +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",
