@@ -11,7 +11,8 @@ plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
       y = "",
       caption ="Performance is pooled study level model performance \n
                  Tau-Squared is the between study variance in model performance"
-    )
+    ) +
+    theme(legend.position = "top")
   if(CI){
     plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(ymin=ll, ymax=ul))
   }
