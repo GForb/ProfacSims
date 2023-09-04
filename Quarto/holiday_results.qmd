@@ -2,6 +2,9 @@
 title: "Holiday Results"
 format: html
 editor: visual
+execute: 
+  echo: false
+  warning: false
 ---
 
 ## Intro
@@ -11,21 +14,24 @@ Quatro doc Showing results of simulations run over my holiday. New addition was 
 Simulaiton scenarios:
 
 
-### Set up
-Load libraries and connect to SQL database containing results.
 
 ```{r}
+devtools::load_all(path = here::here())
+
 library(tidyverse)
 library(DBI)
 library(RSQLite)
 library(here)
 
+dplyr.summarise.inform = FALSE
 # Connecting to database
 db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
 
 ```
 
 ## Simulation scenarios run
+Scenarios run factorially. Note, when the ICC is zero, the intercept-predictor correlation is zero as there is no between study variability in intercepts.
+
 ```{r, echo = FALSE}
 scenarios <- dbGetQuery(db,
             "SELECT  DISTINCT n_studies, ICC, R2, study_sample_size_train , int_pred_corr
@@ -40,9 +46,9 @@ int_pred_corr <- paste(scenarios$int_pred_corr |> unique(), collapse = ", ")
 tibble(Parameter = c("N studies", "Study sample size", "ICC", "R2", "Intercept-predictor corr"), Values = c(n_studies, study_sample_size, ICC, R2, int_pred_corr))
 
 ```
-## Bias in beta
 
-```{r}
+```{r, echo = FALSE}
+# Processing database results to give summaries and ns
 data <- dbGetQuery(db,
            "SELECT n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, beta_mean_error, beta_x, sigma_e, sigma_u
             FROM sim_results_v1
@@ -51,17 +57,207 @@ data <- dbGetQuery(db,
 
 # plot n
 summaries <- data |> 
+  mutate(perc_beta_error = beta_mean_error/beta_x*100) |> 
   group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model) |> 
-  summarise(est = mean(beta_mean_error), 
-            ll = robust_t_test(beta_mean_error)[1], 
-            ul = robust_t_test(beta_mean_error)[2],  
-            n = sum(!is.na(beta_mean_error)),
+  summarise(value = mean(perc_beta_error), 
+            ll = robust_t_test(perc_beta_error)[1], 
+            ul = robust_t_test(perc_beta_error)[2],  
+            n = sum(!is.na(perc_beta_error)),
             beta_x = mean(beta_x))
 
 
 summaries_n <- summaries |> 
-  select(-est) |> 
-  rename(est = n) |> 
-  plot_results_by_model()
+  select(-value) |> 
+  rename(value = n) 
+
+
+
+```
+
+## Number of models that converge 
+Should be 200 (the number of simulation reps)
+
+```{r, fig.height = 6}
+summaries_n |> 
+  ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 200)
+```
+
+
+## Bias in beta
+
+
+## Bias in betas
+
+We expect the bias in betas to be zero for all models when there is no correlation between intercepts and predictors. When there is a correlation we expect bias when: 
+
+1. Study is not adjusted for, as the correlation between study intercepts and predictors will lead to bias in estiamtes of beta (confounding to use causal language).
+2. Maximum liklihood is used for estiamting random intercepts models and the number of studies is low (due to underestimation of between study variance, and consequently under-adjsutment for study) 
+3. All random intercept models due to level 2 endogeneity
+
+The following plots examine the difference between the mean estimated betas and the true value for betas. They show percentage bias in beta on the y-axis. Each model has 12 beta parameters, that should be equal. The plots takes the mean across all beta parameters.
+
+### No correlation between predictors and study intercepts
+Negligible bias for all scenarios
+
+```{r, fig.height = 9}
+summaries |> filter(int_pred_corr==0) |> plot_results_by_model(CI = TRUE) + ylab("Percentage bias in beta")
+
+```
+
+### Correlation between predictors and study intercepts (level 2 endogeneity)
+- Logistic regression with fixed intercepts gives unbiased betas accross all scenarios.
+- No adjusting for study leads to a large bias 
+When using random intercept models bias reduces with stidy size, to become almost zero for study size 1000.
+- Bias, as a percentage of beta. is smaller with higher R-squared as in these scenarios beta is larger. the absolute value of the bias is similar.
+
+
+```{r, fig.height = 6}
+summaries |> filter(int_pred_corr==0.5, ICC !=0) |>  plot_results_by_model(CI = TRUE) + ylab("Percentage bias in beta")
+
+```
+
+The final results show increasing bias with the number of studies, when study is not adjusted for, or random intercept models are used. This is the case for random intercept models when study size is 50. This goes against intuition.
+
+## A closer look at random intercept models
+
+Focusing on scenarios with correlatied intercepts and predictors, removing model that does not adjust for study, and removing the smallest studies.
+
+```{r, fig.height = 6}
+sumaries_focus <- summaries |> 
+  filter(int_pred_corr == 0.5, model != "Not adjusting for study", study_sample_size_train !=50, ICC !=0)
+sumaries_focus |> 
+  filter(int_pred_corr == 0.5, model != "Not adjusting for study", study_sample_size_train !=50) |> 
+  plot_results_by_model(CI = TRUE) + ylab("Percentage bias in beta")
+
+```
+
+To understand the differences we see we can compare the parameters used in the models:
+
+```{r}
+bind_rows(
+  get_sigmas(ICC = 0.05, R2 = 0.4, int_pred_corr = 0.5, n_predictors = 12),
+  get_sigmas(ICC = 0.3, R2 = 0.4, int_pred_corr = 0.5, n_predictors = 12),
+  get_sigmas(ICC = 0.05, R2 = 0.7, int_pred_corr = 0.5, n_predictors = 12),
+  get_sigmas(ICC = 0.3, R2 = 0.7, int_pred_corr = 0.5, n_predictors = 12)
+) |> 
+  mutate(ICC = rep(c(0.05, 0.3),2),
+         R2 = c(0.4, 0.4, 0.7, 0.7)) |> 
+  select(R2, ICC, sigma_u = u, sigma_e = e, everything())
+
+```
+
+When r-squared is 0.4 we see greater bias as beta x is smaller compared to sigma u. If we plot the values of bias, rather than as a percentage of beta, we see no difference with changing r-squared.
+
+```{r}
+summaries <- data |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model) |> 
+  summarise(value = mean(beta_mean_error), 
+            ll = robust_t_test(beta_mean_error)[1], 
+            ul = robust_t_test(beta_mean_error)[2],  
+            n = sum(!is.na(beta_mean_error)),
+            beta_x = mean(beta_x))
+            
+summaries |> 
+  filter(int_pred_corr == 0.5, model != "Not adjusting for study", study_sample_size_train !=50, ICC !=0) |> 
+  plot_results_by_model(CI = TRUE) + ylab("Percentage bias in beta")
+```
+
+## What about mean squared error
+
+Prediction error will be related to the mean squared error in beta-coefficients. This will incorporate both the bias in coefficients and the variance. If it is the case that the variance is much larger than the bias, the mean squared error will be dominated by variance , and relatively low ammounts of bias will become negligible. *(MSE = sum of variance and suqare of bias in estimator)*
+
+```{r, echo = FALSE}
+data <- dbGetQuery(db,
+           "SELECT n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, beta_mean_error, beta_mse, sigma_e, sigma_u
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023' AND metric = 'var_u'"
+)
+
+# plot n
+summaries <- data |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model) |> 
+  summarise(value = mean(beta_mse), 
+            ll = robust_t_test(beta_mse)[1], 
+            ul = robust_t_test(beta_mse)[2],  
+            n = sum(!is.na(beta_mse)),
+            beta_x = mean(beta_mse))
+
+
+summaries |> 
+  filter(int_pred_corr == 0.5, model != "Not adjusting for study", ICC !=0) |> 
+  plot_results_by_model(CI = TRUE) + ylab("MSE Beta")
+
+
+summaries |> 
+  filter(int_pred_corr == 0.5, model != "Not adjusting for study", study_sample_size_train !=50, ICC !=0) |> 
+  plot_results_by_model(CI = TRUE) + ylab("MSE Beta")
+
+
+
+```
+## What about predictive performance...
+```{r, fig.height = 6}
+data <- dbGetQuery(db,
+           "SELECT n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, metric, est
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023' AND intercept_est_sample_size = 1000 AND (metric = 'calib_slope' OR metric = 'r-squared')"
+)
+
+# plot n
+summaries_calib_slope <- data |>
+  filter(metric == "calib_slope") |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model) |> 
+  summarise(value = mean(est), 
+            ll = robust_t_test(est)[1], 
+            ul = robust_t_test(est)[2],  
+            n = sum(!is.na(est)))
+
+summaries_n <- summaries_calib_slope |> 
+  select(-value) |> 
+  rename(value = n) 
+
+
+summaries_calib_slope |> 
+  filter(model != "Not adjusting for study", ICC !=0) |> 
+  plot_results_by_model(CI = TRUE) + ylab("Calibration Slope")
+
+
+summaries_r2 <- data |>
+  filter(metric == "r-squared") |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model) |> 
+  summarise(value = mean(est), 
+            ll = robust_t_test(est)[1], 
+            ul = robust_t_test(est)[2],  
+            n = sum(!is.na(est)))
+
+
+summaries_r2 |> 
+  filter(model != "Not adjusting for study", ICC !=0) |> 
+  plot_results_by_model(CI = TRUE) + ylab("R-squared")
+
+
+```
+
+```{r, fig.height = 6}
+summaries_n |> 
+  ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 200)
+```
+
+## Conclusion
+
+When there is level 2 endogeneity we see bias in beta estimates. This bias does not change with the number of studies but it does change with the number of people per study. This is consistent with the literature, which shows (Castelano 2014) (analytically shown for generalised least squared estimates in Maddala 1971). Intuitively the random intercept estimate of beta can be seen as pooling between cluster and within cluster info in beta. Bias arises from correlation between the between cluster varaition in x and intercepts. This leads to bias in the between cluster estimates of beta. When cluster size is large, little weight is given to between cluster estiamtes and the unbiased within cluster estimates dominate. 
+
+On reflection (and reading RHS section 3.8 p158), the data generating model chosen for my simulations favours fixed effects models due to predictors varying within clusters but not between clusters. Fixed effects models only use within cluster info, this is large in my data as this is where the variation in predictors occurs. If there is more between cluster variation in predictors (and within cluster and between cluster effects are identical/similar) then the random intercept model can have lower mean squared error as it can make use of between cluster info. This would occur if clusters were homogeneous but different, for example if we have studies recruited based on intellectual disability with little variation within clusters. I also assume constant within and between cluster effects. If there is a differing between cluster effect of a predictor (how could this occur - could be driven by slection eg. clinical samples have lower IQ, but also worse outcomes because of other unmeasured factors which are lower in clinical samples)
+
+The impact of bias arising form level 2 endogeneity on mean squared error for betas, and on overall R-squared is small. There is however an impact on calibration slope. This is because estimates of betas are biased upwards. This leads to more extreme predictions for people with extreme values of x, leading to calibration slope less than 1 (note to self - calibration has observed as outcome and predicted as predictor). 
+
+Recommendations as to which model to use should  be driven by whether level 2 endogeneity is thought to be a problem (an additional assumption from random intercept models), but also whether there is between cluster information available. This will particularly be the case when there are lots of smaller clusters. In general for IPD meta-analysis there is more variation within studies than between studies and level 2 endogeneity is likely to be an issue as differing selection may have occurred [find papers].
+
+The situation may be more complicated if random slopes for predictors are included, as these may remain biased due to level 2 endogeneity. 
+
+To many dimensions to think about. What about bias variance. Think about searching for daylight between FE and RE models. What are the impliacitons for individual level prediction - does this fundamentally focus on within cluster effects? 
+
+```{r}
+dbDisconnect(db)
 
 ```

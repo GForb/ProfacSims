@@ -44,11 +44,18 @@ dbGetQuery(db,
             WHERE sim_name = 'BatchAug2023'  AND metric = 'var_u'"
 )
 
+#Getting distinct rows for different data generating scenarios columns
+dbGetQuery(db,
+           "SELECT  DISTINCT n_studies, ICC, R2, study_sample_size_train , int_pred_corr
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023'  AND metric = 'var_u'"
+)
+
 #checking distict values of beta_mean_error - should correspond to models run
 dbGetQuery(db,
-           "SELECT DISTINCT beta_mean_error
+           "SELECT DISTINCT intercept_est_sample_size
             FROM sim_results_v1
-            WHERE sim_name = 'BatchAug2023' AND metric = 'var_u'"
+            WHERE sim_name = 'BatchAug2023'"
 )
 
 #Getting mean beta_...

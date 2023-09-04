@@ -11,11 +11,13 @@ plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
                         labeller= "label_both") +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
+      color = "Model:",
       x = "Number of studies (log scale)",
       y = "",
       caption ="Performance is pooled study level model performance \n
                  Tau-Squared is the between study variance in model performance"
     ) +
+    guides(color = guide_legend(nrow = 2)) +
     theme(legend.position = "top")
   if(CI){
     plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(ymin=ll, ymax=ul))
