@@ -33,9 +33,22 @@ twoway ///
 	
 	// legend(label(1 "study 7") label(2 "study 6") label(3 "study 1") label(4 "study 5") label(5 "study 4") label(6 "study 3") label(7 "study 2")) ///
 	
+gen wave_dec = wave/5
+gen study_wave = studyid+wave_dec
+preserve 
+keep if time_years <18
+twoway ///
+	(scatter study_wave time_years if studyid ==7) ///
+	(scatter study_wave time_years if studyid ==6) ///
+	(scatter study_wave time_years if studyid ==1) ///
+	(scatter study_wave time_years if studyid ==5) ///
+	(scatter study_wave time_years if studyid ==4, mfcolor(none)) ///
+	(scatter study_wave time_years if studyid ==3, mfcolor(none)) ///
+	(scatter study_wave time_years if studyid ==2, mfcolor(none))  ///
+	, ///
+	name(cbcl_time, replace) legend(off) title("Simulated follow up points for the CBCL")
+restore	
 	
-	
-tab studyid time
 	
 twoway (scatter cbcl cbcl2), name(cbcl_cbcl2)
 

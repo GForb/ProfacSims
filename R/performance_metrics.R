@@ -127,7 +127,11 @@ evaluate_performance_continuous <- function(test_data, model, new_studies = FALS
     predicted_lp <- predicted_lp + test_data$pred_intercept
   } else {
     observed_outcome <- test_data[, outcome]
-    predicted_lp <- predict(model, newdata = test_data)
+    if("glm" %in% class(model4)) {
+      predicted_lp <- predict(model, newdata = test_data, type = "response")
+    } else {
+      predicted_lp <- predict(model, newdata = test_data)
+    }
   }
 
   rbind(

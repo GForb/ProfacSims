@@ -25,6 +25,34 @@ plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
   return(plot)
 }
 
+plot_results_by_pred <- function(data, CI = FALSE, model_offset = 0.14) {
+  data <- data |> add_n_studies_mod(model_offset)
+  data <- data |> rename(study_n = study_sample_size_train)
+  plot <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model, fill = intercept_est_sample_size)) +
+    ggplot2::geom_point() +
+    ggplot2::facet_grid(cols = ggplot2::vars(R2, study_n),
+                        rows = ggplot2::vars(int_pred_corr, ICC),
+                        scales = "free_y",
+                        switch = "y",
+                        labeller= "label_both") +
+    ggplot2::scale_x_continuous(trans='log2') +
+    ggplot2::labs(
+      color = "Model:",
+      x = "Number of studies (log scale)",
+      y = "",
+      caption ="Performance is pooled study level model performance \n
+                 Tau-Squared is the between study variance in model performance"
+    ) +
+    guides(color = guide_legend(nrow = 2)) +
+    theme(legend.position = "top")
+  if(CI){
+    plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(ymin=ll, ymax=ul))
+  }
+  return(plot)
+}
+
+
 
 add_n_studies_mod <- function(data, model_offset) {
   data |> dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Not adjusting for study" ~ n_studies*2^(-model_offset*3/2),
