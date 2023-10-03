@@ -7,4 +7,10 @@ corr sdq_emotion_py23 bdi_tot_py23
 
 use "/Users/k1811974/Library/CloudStorage/OneDrive-King'sCollegeLondon/Programming/autism_cohort/Data/autism_cohort_analysis.dta"
 
-corr y4 y5 y6 y7 y8 y9
+rename y4 ABC_Hyp
+rename y5 ABC_Irit
+rename y6 ABCL_total
+rename y7 BDI
+
+*EDX
+corr ABC_Hyp ABC_Irit ABCL_total BDI 
