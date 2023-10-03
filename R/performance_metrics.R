@@ -127,17 +127,22 @@ evaluate_performance_continuous <- function(test_data, model, new_studies = FALS
     predicted_lp <- predicted_lp + test_data$pred_intercept
   } else {
     observed_outcome <- test_data[, outcome]
-    if("glm" %in% class(model4)) {
+    if("glm" %in% class(model)) {
       predicted_lp <- predict(model, newdata = test_data, type = "response")
     } else {
       predicted_lp <- predict(model, newdata = test_data)
     }
   }
+  evaluate_performance_cont_obs_pred(observed_outcome, predicted_lp)
 
+
+}
+
+evaluate_performance_cont_obs_pred <- function(observed, predicted) {
   rbind(
-    metric_calib_slope_cont(predicted_lp, observed_outcome),
-    metric_calib_itl_cont(predicted_lp, observed_outcome),
-    metric_rsqared(predicted_lp, observed_outcome),
+    metric_calib_slope_cont(predicted, observed),
+    metric_calib_itl_cont(predicted, observed),
+    metric_rsqared(predicted, observed),
     make.row.names = FALSE
   )
 }
