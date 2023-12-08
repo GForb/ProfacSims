@@ -63,68 +63,57 @@ add_n_studies_mod <- function(data, model_offset) {
 
 
 
-plot.sim_results_old <- function(sim_results, stack = TRUE, CI = FALSE) {
 
-  sim_results_mod <- sim_results |>
-    dplyr::mutate(n_studies_mod = dplyr::case_when(model == "lm" ~ n_studies*2^-0.21,
-                                                   model == "lm_fixed_int" ~ n_studies*2^-0.07,
-                                                   model == "lmm_random_int_reml" ~ n_studies*2^0.07,
-                                                   model == "lmm_random_int_ml" ~ n_studies*2^0.21),
-                  int_est_n = test_ss/n_studies_test,
-                  int_est_n_factor = factor(int_est_n, exclude = NULL),
-                  model_est_method = paste(model, ", Est. n:", int_est_n)) |>
-    mutate(model_est_method=factor(model_est_method),
-           )
 
-  if(stack){
-    sim_results_stacked <- sim_results_lazy_stack(sim_results_mod)
-  } else {
-    sim_results_stacked <- sim_results_mod
+plot.sim_results <- function(sim_results, stack = TRUE, CI = TRUE, what = NULL) {
+  plot_data <- sim_results |>
+    prep_data_for_plot() |>
+    dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Not adjusting for study" ~ n_studies*2^-0.21,
+                                                   model == "Fixed intercept" ~ n_studies*2^-0.07,
+                                                   model == "Random intercetp - REML" ~ n_studies*2^0.07,
+                                                   model == "Random intercetp - ML" ~ n_studies*2^0.21))
+  if(!is.null(what)){
+    what_filter <- what
+    plot_data <- plot_data |> filter(
+      what == what_filter
+    )
   }
-  print(sim_results_mod)
-  plot <- sim_results_stacked |>
-    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
+
+  plot <- plot_data |>
+    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = mean, color = model, shape = int_est_n_factor)) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(cols = ggplot2::vars(ICC, study_sample_size_train), rows = ggplot2::vars(metric, what), scales = "free_y", switch = "y") +
+    ggplot2::facet_grid(cols = ggplot2::vars(R2, study_sample_size_train),
+                        rows = ggplot2::vars(what, ICC),
+                        labeller = ggplot2::label_both) +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",
       y = "",
       caption ="Performance is pooled study level model performance \n
                  Tau-Squared is the between study variance in model performance"
-      )
+    ) +
+    guides(color = guide_legend(nrow = 2)) +
+    theme(legend.position = "top")
   if(CI){
     plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(ymin=ll, ymax=ul))
   }
   return(plot)
 }
 
-plot.sim_results <- function(sim_results, stack = TRUE, CI = FALSE) {
-
+plot_error_var_u <- function(sim_results, CI = TRUE) {
   sim_results_mod <- sim_results |>
-    dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Not adjusting for study" ~ n_studies*2^-0.21,
-                                                   model == "Fixed intercept" ~ n_studies*2^-0.07,
-                                                   model == "Random intercetp - REML" ~ n_studies*2^0.07,
-                                                   model == "Random intercetp - ML" ~ n_studies*2^0.21),
-                  int_est_n = test_ss/n_studies_test,
-                  int_est_n_factor = factor(int_est_n, exclude = NULL),
-                  model_est_method = paste(model, ", Est. n:", int_est_n)) |>
-    mutate(model_est_method=factor(model_est_method),
+    dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Random intercetp - REML" ~ n_studies*2^-0.1,
+                                                   model == "Random intercetp - ML" ~ n_studies*2^0.1)
     )
 
-  if(stack){
-    sim_results_stacked <- sim_results_lazy_stack(sim_results_mod)
-  } else {
-    sim_results_stacked <- sim_results_mod
-  }
-  plot <- sim_results_stacked |>
-    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model, shape = int_est_n_factor)) +
+  plot <- sim_results_mod |>
+    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(cols = ggplot2::vars(ICC,int_pred_corr, study_sample_size_train), rows = ggplot2::vars(metric, what), scales = "free_y", switch = "y") +
+    ggplot2::facet_grid(cols = ggplot2::vars(ICC,int_pred_corr, study_sample_size_train), scales = "free_y", switch = "y") +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",
-      y = "",
+      y = "Error in random intercept variance",
       caption ="Performance is pooled study level model performance \n
                  Tau-Squared is the between study variance in model performance"
     )
@@ -132,6 +121,23 @@ plot.sim_results <- function(sim_results, stack = TRUE, CI = FALSE) {
     plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(ymin=ll, ymax=ul))
   }
   return(plot)
+}
+
+
+prep_data_for_plot <- function(data) {
+  sim_results_mod <- data |>
+    dplyr::mutate(
+      int_est_n = test_ss/n_studies_test,
+      int_est_n_factor = factor(int_est_n, exclude = NULL),
+      model_est_method = paste(model, ", Est. n:", int_est_n)
+    ) |>
+    mutate(model_est_method=factor(model_est_method),
+    ) |>
+    sim_results_lazy_stack() |>
+    get_summaries() |>
+    ungroup()
+  return(sim_results_mod)
+
 }
 
 
@@ -140,14 +146,18 @@ sim_results_lazy_stack <- function(sim_results) {
     dplyr::mutate(value = .data$est, what = "Performance") |>
     dplyr::filter(metric!="var_u")
   sim_results_mod_tau2 <- sim_results |>
-    dplyr::mutate(value = .data$tau2, what = "Tau-Squared") |>
+    dplyr::mutate(value = sqrt(.data$tau2), what = "Tau") |>
     dplyr::filter(metric!="var_u")
-  sim_results_mod_error_var_u <- sim_results |>
-    dplyr::mutate(value = .data$error_var_u, what = "Error Var_u") |>
-    dplyr::filter(metric=="var_u")
-  sim_results_stacked <- dplyr::bind_rows(sim_results_mod_est, sim_results_mod_tau2, sim_results_mod_error_var_u)
+
+  sim_results_stacked <- dplyr::bind_rows(sim_results_mod_est, sim_results_mod_tau2)
   return(sim_results_stacked)
 }
+
+
+
+
+
+
 
 robust_t_test <- function(x) {
   CI <- c(NA, NA)
@@ -155,38 +165,26 @@ robust_t_test <- function(x) {
   return(CI)
 }
 
-get_summaries <- function(sim_results) {
-  print("running checks")
-  check <- try(sim_results |> dplyr::select(test_ss), silent = TRUE)
-  if (attr(check, "class")[1]=="try-error") {
-    sim_results <- sim_results |> mutate(test_ss = study_sample_size_test)
-    print("test_ss added")
-  }
-  check <- try(sim_results |> dplyr::select(intercept_est_sample_size), silent = TRUE)
-  if (attr(check, "class")[1]=="try-error") {
-    sim_results <- sim_results |> mutate(intercept_est_sample_size = study_sample_size_train)
-    print("intercept_est_sample_size added")
-  }
+get_summaries <- function(sim_results_stacked) {
 
-  check <- try(sim_results |> dplyr::select(n_studies_test), silent = TRUE)
-  if (attr(check, "class")[1]=="try-error") {
-    sim_results <- sim_results |> mutate(n_studies_test = n_studies)
-    print("n_studies_test added")
-  }
 
-  check <- try(sim_results |> dplyr::select(int_pred_corr), silent = TRUE)
+  check <- try(sim_results_stacked |> dplyr::select(int_pred_corr), silent = TRUE)
   if (attr(check, "class")[1]=="try-error") {
-    sim_results <- sim_results |> mutate(int_pred_corr = 0)
+    sim_results_stacked <- sim_results_stacked |> mutate(int_pred_corr = 0)
     print("int_pred_corr added")
   }
 
 
-
-  summaries <- sim_results |>
-    sim_results_lazy_stack() |>
-    dplyr::select(metric, what, value, ICC, R2, study_sample_size_train, n_studies, model, sigma_u, sigma_e, intercept_est_sample_size, test_ss, n_studies_test, int_pred_corr) |>
+  summaries <- sim_results_stacked |>
+    dplyr::select(metric, what, value, ICC, R2, study_sample_size_train, n_studies, model, sigma_u, sigma_e, int_est_n, int_pred_corr, int_est_n_factor, model_est_method, test_ss) |>
     dplyr::group_by(across(c(-value))) |>
-    dplyr::summarise(mean = mean(value), ll = robust_t_test(value)[1], ul = robust_t_test(value)[2],  n = sum(!is.na(value)), sigma_u = mean(sigma_u), sigma_e = mean(sigma_e))
+    dplyr::summarise(
+      mean = mean(value),
+      ll = robust_t_test(value)[1],
+      ul = robust_t_test(value)[2],
+      n = sum(!is.na(value)),
+      sigma_u = mean(sigma_u),
+      sigma_e = mean(sigma_e))
   return(summaries)
 }
 

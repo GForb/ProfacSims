@@ -23,40 +23,7 @@ db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
 
 ```
 
-## Intro
 
-Last time we saw:
-
--   Random intercept models can underestimate variance of intercepts when there are a small number of studies
-
--   This can lead to heterogeneity in calibration-in-the large
-
--   Knock on effect on r-squared
-
--   Having a moderate sample to estimate the intercept can overcome any issues from poor estimation of study intercepts - even when the intercept is not included in the model
-
--   Calibration slope was good except when sample size was small
-
-```{r, echo = FALSE}
-# Processing database results to give summaries and ns
-data <- dbGetQuery(db,
-           "SELECT n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, est, tau2, sigma_e, sigma_u, intercept_est_sample_size
-            FROM sim_results_v1
-            WHERE sim_name = 'BatchAug2023' AND metric = 'calib_itl'"
-)
-
-# plot n
-summaries <- data |> 
-  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, intercept_est_sample_size) |> 
-  summarise(value = mean(tau2), 
-            ll = robust_t_test(tau2)[1], 
-            ul = robust_t_test(tau2)[2],  
-            n = sum(!is.na(tau2)))
-
-summaries |> 
-  ProfacSims:::plot_results_by_pred() + ylab("Tau-squared") 
-
-```
 
 New addition was calcualtion of bias for beta covariates to investiage why we are seeing no impact on performance from random effects models when we introduce level 2 endogenity.
 
@@ -67,10 +34,12 @@ Simulation scenarios:
 Scenarios run factorially. Note, when the ICC is zero, the intercept-predictor correlation is zero as there is no between study variability in intercepts.
 
 ```{r, echo = FALSE}
+
+
 scenarios <- dbGetQuery(db,
             "SELECT  DISTINCT n_studies, ICC, R2, study_sample_size_train , int_pred_corr
             FROM sim_results_v1
-            WHERE sim_name = 'BatchAug2023'  AND metric = 'calib_itl' AND"
+            WHERE sim_name = 'BatchAug2023'  AND metric = 'calib_itl'"
 )
 n_studies <- paste(scenarios$n_studies |> unique(), collapse = ", ")
 study_sample_size <- paste(scenarios$study_sample_size_train |> unique(), collapse = ", ")
@@ -79,9 +48,40 @@ R2 <- paste(scenarios$R2 |> unique(), collapse = ", ")
 int_pred_corr <- paste(scenarios$int_pred_corr |> unique(), collapse = ", ")
 tibble(Parameter = c("N studies", "Study sample size", "ICC", "R2", "Intercept-predictor corr"), Values = c(n_studies, study_sample_size, ICC, R2, int_pred_corr))
 
+metrics <- dbGetQuery(db,
+            "SELECT  DISTINCT metric
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023'"
+)
+
+tibble(metrics)
+
 ```
 
 ### Data generating parameters
+#### When there is no correleation between intercepts and predictors
+
+```{r}
+bind_rows(
+  get_sigmas(ICC = 0.05, R2 = 0.4, int_pred_corr = 0, n_predictors = 12),
+  get_sigmas(ICC = 0.3, R2 = 0.4, int_pred_corr = 0, n_predictors = 12),
+  get_sigmas(ICC = 0.05, R2 = 0.7, int_pred_corr = 0, n_predictors = 12),
+  get_sigmas(ICC = 0.3, R2 = 0.7, int_pred_corr = 0, n_predictors = 12)
+) |> 
+  mutate(
+    ICC = rep(c(0.05, 0.3),2),
+    R2 = c(0.4, 0.4, 0.7, 0.7),
+    predictor_explained_var = 12*beta_x^2,
+    outcome_var = predictor_explained_var + u^2 + e^2 ,
+    r2_check = (u^2 + predictor_explained_var)/(outcome_var) - R2 
+  ) |> 
+  select(R2, ICC, sigma_u = u, sigma_e = e, everything())
+```
+
+What is going on? For a given ICC sigma_u and sigma_e are fixed to give a variance for the random part of the model of 1 and the required ICC. The variance of individual predicors is 1, so beta is chosed to the required predictors explain the required ammount of the total variance. The variance of the outcome explained by predictors will be $ 12*beta_x^2$.
+
+
+#### When there is a correleation between intercepts and predictors
 
 The models data/models have 12 predictors all with the same beta value. Beta, and values of the variances of different components are chosen to give the required r-squared, ICC and correlations These are the parameters used in the models with correlations between intercept and predictors. `beta_int` is a parameter in the data generating model for predictors. When there is less variability in study intercepts (ICC = 0.05) `beta_int` needs to be greater to give the same correlation between predictors and intercepts. Outcomes do not have constant variance.
 
@@ -96,6 +96,133 @@ bind_rows(
          R2 = c(0.4, 0.4, 0.7, 0.7)) |> 
   select(R2, ICC, sigma_u = u, sigma_e = e, everything())
 
+```
+
+
+
+## Random intercept models underestimate variance of intercepts whent there are a small number of studies
+
+```{r, echo = FALSE}
+
+data <- dbGetQuery(db,
+           "SELECT n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, beta_mean_error, beta_x, sigma_e, sigma_u, est, test_ss, n_studies_test, metric, tau2 rep_number, error_var_u
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023' AND metric = 'var_u' AND est IS NOT NULL AND int_pred_corr =0"
+) 
+
+```
+
+```{r, fig.height = 6}
+data |> 
+  dplyr::filter(R2 == 0.4) |> 
+  mutate(error_var_u = est - sigma_u^2) |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model)  |> 
+  summarise(
+    value = mean(error_var_u), 
+    ll = robust_t_test(error_var_u)[1], 
+    ul = robust_t_test(error_var_u)[2],  
+    n = sum(!is.na(error_var_u))
+  ) |> 
+  ProfacSims:::plot_error_var_u()
+```
+
+### Impact on predictive performance: Calibration in the large
+
+
+```{r, echo = FALSE}
+# Processing database results to give summaries and ns
+data <- dbGetQuery(db,
+           "SELECT n_studies, ICC, R2, study_sample_size_train ,test_ss, int_pred_corr, model, est, tau2, sigma_e, sigma_u, intercept_est_sample_size, metric, n_studies_test
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023' AND metric = 'calib_itl' AND int_pred_corr = 0.0" 
+)
+
+
+
+```
+
+Calibration in the large is good accross all scenarios
+
+```{r, fig.height = 6}
+data |> 
+  ProfacSims:::plot.sim_results(what = "Performance")
+
+```
+There is hetrogeneity for some scenarios:
+
+```{r, fig.height = 12}
+data |> 
+  ProfacSims:::plot.sim_results(what = "Tau")
+
+```
+
+We would expect poor estiamtion of study intercepts to lead to heterogeneous calibration in the large. There are however different approaches to estimate random intercepts in new samples.
+
+
+-   Random intercept models can underestimate variance of intercepts when there are a small number of studies
+- This will lead to over-penalisation of predicted intercepts, which in turn will lead to heterogeneity in calibration-in-the large
+- When the ICC is 0, random intercept models penalise estimates of intercepts towards zero, where as fixed- (or no estimate of intercept models) apply no penalisation
+- When ICC > 0 the penalization of random intercepts leads to better perfmroance.
+- There is some evidence of over penalization - Calib ITL is worse with a small number of studies 
+- As the ICC increases the difference between random intercept models and fixed effects models shrinks. This is due to random intercept models applying a lower ammount of penalisation
+- The impact of REML is minimal. 
+- Patterns remain if 100 people are avialbe for estimating intercepts but differences are negligible.
+- Tau remains low - what is material? The outcome variance is between 1 and 3 (higher variances for the outcome for higher r-squared = 0.7). When Tau is 0.1 this as is 10% of outcome variance. Tau of 0.1 feel less material as is 1% of outcome variance
+- Conclusions: When there is limited data to estimate new intercepts, random intercept models outperform fixed effect models. When ICCs are moderate this occurs even when there are only 4 studies and random intercept variances are underestimated. When more data is available to estimate interepts, performance is similar for all models, except for 4 studies when radnom intercept models do worse.
+
+
+### Impact on predictive performance: Calibration slope
+Calibration slope are very similar for models adjusting for study. Calibration slope is less than one when sample sizes are smaller due to overfitting. When ICCs are larger, calibration slope is worse. This is due to there being a lower level of explained variation within study, so a hihger sample size being required to ensure good calibration. Choice of method for esitmating intercepts has no bearing on calibraiton slope.
+
+```{r, echo = FALSE}
+# Processing database results to give summaries and ns
+data <- dbGetQuery(db,
+           "SELECT n_studies, ICC, R2, study_sample_size_train ,test_ss, int_pred_corr, model, est, tau2, sigma_e, sigma_u, intercept_est_sample_size, metric, n_studies_test
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023' AND metric = 'calib_slope' AND int_pred_corr = 0.0" 
+)
+
+
+
+```
+
+```{r, fig.height = 12}
+data |> 
+  ProfacSims:::plot.sim_results(what = "Performance")
+
+```
+```{r, fig.height = 12}
+data |> 
+  ProfacSims:::plot.sim_results(what = "Tau")
+```
+
+Between study heterogeneity in calibration slope is minimal.
+
+
+### Impact on predictive performance: R-sqared
+
+We see a mixture of the impact on calibration in the large and calibration slope. Hetrogeneity in intercept estimation leads to differences in r-squared.  
+
+```{r, echo = FALSE}
+# Processing database results to give summaries and ns
+data <- dbGetQuery(db,
+           "SELECT n_studies, ICC, R2, study_sample_size_train ,test_ss, int_pred_corr, model, est, tau2, sigma_e, sigma_u, intercept_est_sample_size, metric, n_studies_test
+            FROM sim_results_v1
+            WHERE sim_name = 'BatchAug2023' AND metric = 'r-squared' AND int_pred_corr = 0.0" 
+)
+
+
+
+```
+
+```{r, fig.height = 12}
+data |> 
+  ProfacSims:::plot.sim_results(what = "Performance")
+
+```
+```{r, fig.height = 12}
+data |> 
+  ProfacSims:::plot.sim_results(what = "Tau")
 ```
 
 ```{r, echo = FALSE}
@@ -146,15 +273,16 @@ We expect the bias in betas to be zero for all models when there is no correlati
 
 The following plots examine the difference between the mean estimated betas and the true value for betas. They show percentage bias in beta on the y-axis. Each model has 12 beta parameters, that should be equal. The plots takes the mean across all beta parameters.
 
-### No correlation between predictors and study intercepts
 
-Negligible bias for all scenarios
 
 ```{r, fig.height = 9}
 summaries |> filter(int_pred_corr==0) |> plot_results_by_model(CI = TRUE) + ylab("Percentage bias in beta")
 
 ```
 
+### No correlation between predictors and study intercepts
+
+Negligible bias for all scenarios
 ### Correlation between predictors and study intercepts (level 2 endogeneity)
 
 -   Logistic regression with fixed intercepts gives unbiased betas accross all scenarios.
