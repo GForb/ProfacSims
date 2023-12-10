@@ -214,6 +214,8 @@ generate_predictors <- function(n, n_predictors, intercepts, beta_int) {
 }
 
 generate_linear_predictor <- function( X, beta, intercept =0) {
+  print("beta")
+  print(beta)
   W_ <- rep(beta, ncol(X))
   lp <- X %*% W_ + intercept
   return(lp)

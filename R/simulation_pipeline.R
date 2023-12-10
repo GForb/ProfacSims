@@ -29,25 +29,34 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   args <- list(...)
   ICC <-  args$ICC
   R2 <- args$R2
-  int_pred_corr <- args$int_pred_corr
-  if(is.null(args$pred_icc)){
-    pred_icc <- 0
+
+
+  if(!is.null(args$pred_icc)){
+    int_pred_corr <- args$int_pred_corr
   } else {
-    pred_icc = args$pred_icc
+    int_pred_corr <-  0
   }
-  if(is.null(args$n_predictors)){
-    n_predictors = attr(generate_continuous, "n_predictors")
-  } else {
+
+  if(!is.null(args$pred_icc)){
+    pred_icc <-  args$pred_icc
+  } else (
+    pred_icc <- 0
+  )
+
+  if(!is.null(args$n_predictors)){
     n_predictors <- args$n_predictors
+  } else {
+    n_predictors = attr(generate_continuous, "n_predictors")
   }
 
     sigmas <- get_sigmas(
-      sigma2_x = 1,
       n_predictors = n_predictors,
       ICC = ICC,
       R2 = R2,
       int_pred_corr = int_pred_corr,
       pred_icc = pred_icc)
+    print(sigmas)
+    print(args)
     args$sigmas <- sigmas
     args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc")==FALSE]
 
