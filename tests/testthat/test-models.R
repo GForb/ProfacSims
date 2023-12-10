@@ -30,6 +30,14 @@ test_that("predict_random_int_blup", {
 
 })
 
+test_that("get_x_formula_text",{
+  sigmas <- get_sigmas(n_predictors = 2, ICC = 0, R2 = 0.7)
+  data <- generate_continuous(10,100, sigmas= sigmas, n_predictors = 2)
+
+  x_text <- get_x_formula_text(data)
+  expect_equal(x_text, "x1 + x2")
+})
+
 test_that("get_betas",{
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0, R2 = 0.7)
   data <- generate_continuous(10,100, sigmas= sigmas)
@@ -38,3 +46,5 @@ test_that("get_betas",{
   betas <- get_betas(model)
   expect_vector(betas)
 })
+
+

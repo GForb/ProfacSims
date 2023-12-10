@@ -27,19 +27,31 @@ ipdma_simulation <- function(...) {
 
 do_simulation <- function(nreps, sim_rep_fun, ...) {
   args <- list(...)
-
   ICC <-  args$ICC
   R2 <- args$R2
   int_pred_corr <- args$int_pred_corr
+  if(is.null(args$pred_icc)){
+    pred_icc <- 0
+  } else {
+    pred_icc = args$pred_icc
+  }
+  if(is.null(args$n_predictors)){
+    n_predictors = attr(generate_continuous, "n_predictors")
+  } else {
+    n_predictors <- args$n_predictors
+  }
 
     sigmas <- get_sigmas(
       sigma2_x = 1,
-      n_predictors = attr(generate_continuous, "n_predictors"),
+      n_predictors = n_predictors,
       ICC = ICC,
       R2 = R2,
-      int_pred_corr = int_pred_corr)
+      int_pred_corr = int_pred_corr,
+      pred_icc = pred_icc)
     args$sigmas <- sigmas
-    args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr")==FALSE]
+    args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc")==FALSE]
+
+
   loop_fun <- function(rep_number, args){
     results <- do.call(sim_rep_fun, args)
     results |> dplyr::mutate(args = list(args), rep_number = rep_number)
@@ -57,7 +69,7 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
 sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigmas) {
   seed <- .Random.seed
   train_data <- generate_continuous(n_studies = n_studies, study_sample_size = study_sample_size_train, sigmas = sigmas)
-  test_data <- generate_continuous(n_studies, study_sample_size_test, sigmas = sigmas, intercepts_data = train_data)
+  test_data <- generate_continuous(n_studies = n_studies, study_sample_size = study_sample_size_test, sigmas = sigmas, intercepts_data = train_data)
   results <- sim_rep(model_function_list, evaluate_performance = evaluate_performance_continuous, train_data = train_data, test_data = list(test_data))
   results <- results |>
     dplyr::mutate(
@@ -107,6 +119,8 @@ sim_rep <- function(model_function_list, evaluate_performance, train_data, test_
 
   return(results_df)
 }
+
+
 
 model_evaluate_pipeline <- function(fit_model, train_data, test_data_list, evaluate_performance) {
   model <- fit_model(train_data)

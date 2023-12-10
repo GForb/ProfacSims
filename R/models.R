@@ -20,28 +20,43 @@ model_logistic_cbcl_test <- function(data) {
 }
 
 model_lm <- function(data) {
-  model <- stats::lm("y ~ x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12", data = data)
+  x_text = data |> get_x_formula_text()
+  formula = paste("y ~", x_text) |> as.formula()
+  model <- stats::lm(formula, data = data)
   attr(model, "name") <- "Not adjusting for study"
   return(model)
 
 }
 
 model_lm_fixed_int<- function(data) {
-  model <- stats::lm("y ~ studyid + x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 ", data = data)
+  x_text = data |> get_x_formula_text()
+  formula = paste("y ~ studyid +", x_text) |> as.formula()
+  model <- stats::lm(formula, data = data)
   attr(model, "name") <- "Fixed intercept"
   return(model)
 }
 
 model_lmm_random_int_reml <- function(data) {
-  model <- lme4::lmer("y ~ x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12+ (1|studyid)", data = data)
+  x_text = data |> get_x_formula_text()
+  formula = paste("y ~", x_text, "+ (1|studyid)") |> as.formula()
+  model <- lme4::lmer(formula, data = data)
   attr(model, "name") <- "Random intercetp - REML"
   return(model)
 }
 
 model_lmm_random_int_ml <- function(data) {
-  model <- lme4::lmer("y ~ x1 + x2 + x3+ x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12+ (1|studyid)", data = data, REML = FALSE)
+  x_text = data |> get_x_formula_text()
+  formula = paste("y ~", x_text, "+ (1|studyid)") |> as.formula()
+  model <- lme4::lmer(formula, data = data, REML = FALSE)
   attr(model, "name") <- "Random intercetp - ML"
   return(model)
+}
+
+get_x_formula_text <- function(data) {
+  data |>
+    dplyr::select(starts_with("x")) |>
+    colnames() |>
+    paste(collapse = " + ")
 }
 
 get_var_u <- function(model) {

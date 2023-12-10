@@ -14,6 +14,11 @@ test_that("get_sigmas", {
   expect_equal(sigmas$e^2 + sigmas$u^2, 1)
   expect_equal((12*sigmas$beta_x^2+sigmas$u^2)/(sigmas$e^2 + 12*sigmas$beta_x^2+sigmas$u^2), 0.7)
 
+  sigmas <- get_sigmas(n_predictors = 1, ICC = 0.3, R2 = 0.7, pred_icc = 0.5)
+  expect_equal(sigmas$e^2 + sigmas$u^2, 1)
+  expect_equal((2*sigmas$beta_x^2+sigmas$u^2)/(sigmas$e^2 + 2*sigmas$beta_x^2+sigmas$u^2), 0.7)
+
+
 })
 
 
@@ -44,7 +49,7 @@ test_that("generate_continuous", {
   test_data <- generate_continuous(
     n_studies = 50,
     study_sample_size = 200,
-    sigmas = sigmas,
+    sigmas = sigmas
   )
 
   expect_equal(nrow(test_data), 10000)
@@ -62,6 +67,45 @@ test_that("generate_continuous", {
   expect_equal(var(test_data$study_intercept),sigmas$u^2,tolerance = 0.1)
   expect_equal(cor(test_data$study_intercept, test_data$x1),0.25, tolerance = 0.1)
 
-
+  sigmas <- get_sigmas(n_predictors = 1, ICC = 0.3, R2 = 0.7, pred_icc = 0.5)
+  test_data <- generate_continuous(
+    n_studies = 50,
+    study_sample_size = 200,
+    sigmas = sigmas,
+    n_predictors = 1,
+    predictor_intercepts = "random"
+  )
+  var_corr <- lme4::lmer(x1 ~ 1 + (1 | studyid), data = test_data) |> lme4::VarCorr() |> as.data.frame()
+  expect_equal(var_corr$vcov[1] /(var_corr$vcov[1] +var_corr$vcov[1] ), 0.5, tol = 0.05 )
 
 })
+
+test_that("generate_continuous_new_studies", {
+  sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
+
+  test_data = generate_continuous_new_studies(
+    n_studies = 10,
+    intercept_est_sample_size = 10,
+    study_sample_size = 50,
+    sigmas= sigmas,
+    intercepts_data = NULL,
+    min_study_id = 11
+  )
+  expect_equal(nrow(test_data), 600)
+})
+
+test_that("count_predictors", {
+  sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
+
+  test_data = generate_continuous_new_studies(
+    n_studies = 10,
+    intercept_est_sample_size = 10,
+    study_sample_size = 50,
+    sigmas= sigmas,
+    intercepts_data = NULL,
+    min_study_id = 11,
+    n_predictors = 5
+  )
+  expect_equal(count_predictors(test_data), 5)
+})
+

@@ -1,4 +1,3 @@
-
 run_simualtions_in_batches <- function(sim_params, n_batches) {
   file_names = ""
   for(i in 1:n_batches){

@@ -59,7 +59,7 @@ generate_cbcl <- function(n = c(100, 100, 100, 100, 100, 158, 197)) {
   return(data)
 }
 
-get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0) {
+get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pred_icc = 0) {
   if(ICC >= R2) {
     stop("R2 must be higher than the ICC")
   }
@@ -80,6 +80,16 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0) {
   # the total variance of the sum of predictors is sum_var_x
   sum_var_x <- n_predictors*sigma2_x + n_predictors^2*beta_int^2*sigma2_u
 
+  if(pred_icc !=0) {
+    if (int_pred_corr !=0) stop("Either int_pred_corr is nonzero or pred_icc is nonzero")
+  # Predictors are generated with individual variance sigma2_x, and study variance of beta_int^2.
+  # Pred ICC is therefore beta_int^2/(sigma2_x+ beta_int^2). Rearanging gives the following
+  # pred_icc cannot be used in conjuction wiht
+    beta_int = sqrt(sigma2_x*pred_icc/(1-pred_icc))
+    # the variance of random predictor intercepts is 1
+    sum_var_x = n_predictors*sigma2_x + n_predictors^2*beta_int^2
+  }
+
   # set beta_x to give the needed total predictor variance
   beta_x =  sqrt(pred_var/sum_var_x)
 
@@ -94,16 +104,31 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0) {
 
 
 generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercept_est_sample_size, intercepts_data=NULL, min_study_id = 1) {
-    int <- generate_continuous(n_studies = n_studies, intercept_est_sample_size, n_predictors, sigmas, intercepts_data = intercepts_data, min_study_id = min_study_id)
+    int <- generate_continuous(
+      n_studies = n_studies,
+      study_sample_size = intercept_est_sample_size,
+      n_predictors = n_predictors,
+      sigmas = sigmas,
+      intercepts_data = intercepts_data,
+      min_study_id = min_study_id
+    )
+
     int$int_est = TRUE
-    test <- generate_continuous(n_studies = n_studies, study_sample_size, n_predictors, sigmas, intercepts_data = int, min_study_id = min_study_id)
+
+    test <- generate_continuous(
+      n_studies = n_studies,
+      study_sample_size= study_sample_size,
+      n_predictors=n_predictors,
+      sigmas=sigmas,
+      intercepts_data = int,
+      min_study_id = min_study_id)
+
     test$int_est = FALSE
+
     rbind(int, test)
-
-
 }
 
-generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercepts_data = NULL, min_study_id = 1) {
+generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercepts_data = NULL, min_study_id = 1, predictor_intercepts = "study") {
   #Needs args:  n_studies, sample_szies, icc, out_prop (binary)
   # Fixed args: R-squared, number of predictors
   sigma_e <- sigmas$e
@@ -119,8 +144,24 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
     intercepts <- intercepts_data[,c("studyid", "study_intercept")] |> unique()
   }
 
+    if(predictor_intercepts == "random") {
+    if(is.null(intercepts_data$predictor_intercept)){
+      intercepts$predictor_intercept <- rnorm(n_studies, sd = 1)
+    } else {
+      intercetps <- intercepts_data[,c("studyid", "study_intercept", "predictor_intercept")] |> unique()
+    }
+  }
   data <-  intercepts[rep(seq_len(nrow(intercepts)), study_sample_size), ]
-  predictors <- generate_predictors(total_n, n_predictors, data$study_intercept, beta_int)
+
+  if(predictor_intercepts == "study") {
+    predictors <- generate_predictors(total_n, n_predictors, data$study_intercept, beta_int)
+  } else if(predictor_intercepts == "random"){
+    predictors <- generate_predictors(
+      n = total_n,
+      n_predictors = n_predictors,
+      intercepts = data$predictor_intercept,
+      beta_int = beta_int)
+  }
 
   data <- cbind(data, predictors)
   data$lp <- generate_linear_predictor(predictors, beta)
@@ -130,6 +171,10 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
   return(data)
 }
 attr(generate_continuous, "n_predictors") = 12
+
+count_predictors <- function(data) {
+  data |> dplyr::select(starts_with("x")) |> ncol()
+}
 
 generate_binary <- function(n) {
   n_predictors <- 12
