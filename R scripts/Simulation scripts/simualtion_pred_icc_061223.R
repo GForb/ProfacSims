@@ -20,4 +20,4 @@ sim_params <- list(
 
 set.seed(1234)
 
-do.call(ipdma_simulation, sim_params)
+do.call(ProfacSims:::ipdma_simulation, sim_params)
