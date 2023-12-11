@@ -40,10 +40,10 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
 
   if(!is.null(args$pred_icc)){
     pred_icc <-  args$pred_icc
-  } else (
+  } else {
     pred_icc <- 0
-    int_pred_corr <- 0
-  )
+    args$pred_icc <- 0
+  }
 
   if(!is.null(args$n_predictors)){
     n_predictors <- args$n_predictors
