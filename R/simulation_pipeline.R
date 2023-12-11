@@ -31,7 +31,7 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   R2 <- args$R2
 
 
-  if(!is.null(args$pred_icc)){
+  if(!is.null(args$int_pred_corr)){
     int_pred_corr <- args$int_pred_corr
   } else {
     int_pred_corr <-  0
