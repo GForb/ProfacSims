@@ -1,31 +1,49 @@
 
 save_batch_results_db <- function(database_connection, table, results_folder, sim_name) {
-
+  save_time = lubridate::now()
   filenames <- list.files(results_folder, full.names=FALSE)
   print(filenames)
   for (file in filenames){
-    print(file)
-    load(here::here(results_folder, file))
-    results_df <- get_results_df(sim_results, sim_name = sim_name, filename = file)
+    if(file != "readme.rtf"){
+      print(file)
 
-    DBI::dbWriteTable(conn = database_connection,
-                 name = table,
-                 value = results_df,
-                 append = TRUE)
+      data_name <- load(here::here(results_folder, file))
+      data <- get(data_name)
 
+      processed_data <- data |>
+        get_results_df(sim_name = sim_name, filename = file) |>
+        dplyr:: mutate(save_time = save_time)
+
+
+      write_file_to_db(
+        data = processed_data,
+        database_connection = database_connection,
+        table = table)
+    }
   }
 }
 
+
+write_file_to_db <- function(data, database_connection, table) {
+  DBI::dbWriteTable(conn = database_connection,
+                    name = table,
+                    value = data,
+                    append = TRUE)
+}
+
 get_results_df <- function(sim_results, sim_name, filename) {
+  try(sim_results <- sim_results |> mutate(intercept_est_sample_size = test_ss/n_studies_test))
+  try(sim_name <- sim_results |>
+        dplyr::rowwise() |>
+        dplyr::mutate(rng_state = toString(rng_state)) |>
+        dplyr::ungroup())
+
   sim_results |>
     dplyr::select(-model_function_list) |>
-    dplyr::mutate(batch_file = filename, # to reverse toString use parse(text = a) |> eval()
-          sim_name = sim_name,
-          intercept_est_sample_size = test_ss/n_studies_test
-          ) |>
-    dplyr::rowwise() |>
-    dplyr::mutate(rng_state = toString(rng_state)) |>
-    dplyr::ungroup() |>
+    dplyr::mutate(
+      batch_file = filename, # to reverse toString use parse(text = a) |> eval()
+      sim_name = sim_name,
+    ) |>
     process_betas() |>
     as.data.frame()
 }
@@ -54,7 +72,7 @@ clean_beta <- function(beta) {
   beta <- beta
   try({
     beta <- as.numeric(beta$studyid[1,])
-    names(beta) <- c("(Intercept)", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11",  "x12")
+    names(beta) <- c("(Intercept)", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11",  "x12") #I have commented out this line as unsure why needed
   }, silent = TRUE)
   return(beta)
 }
