@@ -57,8 +57,6 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
       R2 = R2,
       int_pred_corr = int_pred_corr,
       pred_icc = pred_icc)
-    print(sigmas)
-    print(args)
     args$sigmas <- sigmas
     args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc")==FALSE]
 
@@ -73,6 +71,7 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   results_df$ICC = ICC
   results_df$R2 = R2
   results_df$int_pred_corr = int_pred_corr
+  results_df$pred_icc = pred_icc
 
   return(results_df)
 }
