@@ -81,8 +81,6 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pre
   sum_var_x <- n_predictors*sigma2_x + n_predictors^2*beta_int^2*sigma2_u
 
   if(pred_icc !=0) {
-    print("int_pred_corr is:")
-    print(int_pred_corr)
     if(int_pred_corr !=0) stop("Either int_pred_corr is nonzero or pred_icc is nonzero")
   # Predictors are generated with individual variance sigma2_x, and study variance of beta_int^2.
   # Pred ICC is therefore beta_int^2/(sigma2_x+ beta_int^2). Rearanging gives the following
@@ -216,8 +214,7 @@ generate_predictors <- function(n, n_predictors, intercepts, beta_int) {
 }
 
 generate_linear_predictor <- function( X, beta, intercept =0) {
-  print("beta")
-  print(beta)
+
   W_ <- rep(beta, ncol(X))
   lp <- X %*% W_ + intercept
   return(lp)
