@@ -1,0 +1,58 @@
+---
+title: "Predictors clustered by study"
+format: html
+editor: visual
+---
+
+## Intro
+
+Quatro doc Showing results of simulations run with a single predictor, clustered by study. Data for the predictor is generated with a different mean in each study. Means are normally distributed.
+
+### Set up
+
+Load libraries and connect to SQL database containing results.
+
+```{r}
+library(tidyverse)
+library(DBI)
+library(RSQLite)
+library(here)
+
+# Connecting to database
+db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
+
+```
+
+## Simulation scenarios run
+
+
+```{r, echo = FALSE}
+data <- dbGetQuery(db,
+            "SELECT  DISTINCT n_studies, ICC, R2, study_sample_size_train , pred_icc
+            FROM sim_results_v3
+            WHERE sim_name = 'pred_icc_061223'"
+)
+
+# plot n
+summaries <- data |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , pred_icc, model) |> 
+  summarise(value = mean(beta_mse), 
+            ll = robust_t_test(beta_mse)[1], 
+            ul = robust_t_test(beta_mse)[2],  
+            n = sum(!is.na(beta_mse)),
+            beta_x = mean(beta_mse))
+
+  summaries_n <- summaries |> select(-value) |> rename(value = n) 
+
+
+```
+## Ns
+```{r}
+  summaries_n |> ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 200)
+```
+
+## MSE
+
+```{r}
+  summaries |> ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 200)
+```
