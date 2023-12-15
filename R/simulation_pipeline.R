@@ -9,7 +9,8 @@ ipdma_simulation <- function(...) {
   params_list <- list(...)
   sim_params <- do.call(tidyr::expand_grid, params_list)
   results <- furrr::future_pmap(.l = sim_params, .f = do_simulation, .options = furrr::furrr_options(seed=TRUE), .progress = TRUE)
-
+  print("here3")
+  print(results)
   results_df <- do.call(rbind, results)
   results_df <- results_df |>
     tidyr::unnest_wider(args) |>
@@ -67,6 +68,8 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   }
   results_list <- lapply(1:nreps, loop_fun, args = args)
 
+  print("here1")
+  print(results_list)
   results_df <- do.call(rbind, results_list)
   results_df$ICC = ICC
   results_df$R2 = R2
@@ -127,6 +130,8 @@ sim_rep <- function(model_function_list, evaluate_performance, train_data, test_
     test_data_list = test_data,
     evaluate_performance = evaluate_performance
   )
+  print("here2")
+  print(results_list)
   results_df <- do.call(rbind, results_list) |> tibble::tibble()
 
   return(results_df)

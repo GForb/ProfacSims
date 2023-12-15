@@ -16,6 +16,7 @@ sim_params_test <- list(
   int_pred_corr = 0,
   intercept_est_sample_size =100,
   n_studies_test = 30,
+  study_sample_size_test = 5000,
   predictor_intercepts = "random",
   n_predictors = 1
 )
@@ -36,7 +37,8 @@ sim_params <- list(
   intercept_est_sample_size =100,
   n_studies_test = 30,
   predictor_intercepts = "random",
-  n_predictors = 1
+  n_predictors = 1,
+  study_sample_size_test = 5000
 )
 
 
