@@ -88,7 +88,7 @@ sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size
   return(results)
 }
 
-sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigmas,  intercept_est_sample_size, n_studies_test = n_studies) {
+sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigmas,  intercept_est_sample_size, n_studies_test = n_studies, n_predictors = 12, predictor_intercepts = "study") {
   train_data <- generate_continuous(n_studies = n_studies, study_sample_size = study_sample_size_train, sigmas = sigmas)
 
   generate_test_data <- function(x) {
@@ -98,7 +98,9 @@ sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies,
       sigmas= sigmas,
       intercept_est_sample_size = x,
       intercepts_data = NULL,
-      min_study_id = 11
+      min_study_id = 11,
+      n_predictors = n_predictors,
+      predictor_intercepts = predictor_intercepts
     )
   }
 
