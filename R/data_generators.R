@@ -122,10 +122,13 @@ generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_pre
       n_predictors=n_predictors,
       sigmas=sigmas,
       intercepts_data = int,
-      min_study_id = min_study_id)
+      min_study_id = min_study_id,
+      predictor_intercepts = predictor_intercepts)
 
     test$int_est = FALSE
-
+    print("here4")
+    print(int)
+    print(test)
     rbind(int, test)
 }
 
