@@ -1,11 +1,14 @@
-plot_results_by_model <- function(data, CI = FALSE, model_offset = 0.14) {
+plot_results_by_model <- function(data, CI = TRUE, model_offset = 0.14) {
+  if(!"pred_icc" %in% names(data)){
+    data$pred_icc = 0
+  }
   data <- data |> add_n_studies_mod(model_offset)
   data <- data |> rename(study_n = study_sample_size_train)
   plot <- data |>
     ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
     ggplot2::geom_point() +
     ggplot2::facet_grid(cols = ggplot2::vars(R2, study_n),
-                        rows = ggplot2::vars(int_pred_corr, ICC),
+                        rows = ggplot2::vars(int_pred_corr, pred_icc, ICC),
                         scales = "free_y",
                         switch = "y",
                         labeller= "label_both") +
@@ -58,7 +61,7 @@ add_n_studies_mod <- function(data, model_offset) {
   data |> dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Not adjusting for study" ~ n_studies*2^(-model_offset*3/2),
                                                  model == "Fixed intercept" ~ n_studies*2^(-model_offset*1/2),
                                                  model == "Random intercetp - REML" ~ n_studies*2^(model_offset*1/2),
-                                                 model == "Random intercetp - ML" ~ n_studies*2^(-model_offset*3/2)))
+                                                 model == "Random intercetp - ML" ~ n_studies*2^(model_offset*3/2)))
 }
 
 
