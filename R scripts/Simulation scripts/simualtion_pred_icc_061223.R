@@ -82,7 +82,7 @@ save(results,file =  here::here("Results/Pred ICC 111223/pred_icc_061223.RData")
 
 
 db <- DBI::dbConnect(RSQLite::SQLite(), "Results/Database/sim_results.db")
-#dbExecute(db, "DELETE FROM  sim_results_v2 WHERE sim_name = 'pred_icc_061223'")
+DBI::dbExecute(db, "DELETE FROM  sim_results_v3 WHERE sim_name = 'pred_icc_061223'")
 
 save_batch_results_db(database_connection = db,
                       table = "sim_results_v3",
