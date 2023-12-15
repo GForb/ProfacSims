@@ -103,14 +103,15 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pre
 
 
 
-generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercept_est_sample_size, intercepts_data=NULL, min_study_id = 1) {
+generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercept_est_sample_size, intercepts_data=NULL, min_study_id = 1, predictor_intercepts = "study") {
     int <- generate_continuous(
       n_studies = n_studies,
       study_sample_size = intercept_est_sample_size,
       n_predictors = n_predictors,
       sigmas = sigmas,
       intercepts_data = intercepts_data,
-      min_study_id = min_study_id
+      min_study_id = min_study_id,
+      predictor_intercepts = predictor_intercepts
     )
 
     int$int_est = TRUE
