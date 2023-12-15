@@ -142,6 +142,6 @@ test_that("ipdma_simulation", {
 
 
   expect_equal(nrow(sim_results_test), 128)
-  expect_equal(ncol(sim_results_test), 25)
+  expect_equal(ncol(sim_results_test), 26)
 
 })

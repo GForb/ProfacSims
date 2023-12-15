@@ -56,6 +56,7 @@ process_betas <- function(data) {
     beta_pred = list(unlist(betas)[grep("^[xX].*", names(unlist(betas)), value=FALSE)]),
     beta_mean_error = mean(unlist(beta_pred)-beta_x),
     beta_mse = mean((unlist(beta_pred)-beta_x)^2),
+    beta_rmse = sqrt(beta_mse),
     beta_names = toString(names(betas)),
     betas = toString(betas),
     beta_pred = toString(beta_pred)
@@ -69,11 +70,13 @@ clean_betas <- function(data) {
 }
 
 clean_beta <- function(beta) {
-  beta <- beta
-  try({
-    beta <- as.numeric(beta$studyid[1,])
-    names(beta) <- c("(Intercept)", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11",  "x12") #I have commented out this line as unsure why needed
-  }, silent = TRUE)
+  if(!is.null(attr(beta,"class"))){
+    if(attr(beta,"class") ==  "coef.mer"){
+      names <-  colnames(beta$studyid)
+      beta <- as.numeric(beta$studyid[1,])
+      names(beta) <- names
+    }
+  }
   return(beta)
 }
 

@@ -1,4 +1,4 @@
-run_simualtions_in_batches <- function(sim_params, n_batches) {
+run_simualtions_in_batches <- function(sim_params, n_batches, save_place = "Results/HolidayBatch") {
   file_names = ""
   for(i in 1:n_batches){
 
