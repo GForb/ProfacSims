@@ -9,8 +9,7 @@ ipdma_simulation <- function(...) {
   params_list <- list(...)
   sim_params <- do.call(tidyr::expand_grid, params_list)
   results <- furrr::future_pmap(.l = sim_params, .f = do_simulation, .options = furrr::furrr_options(seed=TRUE), .progress = TRUE)
-  print("here3")
-  print(results)
+
   results_df <- do.call(rbind, results)
   results_df <- results_df |>
     tidyr::unnest_wider(args) |>
@@ -68,8 +67,7 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   }
   results_list <- lapply(1:nreps, loop_fun, args = args, sim_rep_fun = sim_rep_fun)
 
-  print("here1")
-  print(results_list)
+
   results_df <- do.call(rbind, results_list)
   results_df$ICC = ICC
   results_df$R2 = R2
@@ -92,7 +90,6 @@ sim_rep_continuous <- function(model_function_list, n_studies, study_sample_size
 }
 
 sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigmas,  intercept_est_sample_size, n_studies_test = n_studies, n_predictors = 12, predictor_intercepts = "study") {
-  print("generate train data")
   train_data <- generate_continuous(
     n_studies = n_studies,
     study_sample_size = study_sample_size_train,
@@ -101,7 +98,6 @@ sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies,
     predictor_intercepts= predictor_intercepts)
 
   generate_test_data <- function(x) {
-    print("generate test data")
 
     generate_continuous_new_studies(
       n_studies = n_studies_test,
@@ -117,12 +113,10 @@ sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies,
 
 
   test_data_list = lapply(intercept_est_sample_size, generate_test_data)
-  print("getting results")
   results <- sim_rep(model_function_list,
                      evaluate_performance = evaluate_performance_continuous_new_studies,
                      train_data = train_data, test_data = test_data_list)
 
-  print("adding rng state")
   results <- results |>
     dplyr::mutate(
       rng_state = dplyr::case_when(dplyr::row_number() ==1 ~ list(.Random.seed),
@@ -141,8 +135,7 @@ sim_rep <- function(model_function_list, evaluate_performance, train_data, test_
     test_data_list = test_data,
     evaluate_performance = evaluate_performance
   )
-  print("here2")
-  print(results_list)
+
   results_df <- do.call(rbind, results_list) |> tibble::tibble()
 
   return(results_df)

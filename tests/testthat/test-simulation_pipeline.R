@@ -139,12 +139,12 @@ test_that("do_simulation", {
 
   do_simulation(
     nreps = 1,
-    sim_rep_fun = list(ProfacSims:::sim_rep_continuous_new_test_studies),
+    sim_rep_fun = sim_rep_continuous_new_test_studies,
      n_studies = 4,
-     model_function_list = list(list(ProfacSims:::model_lm_fixed_int,
-                                     ProfacSims:::model_lm,
-                                     ProfacSims:::model_lmm_random_int_reml,
-                                     ProfacSims:::model_lmm_random_int_ml)),
+     model_function_list = list(model_lm_fixed_int,
+                                model_lm,
+                                model_lmm_random_int_reml,
+                                model_lmm_random_int_ml),
      study_sample_size_train = 50,
      ICC = 0.05,
      R2 = 0.4,
