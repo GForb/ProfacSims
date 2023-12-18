@@ -62,11 +62,11 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
     args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc")==FALSE]
 
 
-  loop_fun <- function(rep_number, args){
+  loop_fun <- function(rep_number, args, sim_rep_fun){
     results <- do.call(sim_rep_fun, args)
     results |> dplyr::mutate(args = list(args), rep_number = rep_number)
   }
-  results_list <- lapply(1:nreps, loop_fun, args = args)
+  results_list <- lapply(1:nreps, loop_fun, args = args, sim_rep_fun = sim_rep_fun)
 
   print("here1")
   print(results_list)
