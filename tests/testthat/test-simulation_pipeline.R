@@ -102,6 +102,22 @@ test_that("sim_rep_continuous_new_test_studies", {
     intercept_est_sample_size = 10,
     n_studies_test = 10
   )
+
+  sigmas <-  get_sigmas(n_predictors = 1, ICC = 0.3, R2 = 0.7, pred_icc = 0.05, )
+
+  sim_results <- sim_rep_continuous_new_test_studies(
+    list(model_lmm_random_int_ml, model_lm, model_lm_fixed_int),
+    n_studies = 10,
+    study_sample_size_train = 500,
+    study_sample_size_test = 5000,
+    sigmas = sigmas,
+    intercept_est_sample_size = 10,
+    n_studies_test = 10,
+    n_predictors = 1,
+    predictor_intercepts = "random"
+  )
+
+
   expect_equal(nrow(sim_results), 12)
 
 })
@@ -119,6 +135,26 @@ test_that("do_simulation", {
                                     R2 = 0.7,
                                     int_pred_corr = 0)
   expect_equal(nrow(sim_results_test), 8)
+
+
+  do_simulation(
+    nreps = 1,
+    sim_rep_fun = list(ProfacSims:::sim_rep_continuous_new_test_studies),
+     n_studies = 4,
+     model_function_list = list(list(ProfacSims:::model_lm_fixed_int,
+                                     ProfacSims:::model_lm,
+                                     ProfacSims:::model_lmm_random_int_reml,
+                                     ProfacSims:::model_lmm_random_int_ml)),
+     study_sample_size_train = 50,
+     ICC = 0.05,
+     R2 = 0.4,
+     pred_icc = 0,
+     int_pred_corr = 0,
+     intercept_est_sample_size =100,
+     n_studies_test = 30,
+     study_sample_size_test = 5000,
+     predictor_intercepts = "random",
+     n_predictors = 1)
 
 })
 

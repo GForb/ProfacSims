@@ -21,6 +21,10 @@ test_that("get_sigmas", {
 
 })
 
+test_that("generate_predictors", {
+  preds <- generate_predictors(100, 1, intercepts = 1:100, beta_int = 0.5)
+  expect_equal(nrow(preds), 100)
+})
 
 test_that("generate_continuous", {
   set.seed(2344)
@@ -92,6 +96,48 @@ test_that("generate_continuous_new_studies", {
     min_study_id = 11
   )
   expect_equal(nrow(test_data), 600)
+
+  train_data <-  generate_continuous(
+    n_studies = 10,
+    study_sample_size = 50,
+    sigmas = sigmas,
+  )
+  test_data = generate_continuous_new_studies(
+    n_studies = 10,
+    intercept_est_sample_size = 10,
+    study_sample_size = 50,
+    sigmas= sigmas,
+    intercepts_data = train_data,
+    min_study_id = 11
+  )
+  expect_equal(nrow(test_data), 600)
+
+
+})
+
+test_that("generate_continuous_new_studies_random_pred_intercepts", {
+  sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7, pred_icc = 0.5)
+
+  train_data <-  generate_continuous(
+    n_studies = 10,
+    study_sample_size = 50,
+    sigmas = sigmas,
+    predictor_intercepts = "random",
+    n_predictors = 2
+  )
+
+  test_data = generate_continuous_new_studies(
+    n_studies = 10,
+    intercept_est_sample_size = 10,
+    study_sample_size = 50,
+    sigmas= sigmas,
+    intercepts_data = train_data,
+    min_study_id = 11,
+    predictor_intercepts = "random",
+    n_predictors = 2
+  )
+  expect_equal(nrow(test_data), 600)
+
 })
 
 test_that("count_predictors", {
