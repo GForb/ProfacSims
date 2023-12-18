@@ -116,7 +116,7 @@ generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_pre
 
     int$int_est = TRUE
 
-    test <- generate_continuous(
+        test <- generate_continuous(
       n_studies = n_studies,
       study_sample_size= study_sample_size,
       n_predictors=n_predictors,
@@ -126,9 +126,6 @@ generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_pre
       predictor_intercepts = predictor_intercepts)
 
     test$int_est = FALSE
-    print("here4")
-    print(int)
-    print(test)
     rbind(int, test)
 }
 
@@ -148,24 +145,27 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
     intercepts <- intercepts_data[,c("studyid", "study_intercept")] |> unique()
   }
 
-    if(predictor_intercepts == "random") {
+  if(predictor_intercepts == "random") {
     if(is.null(intercepts_data$predictor_intercept)){
       intercepts$predictor_intercept <- rnorm(n_studies, sd = 1)
     } else {
-      intercetps <- intercepts_data[,c("studyid", "study_intercept", "predictor_intercept")] |> unique()
+      intercepts <- intercepts_data[,c("studyid", "study_intercept", "predictor_intercept")] |> unique()
     }
   }
-  data <-  intercepts[rep(seq_len(nrow(intercepts)), study_sample_size), ]
 
+
+  data <-  intercepts[rep(seq_len(nrow(intercepts)), study_sample_size), ]
   if(predictor_intercepts == "study") {
-    predictors <- generate_predictors(total_n, n_predictors, data$study_intercept, beta_int)
+    pred_intercepts <- data$study_intercept
   } else if(predictor_intercepts == "random"){
-    predictors <- generate_predictors(
-      n = total_n,
-      n_predictors = n_predictors,
-      intercepts = data$predictor_intercept,
-      beta_int = beta_int)
+    pred_intercepts <- data$predictor_intercept
   }
+
+  predictors <- generate_predictors(
+    n = total_n,
+    n_predictors = n_predictors,
+    intercepts = pred_intercepts,
+    beta_int = beta_int)
 
   data <- cbind(data, predictors)
   data$lp <- generate_linear_predictor(predictors, beta)
