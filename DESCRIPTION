@@ -28,6 +28,8 @@ Imports:
     tictoc,
     DBI,
     RSQLite,
-    here
+    here,
+    metafor,
+    metamisc
 URL: https://github.com/GForb/ProfacSims
 BugReports: https://github.com/GForb/ProfacSims/issues
