@@ -3,12 +3,12 @@ install_github("GForb/ProfacSims", upgrade= "never")
 library(tictoc)
 sim_params_test <- list(
   nreps = 1,
-  sim_rep_fun = ProfacSims:::sim_rep_continuous_new_test_studies,
-  n_studies = c(4),
-  model_function_list = list(ProfacSims:::model_lm_fixed_int,
+  sim_rep_fun = list(ProfacSims:::sim_rep_continuous_new_test_studies),
+  n_studies = c(4,8,16,32,64),
+  model_function_list = list(list(ProfacSims:::model_lm_fixed_int,
                                   ProfacSims:::model_lm,
                                   ProfacSims:::model_lmm_random_int_reml,
-                                  ProfacSims:::model_lmm_random_int_ml),
+                                  ProfacSims:::model_lmm_random_int_ml)),
   study_sample_size_train = c(50),
   ICC = c(0.05),
   R2 = c(0.4, 0.7),
@@ -21,14 +21,20 @@ sim_params_test <- list(
   n_predictors = 1
 )
 
+set.seed(1234)
+
+tic()
+results <- do.call(ProfacSims:::ipdma_simulation, sim_params_test)
+toc()
+
 sim_params <- list(
   nreps = 1,
-  sim_rep_fun = ProfacSims:::sim_rep_continuous_new_test_studies,
+  sim_rep_fun = list(ProfacSims:::sim_rep_continuous_new_test_studies),
   n_studies = c(4, 8, 16, 32, 64),
-  model_function_list = list(ProfacSims:::model_lm_fixed_int,
+  model_function_list = list(list(ProfacSims:::model_lm_fixed_int,
                                   ProfacSims:::model_lm,
                                   ProfacSims:::model_lmm_random_int_reml,
-                                  ProfacSims:::model_lmm_random_int_ml),
+                                  ProfacSims:::model_lmm_random_int_ml)),
   study_sample_size_train = c(50, 200, 1000),
   ICC = c(0,0.05, 0.3),
   R2 = c(0.4, 0.7),

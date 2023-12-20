@@ -44,6 +44,14 @@ model_lmm_random_int_reml <- function(data) {
   return(model)
 }
 
+model_lmm_random_int_reml_weight <- function(data) {
+  x_text = data |> get_x_formula_text()
+  formula = paste("y ~", x_text, "+ (1|studyid)") |> as.formula()
+  model <- lme4::lmer(formula, data = data, weights= data$weight)
+  attr(model, "name") <- "Random intercetp - REML"
+  return(model)
+}
+
 model_lmm_random_int_ml <- function(data) {
   x_text = data |> get_x_formula_text()
   formula = paste("y ~", x_text, "+ (1|studyid)") |> as.formula()

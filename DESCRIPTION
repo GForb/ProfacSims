@@ -14,10 +14,6 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Suggests: 
-    irr,
-    lme4,
-    testthat
 Imports: 
     purrr,
     dplyr,
@@ -26,5 +22,9 @@ Imports:
     tidyr,
     furrr,
     stats
+    irr,
+    lme4,
+    testthat,
+    tictoc
 URL: https://github.com/GForb/ProfacSims
 BugReports: https://github.com/GForb/ProfacSims/issues
