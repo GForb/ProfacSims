@@ -1,5 +1,3 @@
-library(tidyverse)
-
 merge_batch_results <- function(folder) {
   # Create results database
 

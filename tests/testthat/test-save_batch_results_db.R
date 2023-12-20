@@ -20,9 +20,9 @@ test_that("clean_betas", {
   cleaned_data <- sim_results |> clean_betas()
   cleaned_data$betas
 
-  fixt_with_int <- cleaned_data |> filter(model == "Fixed intercept")
-  fixed_no_study_int <- cleaned_data |> filter(model == "Not adjusting for study")
-  mixed_model <- cleaned_data |> filter(model == "Random intercetp - REML")
+  fixt_with_int <- cleaned_data |> dplyr::filter(model == "Fixed intercept")
+  fixed_no_study_int <- cleaned_data |> dplyr::filter(model == "Not adjusting for study")
+  mixed_model <- cleaned_data |> dplyr::filter(model == "Random intercetp - REML")
 
   expect_true("x1" %in% names( fixt_with_int$betas[[1]]))
   expect_true("x1" %in% names( fixed_no_study_int$betas[[1]]))

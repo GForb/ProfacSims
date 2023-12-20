@@ -25,6 +25,9 @@ Imports:
     irr,
     lme4,
     testthat,
-    tictoc
+    tictoc,
+    DBI,
+    RSQLite,
+    here
 URL: https://github.com/GForb/ProfacSims
 BugReports: https://github.com/GForb/ProfacSims/issues

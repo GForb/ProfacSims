@@ -1,1 +1,1 @@
-install_github("GForb/ProfacSims", upgrade= "never")
+devtools::.install_github("GForb/ProfacSims", upgrade= "never")

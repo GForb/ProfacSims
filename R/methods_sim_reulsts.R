@@ -134,11 +134,11 @@ prep_data_for_plot <- function(data) {
       int_est_n_factor = factor(int_est_n, exclude = NULL),
       model_est_method = paste(model, ", Est. n:", int_est_n)
     ) |>
-    mutate(model_est_method=factor(model_est_method),
+    dplyr::mutate(model_est_method=factor(model_est_method),
     ) |>
     sim_results_lazy_stack() |>
     get_summaries() |>
-    ungroup()
+    dplyr::ungroup()
   return(sim_results_mod)
 
 }
