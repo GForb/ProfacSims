@@ -21,7 +21,7 @@ Imports:
     pROC,
     tidyr,
     furrr,
-    stats
+    stats,
     irr,
     lme4,
     testthat,
