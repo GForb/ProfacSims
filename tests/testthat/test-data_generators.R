@@ -4,6 +4,37 @@ test_that("generate_cbcl", {
   expect_equal(ncol(data), 17)
 })
 
+test_that("get_error_vars", {
+  R2 <- 0.7
+  ICC <- 0.3
+  vars <- get_error_vars(R2 = R2, ICC = ICC)
+  expect_equal(vars$sigma2_u + vars$sigma2_e + vars$pred_var, 1)
+  expect_equal(vars$sigma2_u/(vars$sigma2_u + vars$sigma2_e), ICC)
+  expect_equal(vars$sigma2_u+vars$pred_var/(vars$sigma2_u + vars$sigma2_e+vars$pred_var), R2)
+
+  R2 <- 0.7
+  ICC <- 0.05
+  vars <- get_error_vars(R2 = R2, ICC = ICC)
+  expect_equal(vars$sigma2_u + vars$sigma2_e + vars$pred_var, 1)
+  expect_equal(vars$sigma2_u/(vars$sigma2_u + vars$sigma2_e), ICC)
+  expect_equal(vars$sigma2_u+vars$pred_var/(vars$sigma2_u + vars$sigma2_e+vars$pred_var), R2)
+
+  R2 <- 0.4
+  ICC <- 0.2
+  vars <- get_error_vars(R2 = R2, ICC = ICC)
+  expect_equal(vars$sigma2_u + vars$sigma2_e + vars$pred_var, 1)
+  expect_equal(vars$sigma2_u/(vars$sigma2_u + vars$sigma2_e), ICC)
+  expect_equal(vars$sigma2_u+vars$pred_var/(vars$sigma2_u + vars$sigma2_e+vars$pred_var), R2)
+
+  R2 <- 0.4
+  ICC <- 0.05
+  vars <- get_error_vars(R2 = R2, ICC = ICC)
+  expect_equal(vars$sigma2_u + vars$sigma2_e + vars$pred_var, 1)
+  expect_equal(vars$sigma2_u/(vars$sigma2_u + vars$sigma2_e), ICC)
+  expect_equal(vars$sigma2_u+vars$pred_var/(vars$sigma2_u + vars$sigma2_e+vars$pred_var), R2)
+
+})
+
 
 test_that("get_sigmas", {
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0, R2 = 0.7)

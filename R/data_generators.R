@@ -64,11 +64,16 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pre
     stop("R2 must be higher than the ICC")
   }
   R2_ <- R2/(1-R2)
+  ICC_ <- (1-ICC)/ICC
+  # calcualte scaled so that sigma2_u + sigma2_e + pred_var=1
 
-  # calcualte scaled so that sigma2_u+sigma2_e=1
-  sigma2_u = ICC
-  sigma2_e = 1-ICC
+  A <- R2 + R2*ICC_-1
+
+  pred_var <- A/(1- R2+(1-R2)*ICC_+A)
+  sigma2_u = pred_var*(1-R2)/A
+  sigma2_e = sigma2_u*ICC_
   pred_var = sigma2_u*R2_+sigma2_e*R2_-sigma2_u/(1-R2)
+
   int_R2 = int_pred_corr^2
   # variance of an individual x is used to give beta_int
   if(ICC==0){
@@ -94,12 +99,41 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pre
   beta_x =  sqrt(pred_var/sum_var_x)
 
 
-  pred_var <- sigma2_x*n_predictors # calculate with beta = 1
-
   return(list(u = sqrt(sigma2_u), e = sqrt(sigma2_e), beta_x = beta_x, beta_int = beta_int))
 }
 
+get_error_vars_old <- function(R2, ICC) {
+  if(ICC >= R2) {
+    stop("R2 must be higher than the ICC")
+  }
+  R2_ <- R2/(1-R2)
+  gamma <- (1-ICC)/ICC
+  # calcualte scaled so that sigma2_u + sigma2_e + pred_var=1
 
+  sigma2_u <- (1-R2)/gamma
+  sigma2_e <- gamma*sigma2_u
+  pred_var <- 1-(1+gamma)*sigma2_u
+
+  return(list(sigma2_u=sigma2_u, sigma2_e=sigma2_e, pred_var=pred_var))
+}
+
+
+get_error_vars_old <- function(R2, ICC) {
+  if(ICC >= R2) {
+    stop("R2 must be higher than the ICC")
+  }
+  R2_ <- R2/(1-R2)
+  ICC_ <- (1-ICC)/ICC
+  # calcualte scaled so that sigma2_u + sigma2_e + pred_var=1
+
+  A <- R2 + R2*ICC_-1
+
+  pred_var <- A/(1- R2+(1-R2)*ICC_+A)
+  sigma2_u = pred_var*(1-R2)/A
+  sigma2_e = sigma2_u*ICC_
+  pred_var = sigma2_u*R2_+sigma2_e*R2_-sigma2_u/(1-R2)
+  return(list(sigma2_u=sigma2_u, sigma2_e=sigma2_e, pred_var=pred_var))
+}
 
 
 
