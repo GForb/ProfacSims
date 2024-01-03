@@ -25,34 +25,107 @@ db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
 
 ## Simulation scenarios run
 
-
 ```{r, echo = FALSE}
-data <- dbGetQuery(db,
-            "SELECT  DISTINCT n_studies, ICC, R2, study_sample_size_train , pred_icc
+
+colnames <- dbGetQuery(db,
+           "SELECT * FROM sim_results_v3 WHERE 1 = 0")
+
+data <- DBI::dbGetQuery(db,
+            "SELECT  DISTINCT n_studies, ICC, R2, study_sample_size_train , pred_icc, model, beta_mse, int_pred_corr, beta_pred, beta_x, beta_mean_error
             FROM sim_results_v3
             WHERE sim_name = 'pred_icc_061223'"
 )
 
 # plot n
 summaries <- data |> 
-  group_by(n_studies, ICC, R2, study_sample_size_train , pred_icc, model) |> 
-  summarise(value = mean(beta_mse), 
-            ll = robust_t_test(beta_mse)[1], 
-            ul = robust_t_test(beta_mse)[2],  
-            n = sum(!is.na(beta_mse)),
-            beta_x = mean(beta_mse))
+  mutate(beta_rmse = sqrt(beta_mse)) |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , pred_icc, model, int_pred_corr, ) |> 
+  summarise(value = mean(beta_rmse), 
+            ll = ProfacSims:::robust_t_test(beta_rmse)[1], 
+            ul = ProfacSims:::robust_t_test(beta_rmse)[2],  
+            n = sum(!is.na(beta_rmse)),
+            beta_x = mean(beta_x))
+
+summaries_bias <- data |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train , pred_icc, model, int_pred_corr, ) |> 
+  summarise(value = mean(beta_mean_error), 
+            ll = ProfacSims:::robust_t_test(beta_mean_error)[1], 
+            ul = ProfacSims:::robust_t_test(beta_mean_error)[2],  
+            n = sum(!is.na(beta_mean_error)),
+            beta_x = mean(beta_mean_error))
 
   summaries_n <- summaries |> select(-value) |> rename(value = n) 
 
 
 ```
+
 ## Ns
-```{r}
-  summaries_n |> ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 200)
+
+```{r, echo = FALSE}
+  summaries_n |> filter(
+    R2 == 0.4, 
+    n_studies !=64, 
+    pred_icc !=0,
+    model!="Not adjusting for study") |> 
+  ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 500)
+```
+
+## Bias is minimal
+Hypothesis: Both approaches unbiased - difference in MSE due to variance
+
+```{r fig.height = 9, echo = FALSE}
+  summaries_bias |> filter(
+    R2 == 0.4, 
+    n_studies !=64, 
+    pred_icc !=0,
+    model!="Not adjusting for study") |> 
+  ProfacSims:::plot_results_by_model() + ylab("RMSE in estimate of beta1") 
 ```
 
 ## MSE
 
-```{r}
-  summaries |> ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 200)
+Hypothesis: When there is higher ICC in the beta parameters, random intercept models will have lower mean squared errors as they pool within and between study information. For larger study sizes the difference will be smaller as between-study information is given less weight.
+
+### When predictor ICC is small (0.05) there is no difference in methods
+
+```{r fig.height = 9, echo = FALSE}
+  summaries |> filter(
+    R2 == 0.4, 
+    n_studies !=64, 
+    pred_icc == 0.05,
+    model!="Not adjusting for study") |> 
+  ProfacSims:::plot_results_by_model() + ylab("RMSE in estimate of beta1") 
 ```
+
+### When predictor ICC is high (0.5) there is a difference when outcome ICCs are low and studies are small
+
+```{r fig.height = 9, echo = FALSE}
+  summaries |> filter(
+    R2 == 0.4, 
+    n_studies !=64, 
+    pred_icc == 0.5,
+    model!="Not adjusting for study") |> 
+  ProfacSims:::plot_results_by_model() + ylab("RMSE in estimate of beta1") 
+```
+
+### When predictor ICCs are very high (0.9 - most of the variance in the predictor is between study differences are largest)
+
+```{r fig.height = 9, echo = FALSE}
+  summaries |> filter(
+    R2 == 0.4, 
+    n_studies !=64, 
+    pred_icc == 0.9,
+    model!="Not adjusting for study") |> 
+  ProfacSims:::plot_results_by_model() + ylab("RMSE in estimate of beta1") 
+```
+
+
+This is what is observed:
+
+-   When there are small studies, and pred_icc is high, then Fixed effect models have higher MSE
+-   When study sizes are large or moderate, there is minimal difference in MSE
+-   If the outcome ICC is high, ICCs are similar for fixed and random models
+-   Outcome ICC seems to play a more important role than study size
+-   Differences only emerge when there are high ICCs for the predictors, and low ICCs for the outcome. If ICCs for the outcome are moderate, differences only occur when predictor ICCs are very high.
+-   Nothing to worry about unless you have a predictor that is very restricted eg. age in my case.
+
