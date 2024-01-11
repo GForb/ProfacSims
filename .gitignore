@@ -6,3 +6,11 @@ Results
 **/*.png
 *.html
 *.png
+Quarto/december_sims_files/libs/bootstrap/bootstrap-icons.woff
+.DS_Store
+Quarto/december_sims_files/libs/bootstrap/bootstrap-icons.css
+*.css
+*.js
+*.png
+*.stswp
+*.html
