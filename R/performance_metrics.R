@@ -149,7 +149,27 @@ evaluate_performance_cont_obs_pred <- function(observed, predicted) {
 
 
 evaluate_performance_continuous_new_studies <- function(test_data, model) {
-  evaluate_performance_continuous(test_data, model, new_studies = TRUE)
+  outcome <- names(stats::model.frame(model))[1]
+
+  intercept_data <- test_data |> dplyr::filter(int_est == TRUE)
+  intercepts <- predict_intercepts(model,intercept_data , cluster_var = "studyid")
+
+  # merge intercepts onto test data
+  test_data <- test_data |> dplyr::filter(int_est == FALSE)
+  test_data <- dplyr::left_join(test_data, intercepts, by = "studyid")
+  observed_outcome <- test_data[, outcome]
+  predicted_lp <- predict_fixed(model, newdata = test_data)
+  predicted_lp <- predicted_lp + test_data$pred_intercept
+
+  evaluate_performance_cont_obs_pred(observed_outcome, predicted_lp)
 }
 
+evaluate_performance_continuous_new_studies0 <- function(test_data, model) {
+  outcome <- names(stats::model.frame(model))[1]
+
+
+
+  evaluate_performance_cont_obs_pred(observed_outcome, predicted_lp)
+
+}
 
