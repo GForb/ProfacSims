@@ -10,7 +10,6 @@ predict_default <- function(model, test_data) {
 predict_with_new_intercept_data <- function(model, test_data) {
   intercept_data <- test_data |> dplyr::filter(int_est == TRUE)
   intercepts <- predict_intercepts(model,intercept_data , cluster_var = "studyid")
-  print(intercepts)
   # merge intercepts onto test data
   test_data_test_only <- test_data |> dplyr::filter(int_est == FALSE)
   test_data_test_only <- dplyr::left_join(test_data_test_only, intercepts, by = "studyid")
@@ -20,6 +19,12 @@ predict_with_new_intercept_data <- function(model, test_data) {
 }
 
 predict_average_intercept <- function(model, test_data) {
+
+  if(!is.null(test_data$int_est)){
+    test_data <- test_data |> dplyr::filter(!int_est)
+  }
+
+
   if(class(model)[1]== "lmerMod"){
     predicted_lp <- predict_fixed(model, test_data = test_data)
   } else if(class(model)[1]== "lm"){
