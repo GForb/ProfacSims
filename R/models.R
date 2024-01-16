@@ -22,7 +22,8 @@ model_logistic_cbcl_test <- function(data) {
 model_lm <- function(data) {
   x_text = data |> get_x_formula_text()
   formula = paste("y ~", x_text) |> as.formula()
-  model <- stats::lm(formula, data = data)
+
+  model <- stats::lm(formula, data = data, weights = data$wt) # if data$wt is null lm defaults to ols
   attr(model, "name") <- "Not adjusting for study"
   return(model)
 
@@ -31,7 +32,7 @@ model_lm <- function(data) {
 model_lm_fixed_int<- function(data) {
   x_text = data |> get_x_formula_text()
   formula = paste("y ~ studyid +", x_text) |> as.formula()
-  model <- stats::lm(formula, data = data)
+  model <- stats::lm(formula, data = data, , weights = data$wt)
   attr(model, "name") <- "Fixed intercept"
   return(model)
 }
@@ -39,7 +40,7 @@ model_lm_fixed_int<- function(data) {
 model_lmm_random_int_reml <- function(data) {
   x_text = data |> get_x_formula_text()
   formula = paste("y ~", x_text, "+ (1|studyid)") |> as.formula()
-  model <- lme4::lmer(formula, data = data)
+  model <- lme4::lmer(formula, data = data , weights = data$wt)
   attr(model, "name") <- "Random intercetp - REML"
   return(model)
 }
@@ -55,7 +56,7 @@ model_lmm_random_int_reml_weight <- function(data) {
 model_lmm_random_int_ml <- function(data) {
   x_text = data |> get_x_formula_text()
   formula = paste("y ~", x_text, "+ (1|studyid)") |> as.formula()
-  model <- lme4::lmer(formula, data = data, REML = FALSE)
+  model <- lme4::lmer(formula, data = data, REML = FALSE,  weights = data$wt)
   attr(model, "name") <- "Random intercetp - ML"
   return(model)
 }
