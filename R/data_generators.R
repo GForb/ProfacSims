@@ -63,31 +63,60 @@ generate_cbcl <- function(n = c(100, 100, 100, 100, 100, 158, 197)) {
 
 
 generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercept_est_sample_size, intercepts_data=NULL, min_study_id = 1, predictor_intercepts = "study") {
-    int <- generate_continuous(
-      n_studies = n_studies,
-      study_sample_size = intercept_est_sample_size,
-      n_predictors = n_predictors,
-      sigmas = sigmas,
-      intercepts_data = intercepts_data,
-      min_study_id = min_study_id,
-      predictor_intercepts = predictor_intercepts
-    )
 
-    int$int_est = TRUE
+  int <- NULL
 
-        test <- generate_continuous(
-      n_studies = n_studies,
-      study_sample_size= study_sample_size,
-      n_predictors=n_predictors,
-      sigmas=sigmas,
-      intercepts_data = int,
-      min_study_id = min_study_id,
-      predictor_intercepts = predictor_intercepts)
+    if(intercept_est_sample_size > 0) {
+      int <- generate_continuous(
+        n_studies = n_studies,
+        study_sample_size = intercept_est_sample_size,
+        n_predictors = n_predictors,
+        sigmas = sigmas,
+        intercepts_data = intercepts_data,
+        min_study_id = min_study_id,
+        predictor_intercepts = predictor_intercepts
+      )
 
-    test$int_est = FALSE
-    rbind(int, test)
+      int$int_est = TRUE
+    }
+
+
+  data <- generate_continuous(
+    n_studies = n_studies,
+    study_sample_size= study_sample_size,
+    n_predictors=n_predictors,
+    sigmas=sigmas,
+    intercepts_data = int,
+    min_study_id = min_study_id,
+    predictor_intercepts = predictor_intercepts)
+
+  data$int_est = FALSE
+  if(intercept_est_sample_size > 0) {
+    data <- dplyr::bind_rows(int, data)
+  }
+    return(data)
 }
 
+
+
+#' Title
+#'
+#' @param n_studies number of studies
+#' @param study_sample_size sample size for all studies
+#' @param n_predictors number of predictors
+#' @param sigmas output from get_sigmas with error variances and other model terms
+#' @param intercepts_data a vector contianing study intercepts. This can be used to generate data from existing studies
+#' @param min_study_id the minimum study ID to use. When generating data for new studies this will need to exceed the ID used in train data.
+#' @param predictor_intercepts Either 'study' or 'random'. If study, the intercepts passed to the function that generates the predictor data are study intercepts. If random the interceps passed are randomly generated (or existing preductor intercepts if intercept data is provided)
+#' Use study when data is generated with a correlation betweens study interceps and predictos. Use random if data is generated with predictors correlated within study. If intercepts are iid accross studies this option will make no difference.
+#'
+#' @return returns a dataframe of simualated data with outcome y and predictors x1 ... x{n_predictors}
+#' @export
+#'
+#' @examples
+#'
+#' I should refactor so n_predictos, and predictor interceps are part of sigmas. That way all arguments that are unchanged between reps, and between train and test data are contained in sigmas.
+#'
 generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercepts_data = NULL, min_study_id = 1, predictor_intercepts = "study") {
   #Needs args:  n_studies, sample_szies, icc, out_prop (binary)
   # Fixed args: R-squared, number of predictors
