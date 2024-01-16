@@ -99,34 +99,39 @@ metric_rsqared_old <- function(predicted_lp, observed_outcome) {
 
 
 
-evaluate_performance_continuous <- function(test_data, model, new_studies = FALSE) {
+evaluate_performance_continuous <- function(test_data, model) {
+  evaluate_performance_continuous_generic(test_data = test_data, model = model, predict_function = predict_default)
+}
+
+
+
+evaluate_performance_continuous_new_studies <- function(test_data, model){
+  evaluate_performance_continuous_generic(test_data = test_data, model = model, predict_function = predict_with_new_intercept_data)
+}
+
+
+evaluate_performance_continuous_new_studies0 <- function(test_data, model) {
+  evaluate_performance_continuous_generic(test_data = test_data, model = model, predict_function = predict_average_intercept)
+}
+
+evaluate_performance_continuous_generic <-  function(test_data, model, predict_function) {
   outcome <- names(stats::model.frame(model))[1]
-
-
-  if(new_studies){
-    intercept_data <- test_data |> dplyr::filter(int_est == TRUE)
-    intercepts <- predict_intercepts(model,intercept_data , cluster_var = "studyid")
-
-        # merge intercepts onto test data
-    test_data <- test_data |> dplyr::filter(int_est == FALSE)
-    test_data <- dplyr::left_join(test_data, intercepts, by = "studyid")
-    observed_outcome <- test_data[, outcome]
-    predicted_lp <- predict_fixed(model, newdata = test_data)
-    predicted_lp <- predicted_lp + test_data$pred_intercept
+  if(!is.null(test_data$int_est)){
+    out_test_data <- test_data |> dplyr::filter(!int_est)
+    observed_outcome <- out_test_data[, outcome]
   } else {
     observed_outcome <- test_data[, outcome]
-    if("glm" %in% class(model)) {
-      predicted_lp <- predict(model, newdata = test_data, type = "response")
-    } else {
-      predicted_lp <- predict(model, newdata = test_data)
-    }
   }
-  evaluate_performance_cont_obs_pred(observed_outcome, predicted_lp)
 
+
+   predicted_lp <- predict_function(model = model, test_data = test_data)
+
+  evaluate_performance_cont_obs_pred(observed_outcome, predicted_lp)
 
 }
 
 evaluate_performance_cont_obs_pred <- function(observed, predicted) {
+  if(length(observed) != length(predicted)) stop("observed does not have the same number of observations as predicted")
   rbind(
     metric_calib_slope_cont(predicted, observed),
     metric_calib_itl_cont(predicted, observed),
@@ -136,34 +141,4 @@ evaluate_performance_cont_obs_pred <- function(observed, predicted) {
 }
 
 
-evaluate_performance_continuous_new_studies <- function(test_data, model) {
-  outcome <- names(stats::model.frame(model))[1]
-
-  intercept_data <- test_data |> dplyr::filter(int_est == TRUE)
-  intercepts <- predict_intercepts(model,intercept_data , cluster_var = "studyid")
-
-  # merge intercepts onto test data
-  test_data <- test_data |> dplyr::filter(int_est == FALSE)
-  test_data <- dplyr::left_join(test_data, intercepts, by = "studyid")
-  observed_outcome <- test_data[, outcome]
-  predicted_lp <- predict_fixed(model, newdata = test_data)
-  predicted_lp <- predicted_lp + test_data$pred_intercept
-
-  evaluate_performance_cont_obs_pred(observed_outcome, predicted_lp)
-}
-
-evaluate_performance_continuous_new_studies0 <- function(test_data, model) {
-  outcome <- names(stats::model.frame(model))[1]
-  # for random intercept models prediction for unseen clusters defaults to using zero intercept for new clusters. For linear models a different approach is required.
-  if("lm" %in% class(model)) {
-    predicted_lp <- predict(model, newdata = test_data, type = "response")
-  } else {
-    predicted_lp <- predict(model, newdata = test_data)
-  }
-
-
-
-  evaluate_performance_cont_obs_pred(observed_outcome, predicted_lp)
-
-}
 
