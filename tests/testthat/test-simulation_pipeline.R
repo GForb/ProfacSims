@@ -29,6 +29,30 @@ test_that("model_evaluate_pipeline", {
 
 })
 
+test_that("model_evaluate_pipeline_fitted_model", {
+  sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
+  train_data <- generate_continuous(
+    n_studies = 10,
+    study_sample_size = 50,
+    sigmas = sigmas
+  )
+  model = model_lm_fixed_int(train_data)
+  test_data = generate_continuous(
+    n_studies = 10,
+    study_sample_size = 50,
+    sigmas= sigmas,
+    intercepts_data = train_data
+  )
+  cont_results <- model_evaluate_pipeline_fitted_model(
+    test_data_list = list(test_data),
+    evaluate_performance = evaluate_performance_continuous,
+    model = model)
+  expect_equal(nrow(cont_results), 4)
+  expect_vector(dplyr::filter(cont_results, metric == "var_u")$betas[[1]])
+
+
+})
+
 
 test_that("sim_rep", {
   sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
@@ -74,7 +98,23 @@ test_that("sim_rep", {
 
 })
 
+test_that("sim_rep_fitted_model",{
+  model_function_list <- list("model_lmm_random_int_reml", "model_lm_fixed_int", "model_lm")
+  sigmas <- get_sigmas(n_predictors = 12, ICC = 0.05, R2 = 0.5)
+  train_data <- generate_continuous(n_studies = 10,  study_sample_size = 50, n_predictors = 12 ,sigmas = sigmas)
+  model_list <-  lapply(model_function_list, do.call, args = list(data = train_data))
 
+  test_data_existing <- generate_continuous(
+    n_studies = 10,
+    study_sample_size = 50,
+    sigmas = sigmas,
+    n_predictors = 12,
+    intercepts_data = train_data)
+
+  results <- sim_rep_fitted_model(fitted_model_list = model_list, test_data = test_data_existing, evaluate_performance = evaluate_performance_continuous)
+  expect_equal(nrow(results), 12)
+
+})
 
 test_that("sim_rep_continuous", {
   sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
