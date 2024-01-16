@@ -4,7 +4,7 @@
 #' @param train_data data used to fit the model
 #' @param test_data data used to validate the model
 #' @param evaluate_performance a function that evaluates the performance of the model for a single study
-#' @param fit_model a function that fits the model to be used
+#' @param model a fitted model
 #'
 #' @return
 #' @export
