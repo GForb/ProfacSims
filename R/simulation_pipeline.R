@@ -126,8 +126,12 @@ sim_rep_continuous_new_test_studies  <- function(model_function_list, n_studies,
 
 }
 
+# test data must be a list of data frames
 
 sim_rep <- function(model_function_list, evaluate_performance, train_data, test_data) {
+  if(!is.list(test_data[[1]])){
+    test_data <- list(test_data)
+  }
   results_list <- lapply(
     model_function_list,
     model_evaluate_pipeline,
@@ -143,6 +147,7 @@ sim_rep <- function(model_function_list, evaluate_performance, train_data, test_
 
 
 
+
 model_evaluate_pipeline <- function(fit_model, train_data, test_data_list, evaluate_performance) {
   model <- fit_model(train_data)
   results_list <- lapply(test_data_list, ipdma_prediction_pipeline, model = model, evaluate_performance = evaluate_performance)
@@ -154,3 +159,38 @@ model_evaluate_pipeline <- function(fit_model, train_data, test_data_list, evalu
   results_df$model <- attr(model, "name")
   return(results_df)
 }
+
+# Function to use with list of fitted models
+sim_rep_fitted_model <- function(fitted_model_list, evaluate_performance, test_data) {
+  if(!is.list(test_data[[1]])){
+    test_data <- list(test_data)
+  }
+  results_list <- lapply(
+    fitted_model_list,
+    model_evaluate_pipeline_fitted_model,
+    test_data_list = test_data,
+    evaluate_performance = evaluate_performance
+  )
+
+  results_df <- do.call(rbind, results_list) |> tibble::tibble()
+
+  return(results_df)
+}
+
+model_evaluate_pipeline_fitted_model <- function(model, test_data_list, evaluate_performance){
+  results_list <- lapply(test_data_list, ipdma_prediction_pipeline, model = model, evaluate_performance = evaluate_performance)
+  results_df <- dplyr::bind_rows(results_list)
+  betas <- get_betas(model)
+  model_est <- tibble::tibble(metric = "var_u", est = get_var_u(model), betas = list(betas))
+  results_df <- dplyr::bind_rows(results_df, model_est)
+
+  results_df$model <- attr(model, "name")
+  return(results_df)
+}
+
+
+model_evaluate_pipeline_dynamic <- name <- function(fit_model, train_data, test_data_list, evaluate_performance) {
+  intercept_est_data <- test_data |> filter()
+  train_data <- bind_rows(train_data, )
+}
+
