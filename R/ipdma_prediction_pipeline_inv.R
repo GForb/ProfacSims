@@ -1,3 +1,5 @@
+# What does this do - what does inv mean?????
+
 sim_rep_continuous_inv <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigma_e, sigma_u, sim_rep) {
   .Random.seed <- sim_rep$rng_state[1]
 
