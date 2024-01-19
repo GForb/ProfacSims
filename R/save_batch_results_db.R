@@ -32,8 +32,10 @@ write_file_to_db <- function(data, database_connection, table) {
 }
 
 get_results_df <- function(sim_results, sim_name, filename) {
-  try(sim_results <- sim_results |> mutate(intercept_est_sample_size = test_ss/n_studies_test))
-  try(sim_name <- sim_results |>
+  if(is.null(sim_results$intercept_est_sample_size)) {
+    try(sim_results <- sim_results |> dplyr::mutate(intercept_est_sample_size = test_ss/n_studies_test))
+  }
+  try(sim_results <- sim_results |>
         dplyr::rowwise() |>
         dplyr::mutate(rng_state = toString(rng_state)) |>
         dplyr::ungroup())
