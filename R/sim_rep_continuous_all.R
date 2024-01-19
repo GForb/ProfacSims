@@ -169,6 +169,7 @@ sim_rep_dynamic <- function(model_function_list, train_data, test_data) {
           train_data = train_data,
           test_data = test_data)
   results$predict_method = "new_dynamic"
+  results$test_ss = nrow(int_est_data)
   return(results)
 }
 

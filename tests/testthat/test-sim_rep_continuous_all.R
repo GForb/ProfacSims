@@ -39,7 +39,7 @@ test_that("sim_rep_", {
 })
 
 test_that("sim_rep_continuous_all_eval", {
-  set.seed(1234)
+  set.seed(12345)
   model_function_list <- list(model_lmm_random_int_reml, model_lm_fixed_int, model_lm)
   sigmas <- get_sigmas(n_predictors = 10, ICC = 0.3, R2 = 0.7)
   results <- sim_rep_continuous_all_eval(

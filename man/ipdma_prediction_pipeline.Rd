@@ -9,11 +9,11 @@ ipdma_prediction_pipeline(test_data, model, evaluate_performance)
 \arguments{
 \item{test_data}{data used to validate the model}
 
+\item{model}{a fitted model}
+
 \item{evaluate_performance}{a function that evaluates the performance of the model for a single study}
 
 \item{train_data}{data used to fit the model}
-
-\item{fit_model}{a function that fits the model to be used}
 }
 \description{
 Pipeline for developing and validating a prediction model by study for an IPD Meta-analysis with training and test data.
