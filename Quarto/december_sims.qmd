@@ -71,6 +71,7 @@ summaries_bias <- data |>
 ```
 
 ## Bias is minimal
+
 Hypothesis: Both approaches unbiased - difference in MSE due to variance
 
 ```{r fig.height = 9, echo = FALSE}
@@ -119,7 +120,6 @@ Hypothesis: When there is higher ICC in the beta parameters, random intercept mo
   ProfacSims:::plot_results_by_model() + ylab("RMSE in estimate of beta1") 
 ```
 
-
 This is what is observed:
 
 -   When there are small studies, and pred_icc is high, then Fixed effect models have higher MSE
@@ -128,4 +128,3 @@ This is what is observed:
 -   Outcome ICC seems to play a more important role than study size
 -   Differences only emerge when there are high ICCs for the predictors, and low ICCs for the outcome. If ICCs for the outcome are moderate, differences only occur when predictor ICCs are very high.
 -   Nothing to worry about unless you have a predictor that is very restricted eg. age in my case.
-
