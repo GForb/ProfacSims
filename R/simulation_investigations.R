@@ -1,5 +1,19 @@
-# What does this do - what does inv mean?????
+# this script is for investigating a particular sim repetition given the random seed.
 
+#' Title
+#'
+#' @param model_function_list
+#' @param n_studies
+#' @param study_sample_size_train
+#' @param study_sample_size_test
+#' @param sigma_e
+#' @param sigma_u
+#' @param sim_rep data from the simulation rep to be investigated
+#'
+#' @return
+#' @export
+#'
+#' @examples
 sim_rep_continuous_inv <- function(model_function_list, n_studies, study_sample_size_train, study_sample_size_test, sigma_e, sigma_u, sim_rep) {
   .Random.seed <- sim_rep$rng_state[1]
 
