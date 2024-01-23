@@ -178,6 +178,8 @@ sim_rep_fitted_model <- function(fitted_model_list, evaluate_performance, test_d
 }
 
 model_evaluate_pipeline_fitted_model <- function(model, test_data_list, evaluate_performance){
+  print(model)
+  get_var_u(model)
   results_list <- lapply(test_data_list, ipdma_prediction_pipeline, model = model, evaluate_performance = evaluate_performance)
   results_df <- dplyr::bind_rows(results_list)
   betas <- get_betas(model)
