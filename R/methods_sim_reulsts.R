@@ -109,10 +109,17 @@ plot_error_var_u <- function(sim_results, CI = TRUE) {
                                                    model == "Random intercetp - ML" ~ n_studies*2^0.1)
     )
 
+  facet_cols <-  ggplot2::vars(ICC, study_sample_size_train)
+  if(!is.null(sim_results$int_pred_corr)){
+    facet_cols <-  ggplot2::vars(int_pred_corr, study_sample_size_train)
+
+  }
+  facet_rows = ggplot2::vars(ICC)
+
   plot <- sim_results_mod |>
     ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(cols = ggplot2::vars(ICC,int_pred_corr, study_sample_size_train), scales = "free_y", switch = "y") +
+    ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, scales = "free_y", switch = "y") +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",
