@@ -61,7 +61,6 @@ generate_cbcl <- function(n = c(100, 100, 100, 100, 100, 158, 197)) {
 
 
 
-
 generate_continuous_new_studies <- function(n_studies, study_sample_size,  n_predictors = 12, sigmas, intercept_est_sample_size, intercepts_data=NULL, min_study_id = 1, predictor_intercepts = "study") {
 
   int <- NULL
@@ -148,12 +147,14 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
   } else if(predictor_intercepts == "random"){
     pred_intercepts <- data$predictor_intercept
   }
-
   predictors <- generate_predictors(
     n = total_n,
     n_predictors = n_predictors,
     intercepts = pred_intercepts,
     beta_int = beta_int)
+
+  row.names(data) <- NULL
+
 
   data <- cbind(data, predictors)
   data$lp <- generate_linear_predictor(predictors, beta)

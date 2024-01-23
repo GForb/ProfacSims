@@ -74,5 +74,8 @@ test_that("sim_rep_continuous_new_data", {
   )
 
   expect_equal(nrow(results), 72)
+  var_u <- results |> dplyr::filter(metric == 'var_u', model == 'Random intercetp - REML', predict_method == "new0")
+  expect_equal(var_u[1,1], var_u[2,1])
+
 
 })

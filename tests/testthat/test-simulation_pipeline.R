@@ -114,6 +114,30 @@ test_that("sim_rep_fitted_model",{
   results <- sim_rep_fitted_model(fitted_model_list = model_list, test_data = test_data_existing, evaluate_performance = evaluate_performance_continuous)
   expect_equal(nrow(results), 12)
 
+  test_data1 <-test_data <-  generate_continuous_new_studies(
+    n_studies = 30,
+    study_sample_size = 1000,
+    sigmas= sigmas,
+    intercept_est_sample_size = 10,
+    intercepts_data = train_data,
+    min_study_id = 11,
+    n_predictors = 12,
+  )
+
+  test_data2 <-test_data <-  generate_continuous_new_studies(
+    n_studies = 30,
+    study_sample_size = 1000,
+    sigmas= sigmas,
+    intercept_est_sample_size = 50,
+    intercepts_data = train_data,
+    min_study_id = 11,
+    n_predictors = 12,
+  )
+  model_list <- list(model_lmm_random_int_reml(train_data))
+
+  rep1 <- sim_rep_fitted_model(model_list, test_data= test_data1, evaluate_performance = evaluate_performance_continuous_new_studies0)
+  rep2 <- sim_rep_fitted_model(model_list, test_data= test_data2, evaluate_performance = evaluate_performance_continuous_new_studies0)
+  expect_equal(rep1[4,1], rep2[4,1])
 })
 
 test_that("sim_rep_continuous", {

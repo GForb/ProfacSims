@@ -1,14 +1,15 @@
-plot_results_by_model <- function(data, CI = TRUE, model_offset = 0.14) {
+plot_results_by_model <- function(data, model_offset = 0.14) {
   if(!"pred_icc" %in% names(data)){
     data$pred_icc = 0
   }
   data <- data |> add_n_studies_mod(model_offset)
   data <- data |> rename(study_n = study_sample_size_train)
+
   plot <- data |>
     ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
     ggplot2::geom_point() +
     ggplot2::facet_grid(cols = ggplot2::vars(R2, study_n),
-                        rows = ggplot2::vars(int_pred_corr, pred_icc, ICC),
+                        rows = ggplot2::vars(pred_icc, ICC),
                         scales = "free_y",
                         switch = "y",
                         labeller= "label_both") +
@@ -16,15 +17,11 @@ plot_results_by_model <- function(data, CI = TRUE, model_offset = 0.14) {
     ggplot2::labs(
       color = "Model:",
       x = "Number of studies (log scale)",
-      y = "",
-      caption ="Performance is pooled study level model performance \n
-                 Tau-Squared is the between study variance in model performance"
+      y = ""
     ) +
     guides(color = guide_legend(nrow = 2)) +
     theme(legend.position = "top")
-  if(CI){
-    plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(ymin=ll, ymax=ul))
-  }
+
   return(plot)
 }
 
