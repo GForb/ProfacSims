@@ -2,7 +2,7 @@
 save_cluster_results_db <- function(table, sim_name, db, min_file_no = 1, max_file_no = 1000) {
   db <- dbConnect(RSQLite::SQLite(), "Results/Database/sim_results.db")
 
-  results_folder. <- here::here("Results/ClusterSims/", sim_name)
+  results_folder <- here::here("Results/ClusterSims/", sim_name)
   save_time = lubridate::now()
 
   for(i in min_file_no:max_file_no){
