@@ -237,7 +237,7 @@ summaries <- data |>
             ll = robust_t_test(perc_beta_error)[1], 
             ul = robust_t_test(perc_beta_error)[2],  
             n = sum(!is.na(perc_beta_error)),
-            beta_x = mean(beta_x))
+            beta_x = mean(beta_x)) 
 
 
 summaries_n <- summaries |> 

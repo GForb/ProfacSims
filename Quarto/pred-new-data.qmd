@@ -13,7 +13,7 @@ library(glue)
 
 # Connecting to database
 table = "sim_results_v4"
-sim_name = "160122-pred-new-data"
+sim_name = "240119-pred-new-data"
 where = glue("sim_name = '{sim_name}'")
 
 db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
@@ -41,74 +41,63 @@ counts <- DBI::dbGetQuery(db,
             GROUP BY n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric")
 )
 counts_col <- counts[,"COUNT(*)"]
-min(counts_col)
-max(counts_col)
+min_sim_rep <- min(counts_col)
+max_sim_re <- max(counts_col)
 
 
 
 
 ```
+Across all scenarios, the minimum number of sim reps with results is `r min_sim_rep` and the maximum number is `r max_sim_rep`.
+
 ## Random intercept models underestimate variance of intercepts whent there are a small number of studies
 
-### Number of models converging
+
+
 ```{r, echo = FALSE}
 
 
 
-model_data <-  DBI::dbGetQuery(db,
+random_models <-  DBI::dbGetQuery(db,
   glue(
-    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, error_var_u, sigma_u
     FROM {table}
-    WHERE {where} AND intercept_est_sample_size = 10 AND (predict_method = 'new0' OR predict_method = 'new_dynamic') AND metric = 'var_u'
+    WHERE {where} AND intercept_est_sample_size = 10 AND (predict_method = 'new0' OR predict_method = 'new_dynamic') AND metric = 'var_u' AND (model ='Random intercetp - ML' OR model = 'Random intercetp - REML')
   ")
 )
 # plot n
-summaries_var_u <- model_data |> 
+summaries_var_u <- random_models |> 
   group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method) |> 
-  summarise(value = mean(est), 
-            sd = sd(est),
-            ll = ProfacSims:::robust_t_test(est)[1], 
-            ul = ProfacSims:::robust_t_test(est)[2],  
-            n = sum(!is.na(est))) |> 
-  ungroup()
+  summarise(sigma2_u = mean((sigma_u^2)),
+            est_sigma_u = mean(est),
+            value = mean(error_var_u), 
+            sd = sd(error_var_u),
+            ll = ProfacSims:::robust_t_test(error_var_u)[1], 
+            ul = ProfacSims:::robust_t_test(error_var_u)[2],  
+            n = sum(!is.na(error_var_u))) |> 
+  ungroup() |> 
+  mutate(perc_error_var_u = value/sigma2_u*100)
 
-summaries_var_u |> filter(ICC == 0.05, !is.na(value))
 
-  summaries_n |> filter(
-    R2 == 0.4, 
-    n_studies !=64, 
-    pred_icc !=0,
-    model!="Not adjusting for study") |> 
-  ProfacSims:::plot_results_by_model() + ylab("N") + scale_y_continuous(breaks = 500)
+
+min_converge <- min(summaries_var_u$n)
+max_converge <- max(summaries_var_u$n)
+
+
 ```
-Min and max number of estimated between study intercepts.
+### Number of models converging
+Across all scenarios and models including a random component, the minimum number of models reporting a random intercept variance is `r min_converge` and the maximum number is `r max_converge`.
+
+
 ```{r}
 n <- summaries_var_u |> filter(model == "Random intercetp - REML" | model == "Random intercetp - ML") |> select(n)
 min(n)
 max(n)
 ```
 
-```{r, echo = FALSE}
-
-data <- dbGetQuery(db,
-           "SELECT n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model, beta_mean_error, beta_x, sigma_e, sigma_u, est, test_ss, n_studies_test, metric, tau2 rep_number, error_var_u
-            FROM sim_results_v2
-            WHERE sim_name = 'BatchAug2023' AND metric = 'var_u' AND est IS NOT NULL AND int_pred_corr =0"
-) 
-
-```
 
 ```{r, fig.height = 6}
-data |> 
-  dplyr::filter(R2 == 0.4) |> 
-  mutate(error_var_u = est - sigma_u^2) |> 
-  group_by(n_studies, ICC, R2, study_sample_size_train , int_pred_corr, model)  |> 
-  summarise(
-    value = mean(error_var_u), 
-    ll = robust_t_test(error_var_u)[1], 
-    ul = robust_t_test(error_var_u)[2],  
-    n = sum(!is.na(error_var_u))
-  ) |> 
+summaries_var_u |> 
   ProfacSims:::plot_error_var_u()
 ```
 
