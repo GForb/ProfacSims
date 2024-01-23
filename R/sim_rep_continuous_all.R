@@ -48,14 +48,17 @@ sim_rep_continuous_new_data <- function(
     )
     results_new0 <-  sim_rep_new_data0(models_list, test_data = test_data)
     results_new0$intercept_est_sample_size2 = x
+    print(results_new0 |> dplyr::select(metric, est, predict_method, intercept_est_sample_size2))
+
     # Method  3. Estimating new intercept using empirical bayes or mean for fixed effect models
     results_new <-  sim_rep_new_data(models_list, test_data = list(test_data))
     results_new$intercept_est_sample_size2 = x
+    print(results_new |> dplyr::select(metric, est, predict_method, intercept_est_sample_size2))
 
     # Method 4. Taking a dynamic approach to intercept estiamtion - re-estimating the model then using the re-estiamted model to make predictions.
     results_dynamic <- sim_rep_dynamic(model_function_list, train_data, test_data)
     results_dynamic$intercept_est_sample_size2 = x
-
+    print(results_dynamic |> dplyr::select(metric, est, predict_method, intercept_est_sample_size2))
     results_list <- c(results_list, list(dplyr::bind_rows(results_new0, results_new, results_dynamic)))
   }
 
