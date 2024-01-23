@@ -42,7 +42,7 @@ counts <- DBI::dbGetQuery(db,
 )
 counts_col <- counts[,"COUNT(*)"]
 min_sim_rep <- min(counts_col)
-max_sim_re <- max(counts_col)
+max_sim_rep <- max(counts_col)
 
 
 
@@ -99,6 +99,16 @@ max(n)
 ```{r, fig.height = 6}
 summaries_var_u |> 
   ProfacSims:::plot_error_var_u()
+```
+
+
+```{r, fig.height = 6}
+summaries_var_u |> 
+  dplyr::filter(predict_method == "new0") |> 
+  ProfacSims:::box_plot_error_var_u()
+
+
+
 ```
 
 

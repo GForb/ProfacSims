@@ -109,17 +109,24 @@ plot_error_var_u <- function(sim_results, CI = TRUE) {
                                                    model == "Random intercetp - ML" ~ n_studies*2^0.1)
     )
 
-  facet_cols <-  ggplot2::vars(ICC, study_sample_size_train)
+  facet_cols <-  ggplot2::vars(study_sample_size_train)
   if(!is.null(sim_results$int_pred_corr)){
     facet_cols <-  ggplot2::vars(int_pred_corr, study_sample_size_train)
-
   }
   facet_rows = ggplot2::vars(ICC)
 
-  plot <- sim_results_mod |>
-    ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model)) +
+  if(is.null(sim_results_mod$predict_method)){
+    plot <- sim_results_mod |>
+      ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model))
+  } else {
+    plot <- sim_results_mod |>
+      ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = value, color = model, shape = predict_method))
+  }
+
+
+  plot <- plot +
     ggplot2::geom_point() +
-    ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, scales = "free_y", switch = "y") +
+    ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed") +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",
