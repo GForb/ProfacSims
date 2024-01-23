@@ -189,3 +189,22 @@ sim_rep_weights <- function(model_function_list, train_data, test_data) {
   # I need to run through the predict methods and make sure they are doing what I want.
 }
 
+sim_rep_continuous_new_data_save_data <- function( model_function_list,
+                                                   n_studies,
+                                                   study_sample_size_train,
+                                                   study_sample_size_test,
+                                                   sigmas,
+                                                   intercept_est_sample_size,
+                                                   n_studies_test,
+                                                   n_predictors,
+                                                   predictor_intercepts = "study"
+) {
+
+    train_data <- generate_continuous(
+      n_studies = n_studies,
+      study_sample_size = study_sample_size_train,
+      sigmas = sigmas,
+      n_predictors = n_predictors,
+      predictor_intercepts= predictor_intercepts)
+  return(train_data)
+}
