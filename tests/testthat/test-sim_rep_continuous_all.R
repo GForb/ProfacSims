@@ -29,8 +29,9 @@ test_that("sim_rep_", {
   results_new <-  sim_rep_new_data(models_list = model_list, test_data = test_data_new)
   expect_equal(nrow(results_new), 12)
 
+
   results_dynamic <- sim_rep_dynamic(model_function_list = model_function_list, train_data = train_data, test_data = test_data_new)
-  expect_equal(nrow(results_dynamic), 12)
+  expect_equal(nrow(results_dynamic), 39)
 
   results_wt <- sim_rep_weights(model_function_list = model_function_list, train_data = train_data, test_data = test_data_new)
   expect_equal(nrow(results_wt), 12)
@@ -53,7 +54,7 @@ test_that("sim_rep_continuous_all_eval", {
     n_predictors = 10
   )
 
-  expect_equal(nrow(results), 96)
+  expect_equal(nrow(results), 210)
 
 
 })
@@ -73,7 +74,7 @@ test_that("sim_rep_continuous_new_data", {
     n_predictors = 10
   )
 
-  expect_equal(nrow(results), 72)
+  expect_equal(nrow(results), 186)
   var_u <- results |> dplyr::filter(metric == 'var_u', model == 'Random intercetp - REML', predict_method == "new0")
   expect_equal(var_u[1,1], var_u[2,1])
 

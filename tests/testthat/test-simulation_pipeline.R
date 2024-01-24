@@ -244,4 +244,25 @@ test_that("ipdma_simulation", {
   expect_equal(nrow(sim_results_test), 128)
   expect_equal(ncol(sim_results_test), 26)
 
+  set.seed(1234)
+  sim_params <- list(
+    nreps = 1,
+    sim_rep_fun = list(sim_rep_continuous_new_data),
+    n_studies = c(10),
+    model_function_list = list(list(model_lmm_random_int_ml)),
+    study_sample_size_train = c(50),
+    study_sample_size_test = 500,
+    ICC = c(0.3),
+    R2 = c(0.7),
+    intercept_est_sample_size = list(c(10, 50)),
+    n_predictors = 12,
+    n_studies_test = 5
+  )
+
+  sim_results_test <- do.call(ipdma_simulation, sim_params)
+  var_u <- sim_results_test |> dplyr::filter(metric == 'var_u', predict_method == 'new0')
+  expect_equal(var_u[1,2], var_u[2,2])
+
+
+
 })

@@ -5,10 +5,15 @@
 # generic function for an ipdma prediciton modelling simulation
 
 
-ipdma_simulation <- function(...) {
+ipdma_simulation <- function(..., expand_intercept_est_sample_size = FALSE, use_furrr = FALSE) {
   params_list <- list(...)
   sim_params <- do.call(tidyr::expand_grid, params_list)
-  results <- furrr::future_pmap(.l = sim_params, .f = do_simulation, .options = furrr::furrr_options(seed=TRUE), .progress = TRUE)
+
+  if(use_furrr){
+    results <- furrr::future_pmap(.l = sim_params, .f = do_simulation, .options = furrr::furrr_options(seed=TRUE), .progress = TRUE)
+  } else {
+    results <- purrr::pmap(.l = sim_params, .f = do_simulation, .progress = TRUE)
+  }
 
   results_df <- do.call(rbind, results)
   results_df <- results_df |>
@@ -59,7 +64,6 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
       pred_icc = pred_icc)
     args$sigmas <- sigmas
     args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc")==FALSE]
-
 
   loop_fun <- function(rep_number, args, sim_rep_fun){
     results <- do.call(sim_rep_fun, args)
@@ -160,6 +164,7 @@ model_evaluate_pipeline <- function(fit_model, train_data, test_data_list, evalu
   return(results_df)
 }
 
+
 # Function to use with list of fitted models
 sim_rep_fitted_model <- function(fitted_model_list, evaluate_performance, test_data) {
   if(!is.list(test_data[[1]])){
@@ -178,7 +183,6 @@ sim_rep_fitted_model <- function(fitted_model_list, evaluate_performance, test_d
 }
 
 model_evaluate_pipeline_fitted_model <- function(model, test_data_list, evaluate_performance){
-  print(model)
   get_var_u(model)
   results_list <- lapply(test_data_list, ipdma_prediction_pipeline, model = model, evaluate_performance = evaluate_performance)
   results_df <- dplyr::bind_rows(results_list)
@@ -190,8 +194,4 @@ model_evaluate_pipeline_fitted_model <- function(model, test_data_list, evaluate
 }
 
 
-model_evaluate_pipeline_dynamic <- name <- function(fit_model, train_data, test_data_list, evaluate_performance) {
-  intercept_est_data <- test_data |> filter()
-  train_data <- bind_rows(train_data, )
-}
 

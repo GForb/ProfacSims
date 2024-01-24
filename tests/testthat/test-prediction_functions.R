@@ -1,4 +1,5 @@
-test_that("get_rand_int", {
+
+test_that("predict_rand_int", {
   set.seed(1234)
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
   data <- generate_continuous(10,100, sigmas= sigmas)
@@ -7,19 +8,19 @@ test_that("get_rand_int", {
                       data = data)
 
   pred_re <- lme4::ranef(model)
-  my_re <- get_rand_int(model, newdata = data)
+  my_re <- predict_rand_int(model, newdata = data)
   diff <- pred_re$studyid - my_re$pred_intercept
   expect_equal(length(pred_re$studyid [[1]]), length(my_re$pred_intercept))
 
   expect_equal(sum(abs(diff)), 0, tolerance = 0.0001)
 
-  my_re <- predict_intercepts(model, newdata = data, cluster_var = "studyid")
-  my_re <- get_rand_int(model, newdata = data)
+  my_re <- predict_rand_int(model, newdata = data)
   diff <- pred_re$studyid - my_re$pred_intercept
   expect_equal(sum(abs(diff)), 0, tolerance = 0.0001)
 
 
 })
+
 
 
 
@@ -85,18 +86,31 @@ test_that("predict_fixed", {
     test_data_existing[grep("x\\d+", names(test_data_existing))],
     test_data_new_test_only[c("y", "studyid")])
 
+  # Check number of rows
   expect_equal(predict_fixed(rand_model, test_data_existing) |> length(), nrow(test_data_existing))
   expect_equal(predict_fixed(fixed_model, test_data_existing) |> length(), nrow(test_data_existing))
   expect_equal(predict_fixed(lm_model, test_data_existing) |> length(), nrow(test_data_existing))
 
   # Tests that changing the outcome and study ids doen't change preidctions - as predictions should be dependent on fixed only.
- expect_equal(predict_fixed(rand_model, test_data_existing), predict_fixed(rand_model, new_test_data))
- expect_equal(predict_fixed(fixed_model, test_data_existing), predict_fixed(fixed_model, new_test_data))
- expect_equal(predict_fixed(lm_model, test_data_existing), predict_fixed(lm_model, new_test_data))
+  expect_equal(predict_fixed(rand_model, test_data_existing), predict_fixed(rand_model, new_test_data))
+  expect_equal(predict_fixed(fixed_model, test_data_existing), predict_fixed(fixed_model, new_test_data))
+  expect_equal(predict_fixed(lm_model, test_data_existing), predict_fixed(lm_model, new_test_data))
 
- expect_false(isTRUE(all.equal(predict_fixed(rand_model, test_data_existing), predict_fixed(rand_model, test_data_new_test_only))))
- expect_false(isTRUE(all.equal(predict_fixed(fixed_model, test_data_existing), predict_fixed(fixed_model, test_data_new_test_only))))
- expect_false(isTRUE(all.equal(predict_fixed(lm_model, test_data_existing), predict_fixed(lm_model, test_data_new_test_only))))
+  expect_false(isTRUE(all.equal(predict_fixed(rand_model, test_data_existing), predict_fixed(rand_model, test_data_new_test_only))))
+  expect_false(isTRUE(all.equal(predict_fixed(fixed_model, test_data_existing), predict_fixed(fixed_model, test_data_new_test_only))))
+  expect_false(isTRUE(all.equal(predict_fixed(lm_model, test_data_existing), predict_fixed(lm_model, test_data_new_test_only))))
+
+})
+
+test_that("predict_ml", {
+  set.seed(1234)
+  train_data <-  generate_continuous(n_studies = 10, study_sample_size =100, n_predictors = 12, sigmas = sigmas)
+  model <- model_lm_fixed_int(data = train_data)
+  model_intercepts <- c(0,model$coefficients[2:10])
+  pred_intercepts <- predict_intercept_ml(model, train_data, cluster_var = "studyid")
+  diff <- sum(abs(pred_intercepts$pred_intercept - model_intercepts))
+  expect_equal(diff, 0, tolerance = 0.0001)
+
 
 })
 
@@ -214,3 +228,28 @@ test_that("predict_new_intercept", {
 
 })
 
+test_that("predict_with_new_intercept_data", {
+  set.seed(1234)
+  train_data <-  generate_continuous(n_studies = 10, study_sample_size =100, n_predictors = 12, sigmas = sigmas)
+  test_data <- train_data
+  test_data$int_est <-  FALSE
+  intercept_data <- train_data
+  intercept_data$int_est <- TRUE
+  test_data <- dplyr::bind_rows(test_data, intercept_data)
+  model_fixed <- model_lm_fixed_int(data = train_data)
+  pred1 <- predict(model_fixed)
+  pred2 <- predict_with_new_intercept_data(model_fixed, test_data = test_data)
+
+  diff_fixed <- abs(pred1 -pred2)
+  expect_equal(sum(diff_fixed), 0, tolerance = 0.001)
+
+
+  model_random <- model_lmm_random_int_reml(data = train_data)
+  pred1 <- predict(model_random)
+  pred2 <- predict_with_new_intercept_data(model_random, test_data = test_data)
+
+  diff_random<- abs(pred1 -pred2)
+  expect_equal(sum(diff_random), 0, tolerance = 0.001)
+
+
+})

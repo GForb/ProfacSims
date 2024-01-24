@@ -4,6 +4,7 @@ model_lm_cbcl_test <- function(data) {
   return(model)
 
 }
+attr(model_lm_cbcl_test, "name") <- "lm1"
 
 model_lm_cbcl_test2 <- function(data) {
   model <- stats::lm("cbcl ~ cbcl2", data = data)
@@ -11,6 +12,7 @@ model_lm_cbcl_test2 <- function(data) {
   return(model)
 
 }
+attr(model_lm_cbcl_test2, "name") <- "lm2"
 
 model_logistic_cbcl_test <- function(data) {
   model <- stats::glm("cbcl_bin ~ studyid + cbcl2", data = data, family = binomial)
@@ -18,6 +20,7 @@ model_logistic_cbcl_test <- function(data) {
   return(model)
 
 }
+attr(model_logistic_cbcl_test, "name") <- "logistic"
 
 model_lm <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -28,14 +31,16 @@ model_lm <- function(data) {
   return(model)
 
 }
+attr(model_lm, "name") <- "Not adjusting for study"
 
 model_lm_fixed_int<- function(data) {
   x_text = data |> get_x_formula_text()
   formula = paste("y ~ studyid +", x_text) |> as.formula()
-  model <- stats::lm(formula, data = data, , weights = data$wt)
+  model <- stats::lm(formula, data = data, weights = data$wt)
   attr(model, "name") <- "Fixed intercept"
   return(model)
 }
+attr(model_lm_fixed_int, "name") <- "Fixed intercept"
 
 model_lmm_random_int_reml <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -44,6 +49,7 @@ model_lmm_random_int_reml <- function(data) {
   attr(model, "name") <- "Random intercetp - REML"
   return(model)
 }
+attr(model_lmm_random_int_reml, "name") <- "Random intercetp - REML"
 
 model_lmm_random_int_reml_weight <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -52,6 +58,8 @@ model_lmm_random_int_reml_weight <- function(data) {
   attr(model, "name") <- "Random intercetp - REML"
   return(model)
 }
+attr(model_lmm_random_int_reml_weight, "name") <- "Random intercetp - REML"
+
 
 model_lmm_random_int_ml <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -60,6 +68,7 @@ model_lmm_random_int_ml <- function(data) {
   attr(model, "name") <- "Random intercetp - ML"
   return(model)
 }
+attr(model_lmm_random_int_ml, "name") <- "Random intercetp - ML"
 
 get_x_formula_text <- function(data) {
   data |>
