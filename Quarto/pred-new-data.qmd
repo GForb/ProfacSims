@@ -60,9 +60,9 @@ Across all scenarios, the minimum number of sim reps with results is `r min_sim_
 
 random_models <-  DBI::dbGetQuery(db,
   glue(
-    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, error_var_u, sigma_u
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, error_var_u, sigma_u, batch_no
     FROM {table}
-    WHERE {where} AND intercept_est_sample_size = 10 AND (predict_method = 'new0' OR predict_method = 'new_dynamic') AND metric = 'var_u' AND (model ='Random intercetp - ML' OR model = 'Random intercetp - REML')
+    WHERE {where}  AND metric = 'var_u' AND (model ='Random intercetp - ML' OR model = 'Random intercetp - REML')
   ")
 )
 # plot n
@@ -74,7 +74,12 @@ summaries_var_u <- random_models |>
             sd = sd(error_var_u),
             ll = ProfacSims:::robust_t_test(error_var_u)[1], 
             ul = ProfacSims:::robust_t_test(error_var_u)[2],  
-            n = sum(!is.na(error_var_u))) |> 
+            n = sum(!is.na(error_var_u)),
+            median = median(error_var_u),
+            p25 = stats::quantile(error_var_u, probs = 0.25),
+            p75 = stats::quantile(error_var_u, probs = 0.75),
+            min = min(error_var_u),
+            max = max(error_var_u)) |> 
   ungroup() |> 
   mutate(perc_error_var_u = value/sigma2_u*100)
 
@@ -103,8 +108,31 @@ summaries_var_u |>
 
 
 ```{r, fig.height = 6}
-summaries_var_u |> 
+random_models |> 
   dplyr::filter(predict_method == "new0") |> 
+  dplyr::filter(R2 == 0.4, intercept_est_sample_size ==50) |> 
+  ProfacSims:::box_plot_error_var_u()
+
+
+
+```
+
+If I focus R-squared = 0.4, then we can present results for higher r-squared as similar...
+
+### Higher r-squared: Similar pattern of results.
+
+```{r, fig.height = 6}
+random_models |> 
+  dplyr::filter(R2 == 0.4, intercept_est_sample_size ==50, predict_method == "new0") |> 
+  ProfacSims:::box_plot_error_var_u()
+
+
+
+```
+
+```{r, fig.height = 6}
+random_models |> 
+  dplyr::filter(R2 == 0.4, intercept_est_sample_size ==50, predict_method == "new_dynamic") |> 
   ProfacSims:::box_plot_error_var_u()
 
 
@@ -112,3 +140,64 @@ summaries_var_u |>
 ```
 
 
+## Calibration in the large for different models, and different methods of prediction.
+```{r, echo = FALSE}
+calib_itl <-  DBI::dbGetQuery(db,
+  glue(
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, tau2, error_var_u, sigma_u, batch_no
+    FROM {table}
+    WHERE {where}  AND metric = 'calib_itl'
+  ")
+)
+
+summaries_calib_itl <- calib_itl |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method) |> 
+  summarise(value = mean(est), 
+            sd = sd(est),
+            ll = ProfacSims:::robust_t_test(est)[1], 
+            ul = ProfacSims:::robust_t_test(est)[2],  
+            n = sum(!is.na(est)),
+            median = median(est),
+            p25 = stats::quantile(est, probs = 0.25),
+            p75 = stats::quantile(est, probs = 0.75),
+            min = min(est),
+            max = max(est)) |> 
+  ungroup() 
+
+
+
+
+min_converge <- min(summaries_calib_itl$n)
+max_converge <- max(summaries_calib_itl$n)
+```
+
+Across all scenarios and models including a random component, the minimum number of models reporting a random intercept variance is `r min_converge` and the maximum number is `r max_converge`.
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new0", R2 == 0.4, intercept_est_sample_size == 50) |> 
+  ProfacSims:::box_plot_est_by_model()
+```
+### Tau-sauared
+
+- new0 no difference
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new0", R2 == 0.4, intercept_est_sample_size == 50) |> 
+  ProfacSims:::box_plot_tau2_by_model()
+```
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new_studies", R2 == 0.4, intercept_est_sample_size == 50) |> 
+  ProfacSims:::box_plot_tau2_by_model()
+```
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new_dynamic", R2 == 0.4, intercept_est_sample_size == 50) |> 
+  ProfacSims:::box_plot_tau2_by_model()
+```
+
+```
