@@ -35,6 +35,13 @@ get_results_df <- function(sim_results, sim_name, filename) {
   if(is.null(sim_results$intercept_est_sample_size)) {
     try(sim_results <- sim_results |> dplyr::mutate(intercept_est_sample_size = test_ss/n_studies_test))
   }
+  if(!is.null(sim_results$intercept_est_sample_size2)){
+    sim_results$intercept_est_sample_size <- sim_results$intercept_est_sample_size2
+    sim_results$intercept_est_sample_size2 <- NULL
+  }
+
+  sim_results$coef <- NULL
+
   try(sim_results <- sim_results |>
         dplyr::rowwise() |>
         dplyr::mutate(rng_state = toString(rng_state)) |>

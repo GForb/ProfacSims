@@ -1,0 +1,81 @@
+---
+title: "Prediction with new data for intercepts"
+format: html
+editor: visual
+---
+
+```{r echo = FALSE}
+library(tidyverse)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240124-pred-new-data"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+var_u <- readRDS(file = here(results_folder, "var_u.RDS"))
+calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS"))
+calib_slope <- readRDS(file = here(results_folder, "calib_slope.RDS"))
+r_squared <- readRDS(file = here(results_folder, "r_squared.RDS"))
+
+
+```
+
+
+
+
+```{r, echo = FALSE}
+summaries_var_u <- var_u |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size) |> 
+  summarise(sigma2_u = mean((sigma_u^2)),
+            est_sigma_u = mean(est),
+            value = mean(error_var_u), 
+            sd = sd(error_var_u),
+            ll = ProfacSims:::robust_t_test(error_var_u)[1], 
+            ul = ProfacSims:::robust_t_test(error_var_u)[2],  
+            n = sum(!is.na(error_var_u)),
+            median = median(error_var_u),
+            p25 = stats::quantile(error_var_u, probs = 0.25),
+            p75 = stats::quantile(error_var_u, probs = 0.75),
+            min = min(error_var_u),
+            max = max(error_var_u)) |> 
+  ungroup() |> 
+  mutate(perc_error_var_u = value/sigma2_u*100)
+
+
+
+min_converge <- min(summaries_var_u$n)
+max_converge <- max(summaries_var_u$n)
+
+
+```
+
+### Number of models converging
+
+Across all scenarios and models including a random component, the minimum number of models reporting a random intercept variance is `r min_converge` and the maximum number is `r max_converge`.
+
+
+```{r}
+n <- summaries_var_u |> filter(model == "Random intercept - REML" | model == "Random intercept - ML") |> select(n)
+min(n)
+max(n)
+```
+## Random intercept variance
+
+```{r, fig.height = 6}
+for(myR2 in c(0.4, 0.7)){
+  plot_data <- var_u |> 
+   filter(predict_method == "new0", R2 == myR2)
+  plot <- plot_data |> 
+    ProfacSims:::box_plot_error_var_u()
+  
+  plot <- plot + ggplot2::ggtitle(glue("Random intercept variance: R-sqaured = {myR2}")) 
+    print(plot)
+}
+```
+
+
+
+

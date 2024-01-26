@@ -13,11 +13,12 @@ save_cluster_results_db <- function(table, sim_name, db, min_file_no = 1, max_fi
 
       data <- readRDS(here::here(results_folder, file))
 
+      print("processing data")
       processed_data <- data |>
         get_results_df(sim_name = sim_name, filename = file) |>
         dplyr:: mutate(save_time = save_time)
 
-
+      print("Writing to database")
       write_file_to_db(
         data = processed_data,
         database_connection = db,
