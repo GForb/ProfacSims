@@ -17,7 +17,8 @@ box_plot_error_var_u <- function(sim_results) {
     ggplot2::labs(
       x = "Number of studies (log scale)",
       y = "Estimated Random intercept variance",
-    )
+    ) +
+    theme(legend.position = "top")
 
   return(plot)
 }
@@ -91,7 +92,7 @@ box_plot_by_model_predict_method <- function(data, outliers = TRUE, what, ylab) 
     theme(legend.position = "top")
 }
 
-box_plot_by_predict_method <- function(data, outliers = TRUE, what, ylab, facet_cols =  ggplot2::vars(model_factor), facet_rows = ggplot2::vars(ICC, R2)) {
+box_plot_by_predict_method <- function(data, what, ylab, facet_cols =  ggplot2::vars(model_factor), facet_rows = ggplot2::vars(intercept_est_sample_size)) {
   data <- data |> mutate(
     predict_method_number = case_when(predict_method == "new0" ~ 1,
                                       predict_method == "new_studies" ~ 2,
@@ -103,7 +104,7 @@ box_plot_by_predict_method <- function(data, outliers = TRUE, what, ylab, facet_
 
 
   data |>  ggplot2::ggplot(ggplot2::aes(x = predict_method_number, y = .data[[what]], group = predict_method_number, color = predict_method )) +
-    ggplot2::geom_boxplot(outlier.size = 0.1, outlier.shape = outlier_shape) +
+    ggplot2::geom_boxplot(outlier.size = 0.1, ) +
     scale_x_continuous(breaks = c(1,2,3), labels = c("Average \n Intercept", "New \n studies", "Dynamic")) +
     ggplot2::labs(
       x = "Intercept prediction method",
