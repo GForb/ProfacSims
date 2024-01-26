@@ -104,7 +104,7 @@ box_plot_by_predict_method <- function(data, what, ylab, facet_cols =  ggplot2::
 
 
   data |>  ggplot2::ggplot(ggplot2::aes(x = predict_method_number, y = .data[[what]], group = predict_method_number, color = predict_method )) +
-    ggplot2::geom_boxplot(outlier.size = 0.1, ) +
+    ggplot2::geom_boxplot(outlier.size = 0.1) +
     scale_x_continuous(breaks = c(1,2,3), labels = c("Average \n Intercept", "New \n studies", "Dynamic")) +
     ggplot2::labs(
       x = "Intercept prediction method",
