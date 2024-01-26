@@ -40,6 +40,7 @@ counts = calib_itl
 ## Calibration in the large
 
 
+
 ```{r, fig.height = 6}
 for(what in c("est", "tau")){
   for(myR2 in c(0.4, 0.7)){

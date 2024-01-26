@@ -72,7 +72,7 @@ box_plot_by_model_predict_method <- function(data, outliers = TRUE, what, ylab) 
                          predict_method_number = case_when(predict_method == "new0" ~ 1,
                                                            predict_method == "new_studies" ~ 2,
                                                            predict_method == "new_dynamic" ~ 3),
-                         model_factor = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercetp - ML", "Random intercetp - REML")),
+                         model_factor = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - ML", "Random intercept - REML")),
                          model_number = model_factor |> as.numeric(),
                          model_predict_method = predict_method_number + (model_number - 2.5)/6,
                          tau = sqrt(tau2))
@@ -97,7 +97,7 @@ box_plot_by_predict_method <- function(data, what, ylab) {
     predict_method_number = case_when(predict_method == "new0" ~ 1,
                                       predict_method == "new_studies" ~ 2,
                                       predict_method == "new_dynamic" ~ 3),
-    model_factor = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercetp - ML", "Random intercetp - REML")),
+    model_factor = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - ML", "Random intercept - REML")),
     model_number = model_factor |> as.numeric(),
     model_predict_method = predict_method_number + (model_number - 2.5)/6,
     tau = sqrt(tau2))

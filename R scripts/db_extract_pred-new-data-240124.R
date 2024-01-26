@@ -16,8 +16,10 @@ save_folder <- here::here(glue("Results/Database-extracts/{sim_name}"))
 
 correct_model_spelling <- function(data) {
   data <- data |>
-    mutate(model = case_when(model == "Random intercetp - ML" ~ "Random intercept - ML",
-                             model == "Random intercetp - REML" ~ "Random intercept - REML"))
+    mutate(
+      model = case_when(model == "Random intercetp - ML" ~ "Random intercept - ML",
+                        model == "Random intercetp - REML" ~ "Random intercept - REML",
+                        TRUE ~ model))
 
 }
 
