@@ -92,7 +92,7 @@ box_plot_by_model_predict_method <- function(data, outliers = TRUE, what, ylab) 
     theme(legend.position = "top")
 }
 
-box_plot_by_predict_method <- function(data, what, ylab, facet_cols =  ggplot2::vars(model_factor), facet_rows = ggplot2::vars(intercept_est_sample_size)) {
+box_plot_by_predict_method <- function(data, what, ylab) {
   data <- data |> mutate(
     predict_method_number = case_when(predict_method == "new0" ~ 1,
                                       predict_method == "new_studies" ~ 2,
@@ -102,6 +102,8 @@ box_plot_by_predict_method <- function(data, what, ylab, facet_cols =  ggplot2::
     model_predict_method = predict_method_number + (model_number - 2.5)/6,
     tau = sqrt(tau2))
 
+  facet_cols =  ggplot2::vars(model_factor)
+  facet_rows = ggplot2::vars(intercept_est_sample_size)
 
   data |>  ggplot2::ggplot(ggplot2::aes(x = predict_method_number, y = .data[[what]], group = predict_method_number, color = predict_method )) +
     ggplot2::geom_boxplot(outlier.size = 0.1) +
