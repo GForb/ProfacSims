@@ -44,7 +44,7 @@ max(counts$n_est)
 
 full_table <- calib_itl |> 
   group_by(model, predict_method, n_studies, study_sample_size_train, ICC, R2, intercept_est_sample_size) |> 
-  quantiles_table_tau() 
+   ProfacSims:::quantiles_table_tau() 
 
 print(full_table)
 
