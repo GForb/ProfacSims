@@ -19,7 +19,7 @@ quantiles_table_est <- function(data) {
 
 quantiles_table_tau <- function(data) {
   data |>
-    mutate(tau = sqrt(tau2))
+    mutate(tau = sqrt(tau2)) |>
     summarise(
       p005 = stats::quantile(tau, probs = 0.05) |> round(digits = 2),
       p25 = stats::quantile(tau, probs = 0.25)|> round(digits = 2),
