@@ -64,36 +64,39 @@ counts = calib_itl
 ## Calibration in the large
 
 ```{r, echo = FALSE}
-what = "est"
+what = "tau"
 ylab = "Calibration in the Large"
 ```
-
+   
+## Intercept est sample size of 10
+   
 ```{r, fig.height = 6}
-
-       
-          plot_data <- calib_itl |> 
-           filter(ICC ==0)
+for(what in c("tau")){
+  for(n_studies in c(4,8,16,32,64)){
+      for(sample_size_train in c(50, 200, 1000)){
+        for(myICC in c(0.05, 0.2)){
+          for(myR2 in c(0.4, 0.7)){
+             
+          plot_data <- calib_itl |> filter(intercept_est_sample_size ==10)
+           filter(R2 == myR2, ICC == myICC, n_studies == n_studies, study_sample_size_train == sample_size_train, model != "Fixed intercept")
           plot <- plot_data |> 
-            ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Calibration in the large")
+            ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
           
-          plot <- plot + labs(title = "Calibration in the large across all scenarios when ICC = 0")
+          plot <- plot + labs(
+            title = "Calibration in the large",
+            subtitle = glue("R-sqaured = {myR2}, ICC = {myICC}, Number of studies == {n_studies}, study sample size = {sample_size_train}"))
           print(plot)
   
             
+        }
+      }
+    }
+  }
+}
+
+
 ```
 
-```{r, fig.height = 6}
-
-       
-          plot_data <- calib_itl |> 
-           filter(model == "Fixed intercept", predict_method != "new0")
-          plot <- plot_data |> 
-            ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Calibration in the large")
-          plot <- plot + labs(title = "Calibration in the large for models with fixed intercepts")
-          print(plot)
-  
-            
-```
 
 
 
