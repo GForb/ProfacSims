@@ -42,16 +42,17 @@ max(counts$n_est)
 ## Table
 
 ```{r, echo = FALSE}
-options(width = 18)
+options(width = 999)
+
 full_table <- calib_itl |> 
-  group_by(model, predict_method, n_studies, study_sample_size_train, ICC, R2, intercept_est_sample_size) |> 
+  group_by(model, predict_method, n_studies , ICC, R2,study_sample_size_train, intercept_est_sample_size) |> 
   quantiles_table_est() 
 
 print(full_table)
 
 extreme_table <- full_table |> filter(p005 < -0.1 | p95 > 0.1)
 
-extreme_table |> filter(predict_method == "new0")
+extreme_table |> filter(predict_method == "new0", intercept_est_sample_size ==10)
 extreme_table |> filter(predict_method != "new0")
 
 ```
