@@ -131,15 +131,17 @@ box_plot_ml_fixed<- function(data,
 ) {
   data <- data |>
     filter(predict_method %in% c("new0", "new_studies"),
-           model %in% c("Fixed intercept", "Random intercept - REML")) |>
+           model %in% c("Fixed intercept", "Random intercept - REML", "Not adjusting for study")) |>
     mutate(
     predict_method_number = case_when(predict_method == "new0" ~ 1,
                                       predict_method == "new_studies" ~ 2),
-    model_factor = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - ML", "Random intercept - REML")),
+    model_factor = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - REML")),
     model_number = model_factor |> as.numeric(),
     x = case_when(
-      model_number ==1 ~ n_studies*2^(-1^predict_method_number*model_number*0.07),
-      model_number ==2 ~n_studies*2^(-1^predict_method_number*model_number*0.07)),
+      model_number ==1   ~ n_studies*2^(-0.1),
+      model_number ==2  ~n_studies*2^(0),
+      model_number ==3  ~n_studies*2^(0.1))
+,
     tau = sqrt(tau2))
 
   data |>  ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model_factor )) +

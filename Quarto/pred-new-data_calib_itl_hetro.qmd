@@ -16,10 +16,13 @@ library(glue)
 sim_name <- "240124-pred-new-data"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-calib_itl_raw <- readRDS(file = here(results_folder, "calib_itl.RDS"))
+calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS"))
 
-calib_itl <- calib_itl_raw |> filter(model != "Not adjusting for study") |> 
-  filter(!(predict_method == "new0" & model != "Fixed intercept"))
+calib_itl_new0 <- calib_itl |> filter(predict_method == "new0", intercept_est_sample_size ==10) |> 
+  mutate(intercept_est_sample_size = 0)
+
+calib_itl_adj <- calib_itl |> filter(predict_method!= "new0") |> bind_rows(calib_itl_new0)
+
 ```
 
 ## Ns
@@ -82,6 +85,21 @@ what = "tau"
 ylab = "Calibration in the Large"
 ```
 
+
+```{r, fig.height = 6}
+for(myICC in c(0, 0.05, 0.2)){
+    for(sample_size_train in c(50, 200, 1000)){
+    plot <- calib_itl_adj |> 
+      ProfacSims:::box_plot_ml_fixed(what = "tau", ylab = "Between study hetrogeneity (Tau)", facet_rows = ggplot2::vars(intercept_est_sample_size), facet_cols = ggplot2::vars(R2))
+    
+    print(plot)
+        
+    }
+  }
+
+```
+
+
 ```{r, fig.height = 6}
 for(myICC in c(0, 0.05, 0.2)){
   for(R2 in c(0.4, 0.7)){
@@ -89,9 +107,7 @@ for(myICC in c(0, 0.05, 0.2)){
       
 
     plot <- calib_itl |> 
-      filter(model %in% c("Fixed intercept", "Random intercept - REML"), 
-             predict_method %in% c("new0", "new_studies")) |> 
-      box_plot_ml_fixed(what = "tau", ylab = "Between study hetrogeneity (Tau)", facet_rows = ggplot2::vars(intercept_est_sample_size))
+      ProfacSims:::box_plot_ml_fixed(what = "tau", ylab = "Between study hetrogeneity (Tau)", facet_rows = ggplot2::vars(intercept_est_sample_size))
     
     print(plot)
         
