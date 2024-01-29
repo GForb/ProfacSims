@@ -38,6 +38,20 @@ print("Tau-squared")
 min(counts$n_est)
 max(counts$n_est)        
 ```
+## Diffs:
+
+Does fixed intercept change with sample size or n_studies?
+
+```{r}
+wide_est <- calib_itl |>
+  filter(model == "Fixed intercept") |> 
+   select(n_studies, ICC, R2, study_sample_size_train, tau2, batch_no, model, intercept_est_sample_size, predict_method) |>
+   pivot_wider(names_from = "study_sample_size_train", values_from = "tau2")
+
+
+
+
+```
 
 ## Table
 ```{r, echo = FALSE}
@@ -67,9 +81,62 @@ counts = calib_itl
 what = "tau"
 ylab = "Calibration in the Large"
 ```
-   
-## Intercept est sample size of 10
-   
+
+```{r, fig.height = 6}
+for(myICC in c(0, 0.05, 0.2)){
+  for(R2 in c(0.4, 0.7)){
+    for(sample_size_train in c(50, 200, 1000)){
+      
+
+    plot <- calib_itl |> 
+      filter(model %in% c("Fixed intercept", "Random intercept - REML"), 
+             predict_method %in% c("new0", "new_studies")) |> 
+      box_plot_ml_fixed(what = "tau", ylab = "Between study hetrogeneity (Tau)", facet_rows = ggplot2::vars(intercept_est_sample_size))
+    
+    print(plot)
+        
+    }
+  }
+}
+```
+  
+## ICC = 0
+```{r, fig.height = 6}
+for(what in c("tau")){
+  for(n_studies in c(4,8,16,32,64)){
+      for(sample_size_train in c(50, 200, 1000)){
+        for(myICC in c(0)){
+          for(myR2 in c(0.4, 0.7)){
+            for(intercept_est_sample_size in c(10, 50, 200)){
+             
+          plot_data <- calib_itl |> 
+            filter(intercept_est_sample_size ==10) |> 
+           filter(R2 == myR2, 
+                  ICC == myICC, 
+                  n_studies == n_studies, 
+                  study_sample_size_train == sample_size_train,
+                  model %in% c("Fixed intercept", "Random intercept - REML"))
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
+          
+          plot <- plot + labs(
+            title = "Calibration in the large",
+            subtitle = glue("R-sqaured = {myR2}, ICC = {myICC}, Number of studies == {n_studies}, study sample size = {sample_size_train}"))
+          print(plot)
+  
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+
+```
+
+# 10 people for prediction
+
 ```{r, fig.height = 6}
 for(what in c("tau")){
   for(n_studies in c(4,8,16,32,64)){
@@ -77,38 +144,12 @@ for(what in c("tau")){
         for(myICC in c(0.05, 0.2)){
           for(myR2 in c(0.4, 0.7)){
              
-          plot_data <- calib_itl |> filter(intercept_est_sample_size ==10)
-           filter(R2 == myR2, ICC == myICC, n_studies == n_studies, study_sample_size_train == sample_size_train, model != "Fixed intercept")
-          plot <- plot_data |> 
-            ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
-          
-          plot <- plot + labs(
-            title = "Calibration in the large",
-            subtitle = glue("R-sqaured = {myR2}, ICC = {myICC}, Number of studies == {n_studies}, study sample size = {sample_size_train}"))
-          print(plot)
-  
-            
-        }
-      }
-    }
-  }
-}
-
-
-```
-
-
-
-
-```{r, fig.height = 6}
-for(what in c("est", "tau")){
-  for(n_studies in c(4,8,16,32,64)){
-      for(sample_size_train in c(50, 200, 1000)){
-        for(myICC in c(0.05, 0.2)){
-          for(myR2 in c(0.4, 0.7)){
-             
           plot_data <- calib_itl |> 
-           filter(R2 == myR2, ICC == myICC, n_studies == n_studies, study_sample_size_train == sample_size_train, model != "Fixed intercept")
+            filter(intercept_est_sample_size ==10) |> 
+           filter(R2 == myR2, 
+                  ICC == myICC, 
+                  n_studies == n_studies, 
+                  study_sample_size_train == sample_size_train)
           plot <- plot_data |> 
             ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
           
@@ -123,4 +164,7 @@ for(what in c("est", "tau")){
     }
   }
 }
+
+
 ```
+

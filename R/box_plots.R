@@ -67,7 +67,11 @@ box_plot_tau2_by_model <- function(data, outliers = TRUE) {
   return(plot)
 }
 
-box_plot_by_model_predict_method <- function(data, outliers = TRUE, what, ylab) {
+box_plot_by_model_predict_method <- function(data,
+                                             what, ylab,
+                                             facet_cols = NULL,
+                                             facet_rows = ggplot2::vars(ICC)
+) {
   data <- data |> mutate(
                          predict_method_number = case_when(predict_method == "new0" ~ 1,
                                                            predict_method == "new_studies" ~ 2,
@@ -77,11 +81,10 @@ box_plot_by_model_predict_method <- function(data, outliers = TRUE, what, ylab) 
                          model_predict_method = predict_method_number + (model_number - 2.5)/6,
                          tau = sqrt(tau2))
 
-  facet_cols <-  ggplot2::vars(study_sample_size_train, n_studies)
-  facet_rows = ggplot2::vars(ICC, R2)
+
 
   data |>  ggplot2::ggplot(ggplot2::aes(x = model_predict_method, y = .data[[what]], group = model_predict_method, color = model_factor )) +
-    ggplot2::geom_boxplot(outlier.size = 0.1, outlier.shape = outlier_shape) +
+    ggplot2::geom_boxplot(outlier.size = 0.1,) +
     scale_x_continuous(breaks = c(1,2,3), labels = c("Average Intercept", "New studies", "Dynamic")) +
     ggplot2::labs(
       x = "Intercept prediction method",
@@ -112,6 +115,40 @@ box_plot_by_predict_method <- function(data, what, ylab) {
       x = "Intercept prediction method",
       y = ylab,
       color = "Method for predicting intercepts:"
+    ) +
+    ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed") +
+    theme(legend.position = "top")
+}
+
+
+
+
+
+box_plot_ml_fixed<- function(data,
+                             what, ylab,
+                             facet_cols = NULL,
+                             facet_rows = ggplot2::vars(ICC)
+) {
+  data <- data |>
+    filter(predict_method %in% c("new0", "new_studies"),
+           model %in% c("Fixed intercept", "Random intercept - REML")) |>
+    mutate(
+    predict_method_number = case_when(predict_method == "new0" ~ 1,
+                                      predict_method == "new_studies" ~ 2),
+    model_factor = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - ML", "Random intercept - REML")),
+    model_number = model_factor |> as.numeric(),
+    x = case_when(
+      model_number ==1 ~ n_studies*2^(-1^predict_method_number*model_number*0.07),
+      model_number ==2 ~n_studies*2^(-1^predict_method_number*model_number*0.07)),
+    tau = sqrt(tau2))
+
+  data |>  ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model_factor )) +
+    ggplot2::geom_boxplot(outlier.size = 0.1,) +
+    ggplot2::scale_x_continuous(trans='log2') +
+    ggplot2::labs(
+      x = "Intercept prediction method",
+      y = ylab,
+      color = "Model:"
     ) +
     ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed") +
     theme(legend.position = "top")
