@@ -148,7 +148,7 @@ box_plot_ml_fixed<- function(data,
     ggplot2::geom_boxplot(outlier.size = 0.1,) +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
-      x = "Intercept prediction method",
+      x = "Number of studies",
       y = ylab,
       color = "Model:"
     ) +
