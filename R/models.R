@@ -87,7 +87,7 @@ attr(model_lmm_random_int_ml, "name") <- "Hausman Selection"
 
 get_x_formula_text <- function(data) {
   data |>
-    dplyr::select(starts_with("x")) |>
+    dplyr::select(dplyr::starts_with("x", ignore.case = FALSE)) |>
     colnames() |>
     paste(collapse = " + ")
 }

@@ -76,3 +76,32 @@ test_that("get_sigmas", {
   #
 
 })
+
+test_that("get_sigmas_single_x", {
+  sigmas <- get_sigmas(ICC= 0.05, R2 = 0.4, int_pred_corr = 0, pred_icc = 0, single_x = TRUE, b_w_ratio = 1)
+
+  expect_equal(sigmas$u^2/(sigmas$e^2+sigmas$u^2), 0.05)
+  expect_equal((1+sigmas$x_w^2*sigmas$beta_w^2)/(1+sigmas$x_w^2*sigmas$beta_w^2+sigmas$e^2), 0.4)
+
+  sigmas <- get_sigmas(ICC= 0.05, R2 = 0.4, int_pred_corr = 0, pred_icc = 0, single_x = TRUE, b_w_ratio = 2)
+
+  expect_equal(sigmas$u^2/(sigmas$e^2+sigmas$u^2), 0.05)
+  expect_equal((1+sigmas$x_w^2*sigmas$beta_w^2)/(1+sigmas$x_w^2*sigmas$beta_w^2+sigmas$e^2), 0.4)
+
+
+  sigmas <- get_sigmas(ICC= 0.05, R2 = 0.4, int_pred_corr = 0.5, pred_icc = 0.25, single_x = TRUE, b_w_ratio = 3)
+  expect_equal(sigmas$u^2/(sigmas$e^2+sigmas$u^2), 0.05)
+  expect_equal(
+    (1 + sigmas$x_w^2*sigmas$beta_w^2 + sigmas$beta_b^2*sigmas$beta_int^2)/(1+sigmas$x_w^2*sigmas$beta_w^2+ sigmas$beta_b^2*sigmas$beta_int^2+sigmas$e^2),
+    0.4
+  )
+
+  sigmas <- get_sigmas(ICC= 0.05, R2 = 0.4, int_pred_corr = 0.5, pred_icc = 0.5, single_x = TRUE, b_w_ratio = 3)
+  expect_equal(sigmas$u^2/(sigmas$e^2+sigmas$u^2), 0.05)
+  expect_equal(
+    (1 + sigmas$x_w^2*sigmas$beta_w^2 + sigmas$beta_b^2*(sigmas$beta_int^2+sigmas$x_b^2))/(1+sigmas$x_w^2*sigmas$beta_w^2+ sigmas$beta_b^2*(sigmas$beta_int^2++sigmas$x_b^2)+sigmas$e^2),
+    0.4
+  )
+  expect_equal(0.5, (sigmas$beta_int^2 + sigmas$x_b^2)/(sigmas$beta_int^2 + sigmas$x_b^2 + sigmas$x_w^2))
+
+})
