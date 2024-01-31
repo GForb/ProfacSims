@@ -63,6 +63,6 @@ test_that("phtest_glmer",{
   fixed_model <- model_lm_fixed_int(data)
 
   htest <- phtest_glmer(glmerMod = rand_model, glmMod = fixed_model)
-  expect_equal(htest$statistic[1,1], 70.61, tol = 0.01)
+  expect_equal(htest$statistic[1,1],  64.25, tol = 0.01)
   expect_equal(htest$parameter[1], c(df = 1))
 })

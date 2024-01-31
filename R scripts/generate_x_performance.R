@@ -2,6 +2,7 @@ set.seed(1234)
 sigmas <- get_sigmas(n_predictors = 1, ICC = 0.05, R2 = 0.7, int_pred_corr = 0.2)
 
 data <- generate_continuous(n_studies = 100, study_sample_size = 100, n_predictor = 1, sigmas = sigmas)
+
 haven::write_dta(data = data, path = "Results/int_pred_corr2.dta")
 
 model <- lme4::lmer("x1~1 + (1|studyid)", data = data)

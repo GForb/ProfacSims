@@ -104,6 +104,7 @@ test_that("predict_fixed", {
 
 test_that("predict_ml", {
   set.seed(1234)
+  sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
   train_data <-  generate_continuous(n_studies = 10, study_sample_size =100, n_predictors = 12, sigmas = sigmas)
   model <- model_lm_fixed_int(data = train_data)
   model_intercepts <- c(0,model$coefficients[2:10])
@@ -229,7 +230,10 @@ test_that("predict_new_intercept", {
 })
 
 test_that("predict_with_new_intercept_data", {
+
   set.seed(1234)
+  sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
+
   train_data <-  generate_continuous(n_studies = 10, study_sample_size =100, n_predictors = 12, sigmas = sigmas)
   test_data <- train_data
   test_data$int_est <-  FALSE

@@ -124,6 +124,8 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
   sigma_u <- sigmas$u
   beta_int = sigmas$beta_int
 
+  if(!is.null(sigmas$single_x)){predictor_intercepts="random"}
+
   total_n <- n_studies*study_sample_size
   if(is.null(intercepts_data)){
     study_intercepts <-  rnorm(n_studies, sd = sigma_u)
@@ -134,7 +136,11 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
 
   if(predictor_intercepts == "random") {
     if(is.null(intercepts_data$predictor_intercept)){
-      intercepts$predictor_intercept <- rnorm(n_studies, sd = 1)
+      if(is.null(sigmas$x_b)){
+        intercepts$predictor_intercept <- rnorm(n_studies, sd = 1)
+      } else {
+        intercepts$predictor_intercept <- rnorm(n_studies, sd = sigmas$x_b)
+      }
     } else {
       intercepts <- intercepts_data[,c("studyid", "study_intercept", "predictor_intercept")] |> unique()
     }
@@ -147,19 +153,31 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
   } else if(predictor_intercepts == "random"){
     pred_intercepts <- data$predictor_intercept
   }
-  predictors <- generate_predictors(
-    n = total_n,
-    n_predictors = n_predictors,
-    intercepts = pred_intercepts,
-    beta_int = beta_int)
+  if(is.null(sigmas$single_x)){
+    predictors <- generate_predictors(
+      n = total_n,
+      n_predictors = n_predictors,
+      intercepts = pred_intercepts,
+      beta_int = beta_int)
 
-  row.names(data) <- NULL
+    row.names(data) <- NULL
 
 
-  data <- cbind(data, predictors)
-  data$lp <- generate_linear_predictor(predictors, beta)
-  data$error = rnorm(total_n, 0, sigma_e)
-  data$y <- data$lp+data$study_intercept+data$error
+    data <- cbind(data, predictors)
+    data$lp <- generate_linear_predictor(predictors, beta)
+    data$error = rnorm(total_n, 0, sigma_e)
+    data$y <- data$lp+data$study_intercept+data$error
+  } else {
+    predictors <- generate_single_predictor(
+      n = total_n,
+      outcome_intercepts = data$study_intercept,
+      predictor_intercepts = data$predictor_intercept,
+      beta_int = sigmas$beta_int
+    )
+    data  <- cbind(data, predictors)
+    data$y <- sigmas$beta_w*data$X_w + sigmas$beta_b*data$X_b + data$study_intercept + rnorm(total_n, sd = sigmas$e)
+  }
+
   data$studyid <- factor(data$studyid)
   return(data)
 }
@@ -197,7 +215,7 @@ generate_binary <- function(n) {
 # This gives the total variance of predictors to be 1
 # Formulas for beta_int and sigma2_err_x are derived form fromulas for r-squared and total variance
 # For any predictor total var = 1/n_predictors. Therefore error var = 1/n_predictors=beta_int^
-generate_predictors <- function(n, n_predictors, intercepts, beta_int) {
+generate_predictors <- function(n, n_predictors, intercepts,  beta_int) {
   sigma2_err_x = 1
   X_error <- rnorm(n * n_predictors, sd = sqrt(sigma2_err_x))
   X <- matrix(X_error, nrow = n, ncol = n_predictors)
@@ -223,12 +241,11 @@ generate_single_predictor <- function(n, outcome_intercepts, predictor_intercept
   X_b <- beta_int*outcome_intercepts + predictor_intercepts
 
   between_data <- data.frame(
-    intercept = rep(outcome_intercepts, study_sample_size),
-    x_b = rep(X_b, study_sample_size),
-    studyid = rep(1:n_studies,study_sample_size)
+    X_b = X_b
   )
 
   X_w <- rnorm(n, sd = 1)
-  X <- data.frame(x1 = X_w + X_b,  x_w = X_w)
+
+  X <- data.frame(x1 = X_w + X_b,  X_w = X_w)
   dplyr::bind_cols(X, between_data)
 }
