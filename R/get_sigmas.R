@@ -1,4 +1,13 @@
-get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pred_icc = 0) {
+get_sigmas<- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pred_icc = 0, single_x = FALSE, b_w_ratio = NULL){
+  if(!single_x){
+    return(get_sigmas_default(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pred_icc = 0))
+  } else {
+    return(get_sigmas_single_x(int_pred_corr = int_pred_corr, icc_x = pred_icc, R2 = R2, ICC = ICC, b_w_ratio = b_w_ratio, ))
+  }
+}
+
+
+get_sigmas_default <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pred_icc = 0) {
   if(ICC >= R2) {
     stop("R2 must be higher than the ICC")
   }
@@ -31,7 +40,6 @@ get_sigmas <- function(sigma2_x = 1, n_predictors, ICC, R2, int_pred_corr=0, pre
 
   # set beta_x to give the needed total predictor variance
   beta_x =  sqrt(pred_var/sum_var_x)
-
 
   return(list(u = sqrt(sigma2_u), e = sqrt(sigma2_e), beta_x = beta_x, beta_int = beta_int))
 }
@@ -95,4 +103,51 @@ get_error_vars_int_pred_corr <- function(R2, ICC, int_pred_corr) {
   pred_var <- pred_var/total_var
 
   return(list(sigma2_u=sigma2_u, sigma2_e=sigma2_e, pred_var=pred_var))
+}
+
+get_pred_between_var <- function(int_pred_corr, icc_x, sigma2_u) {
+  sigma2_Xb <- (icc_x-int_pred_corr^2)/(1-icc_x)
+  return(sigma2_Xb)
+}
+
+get_beta_int <- function(int_pred_corr, sigma2_u, sigma2_Xb){
+  # This function works assuming the within-study variation in predictor is equal to 1
+  beta_int2 <- int_pred_corr^2*(1+ sigma2_Xb)/(sigma2_u*(1-int_pred_corr^2))
+  return(sqrt(beta_int2))
+}
+
+check_icc_x <- function(beta_int, sigma2_Xb, icc_x) {
+  icc_x - (sigma2_Xb+beta_int^2)/(1+sigma2_Xb+beta_int^2)
+}
+
+check_int_pred_corr  <- function(int_pred_corr, beta_int, sigma2_Xb) {
+  int_pred_corr-sqrt(beta_int^2/(beta_int^2+sigma2_Xb+1))
+}
+
+
+get_sigmas_single_x <- function(int_pred_corr, icc_x, R2, ICC, b_w_ratio){
+  sigma2_Xw <- 1
+  sigma2_u <- 1
+  sigma2_Xb <- get_pred_between_var(int_pred_corr = ro_x, icc_x = icc_x)
+  beta_int <- get_beta_int(int_pred_corr = ro_x, sigma2_u = sigma2_u, sigma2_Xb = sigma2_Xb)
+  error_vars <- get_error_vars(R2 = R2, ICC = ICC, int_pred_corr = int_pred_corr)
+  sigma2_e <- get_sigma_e_single_x(b_w_ratio, R2, beta_int, sigma2_Xb)
+  beta_b = 1
+  beta_w = 1*b_w_ratio
+  return(list(sigma2_Xw = sigma2_Xw,
+              sigma2_u = sigma2_u,
+              u = sqrt(sigma2_u),
+              e = sqrt(sigma2_e),
+              x_w = sqrt(sigma2_Xw),
+              x_b=sqrt(sigma2_Xb),
+              beta_int = beta_int,
+              beta_b = beta_b,
+              beta_w = beta_w,
+              single_x = TRUE))
+}
+
+get_sigma_e_single_x <- function(b_w_ratio, R2, beta_int, sigma2_Xb) {
+  var_b = beta_int^2 + sigma2_Xb
+  sigma2_e = (1 + b_w_ratio*sigma2_Xb + sigma2_Xb*var_b)*(1-R2)/R2
+  return(sigma2_e)
 }
