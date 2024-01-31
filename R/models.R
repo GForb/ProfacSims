@@ -70,6 +70,21 @@ model_lmm_random_int_ml <- function(data) {
 }
 attr(model_lmm_random_int_ml, "name") <- "Random intercetp - ML"
 
+model_lmm_lm_hausman <- function(data) {
+  random_model <- model_lmm_random_int_reml(data)
+  fixed_model <- model_lm_fixed_int(data)
+  htest <- phtest_glmer(glmerMod = random_model, glmMod = fixed_model)
+  if (htest$p.value <0.05) {
+    return()
+  } else {
+    return()
+  }
+
+
+}
+attr(model_lmm_random_int_ml, "name") <- "Hausman Selection"
+
+
 get_x_formula_text <- function(data) {
   data |>
     dplyr::select(starts_with("x")) |>
@@ -117,3 +132,33 @@ predict_random_int_blup <- function(model, newdata) {
 
   return(alldata$blup)
 }
+
+
+phtest_glmer <- function (glmerMod, glmMod, ...)  {  ## changed function call
+
+  # code from here: https://stackoverflow.com/questions/23630214/hausmans-specification-test-for-glmer-from-lme4
+
+  coef.wi <- coef(glmMod)
+  coef.re <- lme4::fixef(glmerMod)  ## changed coef() to fixef() for glmer
+  vcov.wi <- stats::vcov(glmMod)
+  vcov.re <- stats::vcov(glmerMod)
+  names.wi <- names(coef.wi)
+  names.re <- names(coef.re)
+  coef.h <- names.re[names.re %in% names.wi]
+  coef.h <- coef.h[coef.h != c("(Intercept)")]
+  dbeta <- coef.wi[coef.h] - coef.re[coef.h]
+  df <- length(dbeta)
+  dvcov <- vcov.re[coef.h, coef.h] - vcov.wi[coef.h, coef.h]
+  stat <- abs(t(dbeta) %*% as.matrix(solve(dvcov)) %*% dbeta)  ## added as.matrix()
+  pval <- pchisq(stat, df = df, lower.tail = FALSE)
+  names(stat) <- "chisq"
+  parameter <- df
+  names(parameter) <- "df"
+  alternative <- "one model is inconsistent"
+  res <- list(statistic = stat, p.value = pval, parameter = parameter,
+              method = "Hausman Test",  alternative = alternative,
+              data.name=deparse(getCall(glmerMod)$data))  ## changed
+  class(res) <- "htest"
+  return(res)
+}
+
