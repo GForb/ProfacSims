@@ -38,6 +38,7 @@ test_that("get_x_formula_text",{
   expect_equal(x_text, "x1 + x2")
 })
 
+
 test_that("get_betas",{
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0, R2 = 0.7)
   data <- generate_continuous(10,100, sigmas= sigmas)
@@ -47,4 +48,21 @@ test_that("get_betas",{
   expect_vector(betas)
 })
 
+test_that("phtest_glmer",{
+  # Test is run against Stata results
 
+  set.seed(1234)
+  sigmas <- get_sigmas(n_predictors = 1, ICC = 0.05, R2 = 0.7, int_pred_corr = 0.2)
+
+  data <- generate_continuous(n_studies = 100, study_sample_size = 100, n_predictor = 1, sigmas = sigmas)
+
+  model <- lme4::lmer("x1~1 + (1|studyid)", data = data)
+  performance::icc(model)
+
+  rand_model <- model_lmm_random_int_reml(data)
+  fixed_model <- model_lm_fixed_int(data)
+
+  htest <- phtest_glmer(glmerMod = rand_model, glmMod = fixed_model)
+  expect_equal(htest$statistic[1,1], 70.61, tol = 0.01)
+  expect_equal(htest$parameter[1], c(df = 1))
+})

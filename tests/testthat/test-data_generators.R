@@ -140,3 +140,37 @@ test_that("count_predictors", {
   expect_equal(count_predictors(test_data), 5)
 })
 
+test_that("generate_single_predictor",{
+  set.seed(1234)
+  n_studies <- 1000
+  study_sample_size = 10
+  sigma2_u <- 1
+  icc_x <- 0.05
+  ro_x <- 0.2
+
+  intercepts <- rnorm(n_studies, sqrt(sigma2_u))
+
+  sigma2_Xb <- get_pred_between_var(int_pred_corr = ro_x, icc_x = icc_x)
+  beta_int <- get_beta_int(int_pred_corr = ro_x, sigma2_u = sigma2_u, sigma2_Xb = sigma2_Xb)
+
+  expect_equal(check_icc_x(beta_int =beta_int, sigma2_Xb =  sigma2_Xb,icc_x = icc_x ), 0)
+  expect_equal(check_int_pred_corr(int_pred_corr = ro_x, beta_int = beta_int, sigma2_Xb = sigma2_Xb),0)
+
+  pred_intercepts<- rnorm(n_studies, sd = sqrt(sigma2_Xb))
+
+  x_data <- generate_single_predictor(n = n_studies*study_sample_size,
+                                      outcome_intercepts = intercepts,
+                                      predictor_intercepts = pred_intercepts,
+                                      beta_int = beta_int)
+
+
+  model <- lme4::lmer("x1~ 1 + (1|studyid)", data = x_data)
+  icc <- performance::icc(model)[[1]]
+
+  expect_equal(icc, icc_x, tol = 0.01)
+  expect_equal(cor(x_data$x1, x_data$intercept), 0.2, tol = 0.01)
+
+
+
+
+})
