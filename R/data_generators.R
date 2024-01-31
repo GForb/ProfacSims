@@ -213,3 +213,22 @@ generate_linear_predictor <- function( X, beta, intercept =0) {
   return(lp)
 }
 
+
+
+# For any predictor total var = 1/n_predictors. Therefore error var = 1/n_predictors=beta_int^
+generate_single_predictor <- function(n, outcome_intercepts, predictor_intercepts,  beta_int) {
+  sigma2_Xw = 1 # constrain within error to be 1 to make formula work
+  n_studies = length(outcome_intercepts)
+  study_sample_size = n/n_studies
+  X_b <- beta_int*outcome_intercepts + predictor_intercepts
+
+  between_data <- data.frame(
+    intercept = rep(outcome_intercepts, study_sample_size),
+    x_b = rep(X_b, study_sample_size),
+    studyid = rep(1:n_studies,study_sample_size)
+  )
+
+  X_w <- rnorm(n, sd = 1)
+  X <- data.frame(x1 = X_w + X_b,  x_w = X_w)
+  dplyr::bind_cols(X, between_data)
+}
