@@ -78,7 +78,7 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
       b_w_ratio = b_w_ratio,
       single_x = single_x)
     args$sigmas <- sigmas
-    args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc")==FALSE]
+    args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc", "single_x", "b_w_ratio")==FALSE]
 
   loop_fun <- function(rep_number, args, sim_rep_fun){
     results <- do.call(sim_rep_fun, args)
