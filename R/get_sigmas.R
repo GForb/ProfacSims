@@ -82,7 +82,7 @@ get_error_vars_ICC0 <- function(R2) {
 
 
 get_error_vars_int_pred_corr <- function(R2, ICC, int_pred_corr) {
-
+  # depreciated function - kept in as used in old simulations.
   # use legacy if it ever worked: sigmau + sigmae = 1, go forth from there. Or fix sigma beta x to be 1... Find better constraint.
   sigma2_u <- 1
 
@@ -133,14 +133,16 @@ get_sigmas_single_x <- function(int_pred_corr, icc_x, R2, ICC, b_w_ratio){
   beta_int <- get_beta_int(int_pred_corr = int_pred_corr, sigma2_u = sigma2_u, sigma2_Xb = sigma2_Xb)
   sigma2_e <- get_error_vars_single_x(ICC)
 
-  sigma2_u <- 1
 
-  beta_b = get_beta_b(b_w_ratio =b_w_ratio,  R2 = R2, sigma2_e =sigma2_e, sigma2_Xb = sigma2_Xb, beta_int = beta_int )
+  beta_b = get_beta_b(b_w_ratio=b_w_ratio,R2 = R2,sigma2_e=sigma2_e,sigma2_Xb=sigma2_Xb,sigma2_Xw=sigma2_Xw,beta_int = beta_int )
   beta_w = beta_b*b_w_ratio
-  return(list(u = sqrt(sigma2_u),
-              e = sqrt(sigma2_e),
-              x_w = sqrt(sigma2_Xw),
-              x_b=sqrt(sigma2_Xb),
+
+  tv =(1+beta_b*beta_int)^2*sigma2_u + sigma2_e + beta_b^2*sigma2_Xb + beta_w^2*sigma2_Xw
+
+  return(list(u = sqrt(sigma2_u/tv),
+              e = sqrt(sigma2_e/tv),
+              x_w = sqrt(sigma2_Xw/tv),
+              x_b = sqrt(sigma2_Xb/tv),
               beta_int = beta_int,
               beta_b = beta_b,
               beta_w = beta_w,
@@ -155,9 +157,17 @@ get_error_vars_single_x <- function(ICC) {
   return(sigma2_e= sigma2_e)
 }
 
-get_beta_b <- function(b_w_ratio, R2, sigma2_e, sigma2_Xb, beta_int){
+get_beta_b <- function(b_w_ratio, R2, sigma2_e, sigma2_Xb,sigma2_Xw, beta_int){
+  a <- beta_int^2 + sigma2_Xb + b_w_ratio^2*sigma2_Xw
+  b <- 2*beta_int
+  c <- 1-(sigma2_e*R2/(1-R2))
+
+  quad_root <- (-b + sqrt(b^2-4*a*c))/(2*a)
+  return(quad_root)
+}
+
+get_beta_b_orig <- function(b_w_ratio, R2, sigma2_e, sigma2_Xb, beta_int){
   var_b = beta_int^2 + sigma2_Xb
   beta_b <- sqrt((R2 + R2*sigma2_e - 1)/((1-R2)*(b_w_ratio^2+var_b)))
 }
-
 

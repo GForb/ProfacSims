@@ -161,7 +161,8 @@ test_that("generate_single_predictor",{
   x_data <- generate_single_predictor(n = n_studies*study_sample_size,
                                       outcome_intercepts = intercepts,
                                       predictor_intercepts = pred_intercepts,
-                                      beta_int = beta_int)
+                                      beta_int = beta_int,
+                                      sigma_Xw = 1)
 
   x_data$studyid <- rep(1:n_studies, study_sample_size)
   model <- lme4::lmer("x1~ 1 + (1|studyid)", data = x_data)
@@ -182,6 +183,8 @@ test_that("generate_continuous_single_x", {
   rand_model <- model_lmm_random_int_reml(data)
   expect_equal(performance::icc(rand_model)[[1]], 0.05, tol = 0.01)
   expect_equal(summary(model_lm(data))$r.squared, 0.4, tol = 0.2)
+  expect_equal(var(data$y), 1, tol = 0.1)
+
 
   sigmas <- get_sigmas(ICC= 0.05, R2 = 0.4, int_pred_corr = 0, pred_icc = 0.5, single_x = TRUE, b_w_ratio = 1)
   data <- generate_continuous(sigmas = sigmas, n_studies = 100, study_sample_size = 100)
@@ -192,8 +195,34 @@ test_that("generate_continuous_single_x", {
   icc <- performance::icc(model)[[1]]
 
   expect_equal(icc, 0.5, tol = 0.06)
+  expect_equal(var(data$y), 1, tol = 0.1)
 
   sigmas <- get_sigmas(ICC= 0.05, R2 = 0.4, int_pred_corr = 0.5, pred_icc = 0.5, single_x = TRUE, b_w_ratio = 1)
   data <- generate_continuous(sigmas = sigmas, n_studies = 100, study_sample_size = 100)
   expect_equal(cor(data$x1, data$study_intercept), 0.5, tol = 0.05)
+  expect_equal(var(data$y), 1, tol = 0.1)
+
 })
+
+test_that("generate_continuous_single_x_new_data", {
+  set.seed(1234)
+  sigmas <- get_sigmas(ICC= 0.2, R2 = 0.4, int_pred_corr = 0.5, pred_icc = 0.5, single_x = TRUE, b_w_ratio = 1)
+  train_data <- generate_continuous(sigmas = sigmas, n_studies = 1000, study_sample_size = 10)
+  intercepts_data <- generate_continuous(sigmas = sigmas, n_studies = 100, study_sample_size = 10, min_study_id = 11)
+  data  <- generate_continuous(sigmas = sigmas, n_studies = 100, study_sample_size = 10, min_study_id = 11, intercepts_data = intercepts_data)
+
+  fixed_model <- model_lm_fixed_int(data)
+  summary(fixed_model)$r.squared
+  expect_equal(summary(fixed_model)$r.squared, 0.4, tol = 0.1)
+
+  model <- lme4::lmer("x1~ 1 + (1|studyid)", data = data)
+  icc <- performance::icc(model)[[1]]
+
+  expect_equal(icc, 0.5, tol = 0.06)
+  expect_equal(var(data$y), 1, tol = 0.1)
+
+
+})
+
+
+
