@@ -50,6 +50,19 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
     args$pred_icc <- 0
   }
 
+  if(!is.null(args$single_x)){
+    single_x <-  args$single_x
+  } else {
+    single_x <- FALSE
+    args$single_x <- FALSE
+  }
+
+
+  b_w_ratio <-  args$b_w_ratio
+
+
+
+
   if(!is.null(args$n_predictors)){
     n_predictors <- args$n_predictors
   } else {
@@ -61,7 +74,9 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
       ICC = ICC,
       R2 = R2,
       int_pred_corr = int_pred_corr,
-      pred_icc = pred_icc)
+      pred_icc = pred_icc,
+      b_w_ratio = b_w_ratio,
+      single_x = single_x)
     args$sigmas <- sigmas
     args <- args[names(args) %in% c("ICC", "R2", "int_pred_corr", "pred_icc")==FALSE]
 
