@@ -105,27 +105,6 @@ get_error_vars_int_pred_corr <- function(R2, ICC, int_pred_corr) {
   return(list(sigma2_u=sigma2_u, sigma2_e=sigma2_e, pred_var=pred_var))
 }
 
-get_pred_between_var <- function(int_pred_corr, icc_x) {
-  if(icc_x <int_pred_corr^2){stop("Predictor ICC must be greater than int_pred_corr^2")}
-  sigma2_Xb <- (icc_x-int_pred_corr^2)/(1-icc_x)
-  return(sigma2_Xb)
-}
-
-get_beta_int <- function(int_pred_corr, sigma2_u, sigma2_Xb){
-  # This function works assuming the within-study variation in predictor is equal to 1
-  beta_int2 <- int_pred_corr^2*(1+ sigma2_Xb)/(sigma2_u*(1-int_pred_corr^2))
-  return(sqrt(beta_int2))
-}
-
-check_icc_x <- function(beta_int, sigma2_Xb, icc_x) {
-  icc_x - (sigma2_Xb+beta_int^2)/(1+sigma2_Xb+beta_int^2)
-}
-
-check_int_pred_corr  <- function(int_pred_corr, beta_int, sigma2_Xb) {
-  int_pred_corr-sqrt(beta_int^2/(beta_int^2+sigma2_Xb+1))
-}
-
-
 get_sigmas_single_x <- function(int_pred_corr, icc_x, R2, ICC, b_w_ratio){
   sigma2_Xw <- 1
   sigma2_u <- 1
@@ -149,10 +128,37 @@ get_sigmas_single_x <- function(int_pred_corr, icc_x, R2, ICC, b_w_ratio){
               single_x = TRUE))
 }
 
+get_pred_between_var <- function(int_pred_corr, icc_x) {
+  if(icc_x <int_pred_corr^2){stop("Predictor ICC must be greater than int_pred_corr^2")}
+  sigma2_Xb <- (icc_x-int_pred_corr^2)/(1-icc_x)
+  return(sigma2_Xb)
+}
+
+get_beta_int <- function(int_pred_corr, sigma2_u, sigma2_Xb){
+  # This function works assuming the within-study variation in predictor is equal to 1
+  beta_int2 <- int_pred_corr^2*(1+ sigma2_Xb)/(sigma2_u*(1-int_pred_corr^2))
+  return(sqrt(beta_int2))
+}
+
+check_icc_x <- function(beta_int, sigma2_Xb, icc_x) {
+  icc_x - (sigma2_Xb+beta_int^2)/(1+sigma2_Xb+beta_int^2)
+}
+
+check_int_pred_corr  <- function(int_pred_corr, beta_int, sigma2_Xb) {
+  int_pred_corr-sqrt(beta_int^2/(beta_int^2+sigma2_Xb+1))
+}
+
+
+
+
 get_error_vars_single_x <- function(ICC) {
   #var_b = beta_int^2 + sigma2_Xb
   #sigma2_e = (1 + b_w_ratio*sigma2_Xb + sigma2_Xb*var_b)*(1-R2)/R2
-  sigma2_e <- (1-ICC)/ICC
+  if(ICC ==0){
+    stop("The ICC must be greater than zero when simulating clustered predictors")
+  } else {
+    sigma2_e <- (1-ICC)/ICC
+  }
 
   return(sigma2_e= sigma2_e)
 }

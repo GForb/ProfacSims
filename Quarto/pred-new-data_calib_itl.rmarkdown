@@ -1,0 +1,72 @@
+---
+title: "Prediction with new data for intercepts"
+format: html
+editor: visual
+---
+
+```{r echo = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240124-pred-new-data"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS"))
+
+
+```
+
+## Ns
+
+```{r, echo = FALSE}
+counts = calib_itl |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size) |> 
+  summarise(n_est = sum(!is.na(est)), n_tau = sum(!is.na(tau2)))
+
+print("Estimates")
+min(counts$n_est)
+max(counts$n_est)   
+
+
+print("Tau-squared")
+min(counts$n_est)
+max(counts$n_est)        
+```
+
+counts = calib_itl 
+
+## Calibration in the large
+
+
+
+
+```{r, fig.height = 6}
+for(what in c("est", "tau")){
+  for(myR2 in c(0.4, 0.7)){
+    for(myICC in c(0, 0.05, 0.2)){
+      for(n_studies in c(4,8,16,32,64)){
+        for(sample_size_train in c(50, 200, 1000)){
+       
+          plot_data <- calib_itl |> 
+           filter(R2 == myR2, ICC == myICC, n_studies == n_studies, study_sample_size_train == sample_size_train)
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
+          
+          plot <- plot + labs(
+            title = "Calibration in the large",
+            subtitle = glue("R-sqaured = {myR2}, ICC = {myICC}, Number of studies == {n_studies}, study sample size = {sample_size_train}"))
+          print(plot)
+  
+            
+        }
+      }
+    }
+  }
+}
+```
+

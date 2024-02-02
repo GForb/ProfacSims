@@ -1,0 +1,426 @@
+---
+title: "Prediction with new data for intercepts"
+format: html
+editor: visual
+---
+
+```{r echo = FALSE}
+library(tidyverse)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Connecting to database
+table = "sim_results_v5"
+sim_name = "240124-pred-new-data"
+where = glue("sim_name = '{sim_name}'")
+
+db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
+
+```
+
+
+## Intro
+
+Simulations comparing random intercept to fixed intercept when there is
+
+## Simulation Parameters
+
+## Checking n's
+
+
+```{r, echo = FALSE}
+
+colnames <- dbGetQuery(db,
+           glue("SELECT * FROM {table} WHERE 1 = 0"))
+
+
+
+counts <- DBI::dbGetQuery(db,
+            glue("SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, COUNT(*) 
+            FROM {table}
+            WHERE {where}
+            GROUP BY n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric")
+)
+counts_col <- counts[,"COUNT(*)"]
+min_sim_rep <- min(counts_col)
+max_sim_rep <- max(counts_col)
+
+
+
+
+```
+
+
+Across all scenarios, the minimum number of sim reps with results is `r min_sim_rep` and the maximum number is `r max_sim_rep`.
+
+## Random intercept models underestimate variance of intercepts whent there are a small number of studies
+
+
+```{r, echo = FALSE}
+
+
+
+random_models <-  DBI::dbGetQuery(db,
+  glue(
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, error_var_u, sigma_u, batch_no
+    FROM {table}
+    WHERE {where}  AND metric = 'var_u' AND (model ='Random intercetp - ML' OR model = 'Random intercetp - REML') AND predict_method = 'new0' AND intercept_est_sample_size = 10
+  ")
+)
+# plot n
+summaries_var_u <- random_models |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size) |> 
+  summarise(sigma2_u = mean((sigma_u^2)),
+            est_sigma_u = mean(est),
+            value = mean(error_var_u), 
+            sd = sd(error_var_u),
+            ll = ProfacSims:::robust_t_test(error_var_u)[1], 
+            ul = ProfacSims:::robust_t_test(error_var_u)[2],  
+            n = sum(!is.na(error_var_u)),
+            median = median(error_var_u),
+            p25 = stats::quantile(error_var_u, probs = 0.25),
+            p75 = stats::quantile(error_var_u, probs = 0.75),
+            min = min(error_var_u),
+            max = max(error_var_u)) |> 
+  ungroup() |> 
+  mutate(perc_error_var_u = value/sigma2_u*100)
+
+
+
+min_converge <- min(summaries_var_u$n)
+max_converge <- max(summaries_var_u$n)
+
+
+```
+
+
+### Number of models converging
+
+Across all scenarios and models including a random component, the minimum number of models reporting a random intercept variance is `r min_converge` and the maximum number is `r max_converge`.
+
+
+```{r}
+n <- summaries_var_u |> filter(model == "Random intercetp - REML" | model == "Random intercetp - ML") |> select(n)
+min(n)
+max(n)
+```
+
+```{r, fig.height = 6}
+summaries_var_u |> 
+  ProfacSims:::plot_error_var_u()
+```
+
+```{r, fig.height = 6}
+random_models |> 
+  dplyr::filter(predict_method == "new0") |> 
+  dplyr::filter(R2 == 0.4, intercept_est_sample_size ==50) |> 
+  ProfacSims:::box_plot_error_var_u()
+
+
+
+```
+
+
+If I focus R-squared = 0.4, then we can present results for higher r-squared as similar...
+
+
+```{r, fig.height = 6}
+random_models |> 
+  dplyr::filter(R2 == 0.4) |> 
+  ProfacSims:::box_plot_error_var_u()
+
+
+
+```
+
+
+### Higher r-squared: Similar pattern of results.
+
+
+```{r, fig.height = 6}
+random_models |> 
+  dplyr::filter(R2 == 0.7) |> 
+  ProfacSims:::box_plot_error_var_u()
+
+
+
+```
+
+```{r, fig.height = 6}
+random_models_dynamic <-  DBI::dbGetQuery(db,
+  glue(
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, error_var_u, sigma_u, batch_no
+    FROM {table}
+    WHERE {where}  AND metric = 'var_u' AND (model ='Random intercetp - ML' OR model = 'Random intercetp - REML') AND predict_method = 'new_dynamic' AND intercept_est_sample_size = 10
+  ")
+  )
+
+
+
+```
+
+
+
+## Dynamic models
+ 
+
+```{r, fig.height = 6}
+ random_models_dynamic |> 
+  dplyr::filter(R2 == 0.4) |> 
+  ProfacSims:::box_plot_error_var_u()
+
+```
+
+```{r, fig.height = 6}
+ random_models_dynamic |> 
+  dplyr::filter(R2 == 0.7) |> 
+  ProfacSims:::box_plot_error_var_u()
+
+```
+
+
+## Calibration in the large for different models, and different methods of prediction.
+
+
+```{r, echo = FALSE}
+calib_itl <-  DBI::dbGetQuery(db,
+  glue(
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, tau2, error_var_u, sigma_u, batch_no
+    FROM {table}
+    WHERE {where}  AND metric = 'calib_itl'
+  ")
+)
+
+summaries_calib_itl <- calib_itl |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size) |> 
+  summarise(value = mean(est), 
+            sd = sd(est),
+            ll = ProfacSims:::robust_t_test(est)[1], 
+            ul = ProfacSims:::robust_t_test(est)[2],  
+            n = sum(!is.na(est)),
+            median = median(est),
+            p25 = stats::quantile(est, probs = 0.25),
+            p75 = stats::quantile(est, probs = 0.75),
+            min = min(est),
+            max = max(est)) |> 
+  ungroup() 
+
+
+
+
+min_converge <- min(summaries_calib_itl$n)
+max_converge <- max(summaries_calib_itl$n)
+```
+
+
+Across all scenarios and models including a random component, the minimum number of models reporting a random intercept variance is `r min_converge` and the maximum number is `r max_converge`.
+
+
+Calibration in the large averages zero for all models in all scenarios. It is however more variable for some models. There are extreme outliers for random intercept mdoels. What is going on here. I expect it corresponds to when the random intercept variance is over-estimated. This would lead to poor estimation of the model intercept. This would lead to poor calibration in the large on average, as averaged accross studies the model intercept will prevail (what does that even mean). If, based in the training data, the intercept given predictors is high, . The more penalisation applied, the closer to the intercept the prediction will be and therefore the more baised it will be. Underestimating between study variance will lead to over penalisation. 
+
+Why when we take the average is this not a problem?
+
+I want the same set of plots. Or do I need to really focus on certain situations. Exactly this. How to tell the story.
+
+To see this I need to put the predict methods next to each other. To tell a story for each mdoel.
+
+When sample sizes are small, and there is a small number of clusters...
+
+
+How to describe results: When you have a small number of studies these problems arrise. How do the problems change when the number of studies increases.
+
+
+There is variability in calibration in the large as the model intercept is estimated with error. That error recuces with the number of studies but remains unchanged with the study sample size. If no correction is made locally in a study (by estimating a new intercept), that error remains. If a correction is made, by predicting a new intercept then 
+
+Random intercept models go badly wrong when they predict a zero variance (boundry fit). In this case penalisation is absolute and their predictions will be the same as would be obtained taking the average.
+
+Proportion of models with variance in u estimated at zero.
+
+# Consequences of overestimating var_u
+
+# Consequeneces of underestimating var_u, including boundry fits.
+
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(study_sample_size_train == 50, intercept_est_sample_size == 10, R2 == 0.4, ICC == 0.05, n_studies ==4) |> 
+  ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Pooled Calibration In the Large (Tau)")
+
+calib_itl |> 
+  filter(batch_no == 260 , predict_method  =='new_studies', ICC == 0.05, study_sample_size_train == 50, n_studies ==4, R2 == 0.4) |> 
+  select(model, study_sample_size_train, intercept_est_sample_size,  est, tau2, batch_no) |> 
+  arrange(model)
+
+
+```
+
+
+calib_itl |> filter(est >)
+All models are good.
+There is less variability from fixed effect models
+When the number of studies is large
+
+Poorly estimated intercepts for indivudal studies will lead to hetrogeneiaty in calibration in the large. 
+Poor estimation of the overall intercept will lead to error in calibration in the large.
+
+
+
+
+For all mdoels, taking the average intercept is the worst performing method of prediction, even when there are only 10 observations available for a new prediciotn. Question: Is this material??
+
+
+Maybe explain:
+
+What happens with new-0, what happens with Random intercept/ML, what happens with Fixed intercept.
+
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(study_sample_size_train == 50, intercept_est_sample_size == 10, R2 == 0.4, ICC == 0.05, n_studies %in% c(4, 64)) |> 
+  ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Pooled Calibration In the Large (Tau)", facet_cols = ggplot2::vars(model, n_studies))
+```
+
+Conclusions:
+- For moderate ICC, on average calibration in the large is always close to 0. Calibration in the large is more variable when average intercepts are used. Models using fixed intercepts, or not adjusting for study have compatible performance . Using average intercept is with any model gives identical performance and is worse than any combination of models/pre even when there are only 4 studies of size 50 and data is available on 10 people. The performance of using average intercepts improves with the number of studies - with 64 studies the performance is comparible to the performance of fixed effect models with  
+
+The questions for all are:
+1. How do the models compare 
+2. Does the mode of prediction make a difference
+3. How does this change with number of studies
+4. How does this change with study sample size
+5. How does this change with the level of data available.
+6. Does this change with ICC?
+7. Does this change with R-squared?
+
+
+
+
+
+
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new0", R2 == 0.4, intercept_est_sample_size == 50) |> 
+  ProfacSims:::box_plot_est_by_model()
+```
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new_studies", R2 == 0.4, intercept_est_sample_size == 50, ICC == 0.05) |> 
+  ProfacSims:::box_plot_est_by_model()
+```
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new_dynamic", R2 == 0.4, intercept_est_sample_size == 200, ICC == 0.05) |> 
+  ProfacSims:::box_plot_est_by_model()
+```
+
+
+
+### Tau-sauared
+
+Thoughts on plots:
+- If I want to compare between methods th
+
+-   new0 no difference
+
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(study_sample_size_train == 50, intercept_est_sample_size == 10, R2 == 0.4, ICC == 0.05) |> 
+  ProfacSims:::box_plot_by_model_predict_method(what = "tau", ylab = "Between Study Hetrogeneity in Calibration In the Large (Tau)")
+```
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new_studies", R2 == 0.4, intercept_est_sample_size == 50) |> 
+  ProfacSims:::box_plot_tau2_by_model()
+```
+
+```{r, fig.height = 6}
+calib_itl |> 
+  dplyr::filter(predict_method == "new_dynamic", R2 == 0.4, intercept_est_sample_size == 50) |> 
+  ProfacSims:::box_plot_tau2_by_model()
+```
+
+
+# Calibration Slope
+
+```{r, echo = FALSE}
+calib_slope <-  DBI::dbGetQuery(db,
+  glue(
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, tau2, error_var_u, sigma_u, batch_no
+    FROM {table}
+    WHERE {where}  AND metric = 'calib_slope'
+  ")
+)
+
+summaries_calib_slope <- calib_slope |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size) |> 
+  summarise(value = mean(est), 
+            sd = sd(est),
+            ll = ProfacSims:::robust_t_test(est)[1], 
+            ul = ProfacSims:::robust_t_test(est)[2],  
+            n = sum(!is.na(est)),
+            median = median(est),
+            p25 = stats::quantile(est, probs = 0.25),
+            p75 = stats::quantile(est, probs = 0.75),
+            min = min(est),
+            max = max(est)) |> 
+  ungroup() 
+
+
+
+
+min_converge <- min(summaries_calib_calib_slope$n)
+max_converge <- max(summaries_calib_calib_slope$n)
+```
+
+```{r, fig.height = 6}
+calib_calib_slope |> 
+  dplyr::filter(study_sample_size_train == 50, intercept_est_sample_size == 10, R2 == 0.4, ICC == 0.05, n_studies %in% c(4, 64)) |> 
+  ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Pooled Calibration In the Large (Tau)", facet_cols = ggplot2::vars(model, n_studies))
+```
+
+
+## R-squared
+
+```{r, echo = FALSE}
+r-squared <-  DBI::dbGetQuery(db,
+  glue(
+    "SELECT n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size, metric, est, tau2, error_var_u, sigma_u, batch_no
+    FROM {table}
+    WHERE {where}  AND metric = 'r-squared'
+  ")
+)
+
+summaries_r-squared <- r-squared |> 
+  group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size) |> 
+  summarise(value = mean(est), 
+            sd = sd(est),
+            ll = ProfacSims:::robust_t_test(est)[1], 
+            ul = ProfacSims:::robust_t_test(est)[2],  
+            n = sum(!is.na(est)),
+            median = median(est),
+            p25 = stats::quantile(est, probs = 0.25),
+            p75 = stats::quantile(est, probs = 0.75),
+            min = min(est),
+            max = max(est)) |> 
+  ungroup() 
+
+
+
+
+min_converge <- min(summaries_calib_r-squared$n)
+max_converge <- max(summaries_calib_r-squared$n)
+```
+
+```{r, fig.height = 6}
+r-squared |> 
+  dplyr::filter(study_sample_size_train == 50, intercept_est_sample_size == 10, R2 == 0.4, ICC == 0.05, n_studies %in% c(4, 64)) |> 
+  ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Pooled Calibration In the Large (Tau)", facet_cols = ggplot2::vars(model, n_studies))
+```
+
