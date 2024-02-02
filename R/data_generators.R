@@ -187,7 +187,7 @@ generate_continuous <- function(n_studies, study_sample_size,  n_predictors = 12
 attr(generate_continuous, "n_predictors") = 12
 
 count_predictors <- function(data) {
-  data |> dplyr::select(dplyr::starts_with("x")) |> ncol()
+  data |> dplyr::select(dplyr::starts_with("x", ignore.case = FALSE)) |> ncol()
 }
 
 generate_binary <- function(n) {

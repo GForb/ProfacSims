@@ -9,7 +9,11 @@ predict_default <- function(model, test_data) {
 
 predict_with_new_intercept_data <- function(model, test_data) {
   intercept_data <- test_data |> dplyr::filter(int_est == TRUE)
+
+
   intercepts <- predict_intercepts(model, intercept_data , cluster_var = "studyid")
+
+
   # merge intercepts onto test data
   test_data_test_only <- test_data |> dplyr::filter(int_est == FALSE)
   test_data_test_only <- dplyr::left_join(test_data_test_only, intercepts, by = "studyid")
@@ -38,11 +42,13 @@ predict_average_intercept <- function(model, test_data) {
 }
 
 predict_intercepts <- function(model, newdata, cluster_var = "studyid") {
+
   if(class(model)[1]== "lmerMod"){
     intercepts <- predict_rand_int(model, newdata)
   } else if(class(model)[1]== "lm"){
     intercepts <- predict_intercept_ml(model, newdata, cluster_var)
   }
+
   return(intercepts)
 }
 
@@ -71,9 +77,7 @@ predict_intercept_ml <- function(model, newdata, cluster_var) {
 
   pred <- predict_fixed(model, test_data = newdata)
   total_error = newdata[,outcome] - pred
-
   by_cluster = stats::aggregate(total_error,by = list(newdata[,cluster_var]), FUN=mean)
-
   colnames(by_cluster) <-  c(cluster_var, "mean_error")
 
   prediction <-  by_cluster[,c(cluster_var, "mean_error")]
@@ -115,7 +119,7 @@ get_fixed_int_offset <- function(model, newdata, cluster_var) {
 }
 
 get_x_prediction <- function(model, newdata) {
-  predictors <- newdata |> dplyr::select(starts_with("x"))
+  predictors <- newdata |> dplyr::select(starts_with("x", ignore.case = FALSE))
   predictor_names <- colnames(predictors)
   betas <- model$coef[predictor_names]
   pred_fixed <- as.matrix(predictors)%*%betas

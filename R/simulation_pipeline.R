@@ -23,8 +23,6 @@ ipdma_simulation <- function(..., expand_intercept_est_sample_size = FALSE, use_
     dplyr::mutate(error_var_u = dplyr::case_when(metric == "var_u" ~ est - (sigma_u^2),
                                                  TRUE ~ NA))
 
-
-
   class(results_df) <-  c("sim_results", class(results_df))
   return(results_df)
 }
@@ -92,6 +90,7 @@ do_simulation <- function(nreps, sim_rep_fun, ...) {
   results_df$R2 = R2
   results_df$int_pred_corr = int_pred_corr
   results_df$pred_icc = pred_icc
+  if(!is.null(b_w_ratio)) results_df$b_w_ratio = b_w_ratio
 
   return(results_df)
 }

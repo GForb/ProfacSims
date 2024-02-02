@@ -75,14 +75,14 @@ model_lmm_lm_hausman <- function(data) {
   fixed_model <- model_lm_fixed_int(data)
   htest <- phtest_glmer(glmerMod = random_model, glmMod = fixed_model)
   if (htest$p.value <0.05) {
-    return()
+    model <- fixed_model
   } else {
-    return()
+    model <- random_model
   }
-
-
+  attr(model, "name") <- "Hausman"
+  return(model)
 }
-attr(model_lmm_random_int_ml, "name") <- "Hausman Selection"
+attr(model_lmm_lm_hausman, "name") <- "Hausman"
 
 
 get_x_formula_text <- function(data) {
