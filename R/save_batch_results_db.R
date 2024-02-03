@@ -58,19 +58,20 @@ get_results_df <- function(sim_results, sim_name, filename) {
 }
 
 process_betas <- function(data) {
+  if(is.null(data$beta_x)) data$beta_x = data$beta_w # beta_x is used as true value for beta. Replacing with beta_w for clustered sims which is the within cluster effect.
   data |>
-  clean_betas() |>
-  dplyr::rowwise() |>
-  dplyr::mutate(
-    beta_pred = list(unlist(betas)[grep("^[xX].*", names(unlist(betas)), value=FALSE)]),
-    beta_mean_error = mean(unlist(beta_pred)-beta_x),
-    beta_mse = mean((unlist(beta_pred)-beta_x)^2),
-    beta_rmse = sqrt(beta_mse),
-    beta_names = toString(names(betas)),
-    betas = toString(betas),
-    beta_pred = toString(beta_pred)
-  ) |>
-  dplyr::ungroup()
+    clean_betas() |>
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      beta_pred = list(unlist(betas)[grep("^[xX].*", names(unlist(betas)), value=FALSE)]),
+      beta_mean_error = mean(unlist(beta_pred)-beta_x),
+      beta_mse = mean((unlist(beta_pred)-beta_x)^2),
+      beta_rmse = sqrt(beta_mse),
+      beta_names = toString(names(betas)),
+      betas = toString(betas),
+      beta_pred = toString(beta_pred)
+    ) |>
+    dplyr::ungroup()
 }
 
 clean_betas <- function(data) {

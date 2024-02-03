@@ -67,3 +67,16 @@ test_that("phtest_glmer",{
   # there is a strnge effect whereby this sometimes gives different answers despite seed being set. Seems to be a datagen issue as can replicate output in stata.
   expect_equal(htest$parameter[1], c(df = 1))
 })
+
+test_that("model_hausman", {
+  sigmas <- get_sigmas(n_predictors = 1, ICC = 0.05, R2 = 0.4, int_pred_corr = 0, b_w_ratio = 2, pred_icc = 0.5, single_x = TRUE)
+  data <- generate_continuous(n_studies = 64, study_sample_size = 50, n_predictor = 1, sigmas = sigmas)
+
+  rand_model <- model_lmm_random_int_reml(data)
+  fixed_model <- model_lm_fixed_int(data)
+  htest <- phtest_glmer(glmerMod = rand_model, glmMod = fixed_model)
+  htest$p.value < 0.05
+  model <- model_lmm_lm_hausman(data)
+  model
+
+})

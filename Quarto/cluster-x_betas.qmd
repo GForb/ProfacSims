@@ -1,0 +1,107 @@
+---
+title: "240131-cluster-x-betas"
+format: html
+---
+
+## Here we go:
+
+```{r echo = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240131-cluster-x"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+data_raw <- readRDS(file = here(results_folder, "betas.RDS")) 
+data <- data_raw |> tibble()
+cn <- colnames(data)
+```
+
+## Model selection: Hausman or Fixed
+- Hausman test does very well in identifying false positives
+
+```{r echo = FALSE}
+data_select <- data |> 
+  filter(model == "Hausman") |> 
+  mutate(random = !is.na(est) |> as.integer())
+
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data_select |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC, random) |> 
+    ggplot(mapping =aes(x = pred_icc)) +
+    geom_bar() +
+    facet_grid(rows = vars(n_studies), cols = vars(b_w_ratio)) +
+    labs(title = "Number of times Hausman test select random intercept model", subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}
+
+
+
+```
+
+```{r echo = FALSE}
+data_select <- data |> 
+  filter(model == "Hausman") |> 
+  mutate(random = !is.na(est) |> as.integer())
+
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data_select |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC, random) |> 
+    ggplot(mapping =aes(x = pred_icc)) +
+    geom_bar() +
+    facet_grid(rows = vars(n_studies), cols = vars(b_w_ratio)) +
+    labs(title = "Number of times Hausman test select random intercept model", subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}
+
+
+
+```
+
+## Error in Beta
+
+```{r echo = FALSE}
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data |> mutate(plot_value = beta_mean_error) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    ProfacSims:::box_plot_cluster_x() +
+    ylab("Error in beta") +
+    labs(title = "Error in beta estimate", subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}
+
+
+
+```
+## Root mean squared Error in Beta
+
+```{r echo = FALSE}
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data |> mutate(plot_value = beta_rmse) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    ProfacSims:::box_plot_cluster_x() +
+    ylab("Root mean squared error for beta")
+    labs(title = "Error in beta estimate", subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}

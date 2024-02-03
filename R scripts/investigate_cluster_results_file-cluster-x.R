@@ -1,6 +1,6 @@
 library(tidyverse)
 
-sim_name <- "240124-cluster-x"
+sim_name <- "240131-cluster-x"
 i <- 1
 
 
@@ -17,10 +17,7 @@ data <- readRDS(here::here(results_folder, file)) |> tibble()
 tibble(data)
 
 colnames(data)
-data$predict_method |> table()
-data |> filter(predict_method == "new_dynamic") |> select(metric, est, betas, model, predict_method, coef, studyid, sigma_u, beta_x, beta_int, error_var_u)
 
-model1 <- data |> filter(predict_method == "new_dynamic") |> select(metric, est, betas, model, predict_method, coef, studyid, sigma_u, beta_x, beta_int, error_var_u) |> slice(5)
 
 data |> filter(!is.na(coef))
 
@@ -29,4 +26,4 @@ processed_data <- data |>
   get_results_df(sim_name = sim_name, filename = file) |>
   dplyr:: mutate(save_time = save_time)
 
-colnames(processed)
+colnames(processed_data)
