@@ -46,13 +46,13 @@ predict_intercepts <- function(model, newdata, cluster_var = "studyid") {
     if(!is.null(attr(model, "x1_centered"))){
       x1_b <- stats::aggregate(x1 ~ studyid, data = newdata, mean)
       colnames(x1_b)[2] <- "x1_b"
-      newdata <- dplyr::left_join(newdata, x1_b)
+      newdata <- dplyr::left_join(newdata, x1_b, by = "studyid")
       newdata$x1_w = newdata$x1 - newdata$x1_b
     }
 
     intercepts <- predict_rand_int(model, newdata)
     if(!is.null(attr(model, "x1_centered"))){
-      intercepts <- dplyr::left_join(intercepts, x1_b)
+      intercepts <- dplyr::left_join(intercepts, x1_b, by = "studyid")
     }
 
   } else if(class(model)[1]== "lm"){

@@ -73,7 +73,7 @@ attr(model_lmm_random_int_ml, "name") <- "Random intercetp - ML"
 model_lmm_reml_x1bar <- function(data){
   x1_b <- stats::aggregate(x1 ~ studyid, data = data, mean)
   colnames(x1_b)[2] <- "x1_b"
-  data <- dplyr::left_join(data, x1_b)
+  data <- dplyr::left_join(data, x1_b, by = "studyid")
 
   data$x1_w <- data$x1 - data$x1_b
   formula = paste("y ~ x1_w + x1_b + (1|studyid)") |> as.formula()
@@ -107,7 +107,7 @@ model_lmm_lm_hausman_xbar <- function(data) {
   if (htest$p.value <0.05) {
     model <- fixed_model
   } else {
-    model <- model_lmm_reml_x1bar
+    model <- model_lmm_reml_x1bar(data)
   }
   attr(model, "name") <- "Hausman - centred"
   return(model)
