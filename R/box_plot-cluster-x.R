@@ -11,5 +11,6 @@ box_plot_cluster_x <- function(data) {
     geom_boxplot(outlier.size = 0.1) +
     scale_x_continuous(breaks = c("0" = 1, "0.05" = 2, "0.2" = 3, "0.5" = 4, "0.9" = 5)) +
     xlab("Predictor ICC") +
-    facet_grid(rows = vars(n_studies), cols = vars(b_w_ratio))
+    facet_grid(rows = vars(n_studies), cols = vars(b_w_ratio)) +
+    theme(legend.position = "top")
 }
