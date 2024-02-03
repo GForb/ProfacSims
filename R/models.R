@@ -70,6 +70,22 @@ model_lmm_random_int_ml <- function(data) {
 }
 attr(model_lmm_random_int_ml, "name") <- "Random intercetp - ML"
 
+model_lmm_reml_x1bar <- function(data){
+  x1_b <- stats::aggregate(x1 ~ studyid, data = data, mean)
+  colnames(x1_b)[2] <- "x1_b"
+  data <- dplyr::left_join(data, x1_b)
+
+  data$x1_w <- data$x1 - data$x1_b
+  formula = paste("y ~ x1_w + x1_b + (1|studyid)") |> as.formula()
+  model <- lme4::lmer(formula, data = data , weights = data$wt)
+  attr(model, "name") <- "Random intercetp - REML x1bar"
+  attr(model, "x1_centered") <- TRUE
+  return(model)
+}
+attr(model_lmm_reml_x1bar, "name") <- "Random intercetp - REML x1bar"
+
+
+
 model_lmm_lm_hausman <- function(data) {
   random_model <- model_lmm_random_int_reml(data)
   fixed_model <- model_lm_fixed_int(data)
@@ -83,6 +99,20 @@ model_lmm_lm_hausman <- function(data) {
   return(model)
 }
 attr(model_lmm_lm_hausman, "name") <- "Hausman"
+
+model_lmm_lm_hausman_xbar <- function(data) {
+  random_model <- model_lmm_random_int_reml(data)
+  fixed_model <- model_lm_fixed_int(data)
+  htest <- phtest_glmer(glmerMod = random_model, glmMod = fixed_model)
+  if (htest$p.value <0.05) {
+    model <- fixed_model
+  } else {
+    model <- model_lmm_reml_x1bar
+  }
+  attr(model, "name") <- "Hausman - centred"
+  return(model)
+}
+attr(model_lmm_lm_hausman, "name") <- "Hausman - centred"
 
 
 get_x_formula_text <- function(data) {

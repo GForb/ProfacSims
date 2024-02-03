@@ -80,3 +80,16 @@ test_that("model_hausman", {
   model
 
 })
+
+
+test_that("model_lmm_reml_x1bar", {
+  sigmas <- get_sigmas(n_predictors = 1, ICC = 0.05, R2 = 0.4, int_pred_corr = 0, b_w_ratio = 2, pred_icc = 0.5, single_x = TRUE)
+  data <- generate_continuous(n_studies = 64, study_sample_size = 50, n_predictor = 1, sigmas = sigmas)
+
+
+  model <- model_lmm_reml_x1bar(data)
+  expect_true(attr(model, "x1_centered"))
+
+
+
+})

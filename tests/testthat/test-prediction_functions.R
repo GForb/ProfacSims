@@ -257,3 +257,26 @@ test_that("predict_with_new_intercept_data", {
 
 
 })
+
+test_that("predict_with_new_intercept_data x1 centred", {
+
+  set.seed(1234)
+  sigmas <- get_sigmas(n_predictors = 1, ICC = 0.05, R2 = 0.4, single_x = TRUE, int_pred_corr = 0, pred_icc = 0.9, b_w_ratio = 2)
+
+  train_data <-  generate_continuous(n_studies = 64, study_sample_size =100, n_predictors = 1, sigmas = sigmas)
+  test_data <- train_data
+  test_data$int_est <-  FALSE
+  intercept_data <- train_data
+  intercept_data$int_est <- TRUE
+  test_data <- dplyr::bind_rows(test_data, intercept_data)
+
+  model_random <- model_lmm_reml_x1bar(data = train_data)
+  pred1 <- predict_with_new_intercept_data(model_random, test_data = test_data)
+  expect_equal(length(pred1), 6400)
+
+  model_h <- model_lmm_lm_hausman_xbar(test_data)
+  pred2 <- predict_with_new_intercept_data(model_random, test_data = test_data)
+  expect_equal(length(pred2), 6400)
+
+})
+
