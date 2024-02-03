@@ -1,7 +1,7 @@
 ---
 title: "Prediction with new data for intercepts"
-format: html
-editor: visual
+format: pdf
+editor: source
 ---
 
 ```{r echo = FALSE}
@@ -59,16 +59,16 @@ wide_est <- calib_itl |>
 ## Table
 ```{r, echo = FALSE}
 
-full_table <- calib_itl |> 
-  group_by(model, predict_method, n_studies, study_sample_size_train, ICC, R2, intercept_est_sample_size) |> 
-   ProfacSims:::quantiles_table_tau() 
-
-print(full_table)
-
-extreme_table <- full_table |> filter(p005 < -0.1 | p95 > 0.1)
-
-extreme_table |> filter(predict_method == "new0")
-extreme_table |> filter(predict_method != "new0")
+# full_table <- calib_itl |> 
+#   group_by(model, predict_method, n_studies, study_sample_size_train, ICC, R2, intercept_est_sample_size) |> 
+#    ProfacSims:::quantiles_table_tau() 
+# 
+# print(full_table)
+# 
+# extreme_table <- full_table |> filter(p005 < -0.1 | p95 > 0.1)
+# 
+# extreme_table |> filter(predict_method == "new0")
+# extreme_table |> filter(predict_method != "new0")
 
 ```
 
@@ -86,101 +86,18 @@ ylab = "Calibration in the Large"
 ```
 
 
-```{r, fig.height = 6}
+```{r, fig.height = 8}
 for(myICC in c(0, 0.05, 0.2)){
     for(sample_size_train in c(50, 200, 1000)){
     plot <- calib_itl_adj |> 
-      ProfacSims:::box_plot_ml_fixed(what = "tau", ylab = "Between study hetrogeneity (Tau)", facet_rows = ggplot2::vars(intercept_est_sample_size), facet_cols = ggplot2::vars(R2))
+      ProfacSims:::box_plot_ml_fixed(what = "tau", ylab = "Tau", facet_rows = ggplot2::vars(intercept_est_sample_size), facet_cols = ggplot2::vars(R2)) +
+      labs(title = "Between study hetrogeneity in calibration in the large",
+        subtitle = glue("ICC = {myICC}, study sample size = {sample_size_train}"))
     
     print(plot)
         
     }
   }
-
-```
-
-
-```{r, fig.height = 6}
-for(myICC in c(0, 0.05, 0.2)){
-  for(R2 in c(0.4, 0.7)){
-    for(sample_size_train in c(50, 200, 1000)){
-      
-
-    plot <- calib_itl |> 
-      ProfacSims:::box_plot_ml_fixed(what = "tau", ylab = "Between study hetrogeneity (Tau)", facet_rows = ggplot2::vars(intercept_est_sample_size))
-    
-    print(plot)
-        
-    }
-  }
-}
-```
-  
-## ICC = 0
-```{r, fig.height = 6}
-for(what in c("tau")){
-  for(n_studies in c(4,8,16,32,64)){
-      for(sample_size_train in c(50, 200, 1000)){
-        for(myICC in c(0)){
-          for(myR2 in c(0.4, 0.7)){
-            for(intercept_est_sample_size in c(10, 50, 200)){
-             
-          plot_data <- calib_itl |> 
-            filter(intercept_est_sample_size ==10) |> 
-           filter(R2 == myR2, 
-                  ICC == myICC, 
-                  n_studies == n_studies, 
-                  study_sample_size_train == sample_size_train,
-                  model %in% c("Fixed intercept", "Random intercept - REML"))
-          plot <- plot_data |> 
-            ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
-          
-          plot <- plot + labs(
-            title = "Calibration in the large",
-            subtitle = glue("R-sqaured = {myR2}, ICC = {myICC}, Number of studies == {n_studies}, study sample size = {sample_size_train}"))
-          print(plot)
-  
-            }
-          }
-        }
-      }
-    }
-  }
-
-
-
-```
-
-# 10 people for prediction
-
-```{r, fig.height = 6}
-for(what in c("tau")){
-  for(n_studies in c(4,8,16,32,64)){
-      for(sample_size_train in c(50, 200, 1000)){
-        for(myICC in c(0.05, 0.2)){
-          for(myR2 in c(0.4, 0.7)){
-             
-          plot_data <- calib_itl |> 
-            filter(intercept_est_sample_size ==10) |> 
-           filter(R2 == myR2, 
-                  ICC == myICC, 
-                  n_studies == n_studies, 
-                  study_sample_size_train == sample_size_train)
-          plot <- plot_data |> 
-            ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
-          
-          plot <- plot + labs(
-            title = "Calibration in the large",
-            subtitle = glue("R-sqaured = {myR2}, ICC = {myICC}, Number of studies == {n_studies}, study sample size = {sample_size_train}"))
-          print(plot)
-  
-            
-        }
-      }
-    }
-  }
-}
-
 
 ```
 

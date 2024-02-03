@@ -1,0 +1,70 @@
+---
+title: "240131-cluster-x-betas - Model Performance"
+format: html
+params:
+  what: "Calibration in the large"
+  file_name: "calib_itl"
+  sim_name: "240131-cluster-x"
+---
+
+
+```{r echo = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+what <- params$what
+sim_name <- params$sim_name
+file_name <- paste0(params$file_name, ".RDS")
+
+# Loading files:
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+data_raw <- readRDS(file = here(results_folder, file_name)) 
+data <- data_raw |> tibble()
+cn <- colnames(data)
+
+
+```
+
+
+
+## `r what`
+
+```{r echo = FALSE}
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data |> mutate(plot_value = est) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    ProfacSims:::box_plot_cluster_x() +
+    ylab(glue("{what}")) +
+    labs(title = glue("{what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}
+
+
+
+```
+## Between study hetrogenetiy in `r what`
+
+```{r echo = FALSE}
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data |> mutate(plot_value = sqrt(tau2)) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    ProfacSims:::box_plot_cluster_x() +
+     ylab(glue("Tau")) +
+    labs(title = glue("Between study hetrogeneity in {what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}
+
+```

@@ -22,6 +22,8 @@ data_new0 <- data |> filter(predict_method == "new0", intercept_est_sample_size 
 
 data <- data |> filter(predict_method!= "new0") |> bind_rows(data_new0)
 
+
+
 ```
 
 ## Ns
@@ -47,8 +49,8 @@ max(counts$n_est)
 for(myICC in c(0, 0.05, 0.2)){
     for(sample_size_train in c(50, 200, 1000)){
     plot <- data |> 
-      ProfacSims:::box_plot_ml_fixed(what = "est", ylab = "Tau", facet_rows = ggplot2::vars(intercept_est_sample_size), facet_cols = ggplot2::vars(R2)) +
-      labs(title = "R-squared",
+      ProfacSims:::box_plot_ml_fixed(what = "tau", ylab = "Tau", facet_rows = ggplot2::vars(intercept_est_sample_size), facet_cols = ggplot2::vars(R2)) +
+      labs(title = "Between study hetrogeneity in R-squared",
         subtitle = glue("ICC = {myICC}, study sample size = {sample_size_train}"))
     
     print(plot)

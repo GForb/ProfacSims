@@ -98,7 +98,7 @@ for(myStudySize in c(50, 200, 1000)){
   plot <- data |> mutate(plot_value = beta_rmse) |> 
     filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
     ProfacSims:::box_plot_cluster_x() +
-    ylab("Root mean squared error for beta")
+    ylab("Root mean squared error for beta") +
     labs(title = "Error in beta estimate", subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
   
   print(plot)

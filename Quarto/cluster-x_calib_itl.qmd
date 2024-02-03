@@ -1,0 +1,65 @@
+---
+title: "240131-cluster-x-betas - Calibration in the Large"
+format: html
+---
+
+## Here we go:
+
+```{r echo = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240131-cluster-x"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+data_raw <- readRDS(file = here(results_folder, "calib_itl.RDS")) 
+data <- data_raw |> tibble()
+cn <- colnames(data)
+
+what = "Calibration in the large"
+
+```
+
+
+
+## Calib ITL
+
+```{r echo = FALSE}
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data |> mutate(plot_value = est) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    ProfacSims:::box_plot_cluster_x() +
+    ylab(glue("{what}")) +
+    labs(title = glue("{what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}
+
+
+
+```
+## Tau
+
+```{r echo = FALSE}
+for(myStudySize in c(50, 200, 1000)){
+  for(myICC in c(0.05, 0.2)){
+  plot <- data |> mutate(plot_value = sqrt(tau2)) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    ProfacSims:::box_plot_cluster_x() +
+     ylab(glue("Tau")) +
+    labs(title = glue("Between study hetrogeneity in {what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+  
+  print(plot)
+  
+  }
+}
+
+```
