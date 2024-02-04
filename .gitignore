@@ -14,3 +14,8 @@ Quarto/december_sims_files/libs/bootstrap/bootstrap-icons.css
 *.png
 *.stswp
 *.html
+*.RData
+*.rdb
+*.rdx
+*.woff
+*.stswp

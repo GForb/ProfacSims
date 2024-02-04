@@ -7,8 +7,8 @@ library(here)
 library(glue)
 
 # Connecting to database
-db_table <- "sim_results_cluster_x"
-sim_name <- "240131-cluster-x"
+db_table <- "sim_results_cluster_x_v2"
+sim_name <- "240203-cluster-x"
 where = glue("sim_name = '{sim_name}'")
 
 always_include <- "n_studies, ICC, R2, study_sample_size_train, model, metric, est, tau2, b_w_ratio, pred_icc, batch_no "

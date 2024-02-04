@@ -4,7 +4,7 @@ format: html
 params:
   what: "R-Squared"
   file_name: "r_squared"
-  sim_name: "240131-cluster-x"
+  sim_name: "240203-cluster-x"
 ---
 
 
@@ -22,7 +22,7 @@ file_name <- paste0(params$file_name, ".RDS")
 
 # Loading files:
 results_folder <- here("Results", "Database-extracts", sim_name)
-
+print(results_folder)
 data_raw <- readRDS(file = here(results_folder, file_name)) 
 data <- data_raw |> tibble()
 cn <- colnames(data)
@@ -40,6 +40,7 @@ for(myStudySize in c(50, 200, 1000)){
   plot <- data |> mutate(plot_value = est) |> 
     filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
     ProfacSims:::box_plot_cluster_x() +
+    ylim(c(0,0.5)) +
     ylab(glue("{what}")) +
     labs(title = glue("{what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
   

@@ -22,6 +22,7 @@ file_name <- paste0(params$file_name, ".RDS")
 
 # Loading files:
 results_folder <- here("Results", "Database-extracts", sim_name)
+print(results_folder)
 
 data_raw <- readRDS(file = here(results_folder, file_name)) 
 data <- data_raw |> tibble()

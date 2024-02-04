@@ -3,7 +3,7 @@ wd <- getwd()
 if(wd != here::here("Quarto")){
   setwd(here::here("Quarto"))
 }
-sim_name <- "240131-cluster-x"
+sim_name <- "240203-cluster-x"
 file_names = c("calib_itl", "calib_slope", "r_squared")
 for (filename in file_names){
   input <- paste0("cluster-x_perf_", filename, ".qmd")
@@ -11,6 +11,7 @@ for (filename in file_names){
   quarto::quarto_render(
         cache_refresh = TRUE,
         input = input,
+        execute_params = list(sim_name = sim_name),
         output_file = paste0(sim_name, "_", filename, ".html")
         )
 }
