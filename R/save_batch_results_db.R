@@ -57,6 +57,7 @@ get_results_df <- function(sim_results, sim_name, filename) {
     as.data.frame()
 }
 
+
 process_betas <- function(data) {
   if(is.null(data$beta_x)) data$beta_x = data$beta_w # beta_x is used as true value for beta. Replacing with beta_w for clustered sims which is the within cluster effect.
   data |>

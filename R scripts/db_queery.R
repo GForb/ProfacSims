@@ -8,8 +8,8 @@ db <- dbConnect(RSQLite::SQLite(), "Results/Database/sim_results.db")
 dbListTables(db)
 
 # Counting rows
-dbGetQuery(db,
-           "SELECT COUNT(*) FROM sim_results_v1")
+dbGetQuery(db,"SELECT COUNT(*) FROM sim_results_v1")
+dbGetQuery(con,"SELECT COUNT(*) FROM db_test")
 
 dbGetQuery(db,
            "SELECT COUNT(*) FROM sim_results_v2")
@@ -40,8 +40,8 @@ dbGetQuery(db,
 )
 
 # Getting column names
-dbGetQuery(db,
-           "SELECT * FROM sim_results_v1 WHERE 1 = 0")
+  dbGetQuery(db,
+             "SELECT * FROM sim_results_v1 WHERE 1 = 0")
 
 # Getting column names
 dbGetQuery(db,
