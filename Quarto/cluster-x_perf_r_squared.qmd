@@ -35,12 +35,12 @@ cn <- colnames(data)
 ## `r what`
 
 ```{r echo = FALSE}
-for(myStudySize in c(50, 200, 1000)){
-  for(myICC in c(0.05, 0.2)){
+for(myStudySize in c(50)){ # , 200, 1000
+  for(myICC in c(0.05)){ #, 0.2
   plot <- data |> mutate(plot_value = est) |> 
-    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC, pred_icc == 0.9, model %in% c("Random intercept - REML", "Random intercetp - REML x1bar")) |> 
     ProfacSims:::box_plot_cluster_x() +
-    ylim(c(0,0.5)) +
+    ylim(c(0,0.2)) +
     ylab(glue("{what}")) +
     labs(title = glue("{what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
   
@@ -58,7 +58,7 @@ for(myStudySize in c(50, 200, 1000)){
 for(myStudySize in c(50, 200, 1000)){
   for(myICC in c(0.05, 0.2)){
   plot <- data |> mutate(plot_value = sqrt(tau2)) |> 
-    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC, model %in% c("Random intercept - REML", "Random intercetp - REML x1bar")) |> 
     ProfacSims:::box_plot_cluster_x() +
      ylab(glue("Tau")) +
     labs(title = glue("Between study hetrogeneity in {what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))

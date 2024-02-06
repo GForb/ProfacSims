@@ -1,5 +1,6 @@
 test_that("sim_rep_", {
-  set.seed(1234)
+  n_metrics <- 4 + 1
+  set.seed(12345)
   model_function_list <- list(model_lmm_random_int_reml, model_lm_fixed_int, model_lm)
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0.05, R2 = 0.5)
   train_data <- generate_continuous(n_studies = 10,  study_sample_size = 50, n_predictors = 12 ,sigmas = sigmas)
@@ -13,7 +14,7 @@ test_that("sim_rep_", {
     intercepts_data = train_data)
 
   results_existing <- sim_rep_existing(models_list = model_list, test_data = test_data_existing)
-  expect_equal(nrow(results_existing), 12)
+  expect_equal(nrow(results_existing), n_metrics*3)
 
   test_data_new <- generate_continuous_new_studies(
     intercept_est_sample_size = 50,
@@ -24,22 +25,23 @@ test_that("sim_rep_", {
     min_study_id = 11)
 
   results_new_data0 <- sim_rep_new_data0(models_list = model_list, test_data = test_data_new)
-  expect_equal(nrow(results_new_data0), 12)
+  expect_equal(nrow(results_new_data0), n_metrics*3)
 
   results_new <-  sim_rep_new_data(models_list = model_list, test_data = test_data_new)
-  expect_equal(nrow(results_new), 12)
+  expect_equal(nrow(results_new), n_metrics*3)
 
 
   results_dynamic <- sim_rep_dynamic(model_function_list = model_function_list, train_data = train_data, test_data = test_data_new)
-  expect_equal(nrow(results_dynamic), 39)
+  expect_equal(nrow(results_dynamic), (n_metrics + 9)*3)
 
   results_wt <- sim_rep_weights(model_function_list = model_function_list, train_data = train_data, test_data = test_data_new)
-  expect_equal(nrow(results_wt), 12)
+  expect_equal(nrow(results_wt), n_metrics*3)
 
 
 })
 
 test_that("sim_rep_continuous_all_eval", {
+  n_metrics <- 4 + 1
   set.seed(12345)
   model_function_list <- list(model_lmm_random_int_reml, model_lm_fixed_int, model_lm)
   sigmas <- get_sigmas(n_predictors = 10, ICC = 0.3, R2 = 0.7)
@@ -54,7 +56,7 @@ test_that("sim_rep_continuous_all_eval", {
     n_predictors = 10
   )
 
-  expect_equal(nrow(results), 210)
+  expect_equal(nrow(results), 234)
 
 
 })
@@ -74,7 +76,7 @@ test_that("sim_rep_continuous_new_data", {
     n_predictors = 10
   )
 
-  expect_equal(nrow(results), 186)
+  expect_equal(nrow(results), 204)
   var_u <- results |> dplyr::filter(metric == 'var_u', model == 'Random intercetp - REML', predict_method == "new0")
   expect_equal(var_u[1,1], var_u[2,1])
 

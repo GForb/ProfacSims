@@ -59,6 +59,14 @@ rsq_oosse <- function(data) {
   oosse::RsquaredSE(MSE = mse, margVar = var_outcome, SEMSE = 1, n = length(predicted_lp), corMSEMST = 0.5)["R2"]
 }
 
+mse <- function(data) {
+  predicted_lp <- data[,1]
+  observed_outcome <- data[,2]
+  n <- length(observed_outcome)
+  mse <- sum((predicted_lp - observed_outcome)^2)/n
+  return(mse)
+}
+
 rsq2 <- function(data) {
   predicted_lp <- data[,1]
   observed_outcome <- data[,2]
@@ -88,6 +96,14 @@ metric_rsqared <- function(predicted_lp, observed_outcome) {
   return(data.frame(metric = "r-squared", coef = coef, se = se))
 }
 
+metric_mse  <-  function(predicted_lp, observed_outcome) {
+  data <- data.frame(predicted_lp = predicted_lp, observed_outcome = observed_outcome)
+  coef <- mse(data)
+  # Use a bootstrap to estimate the variance
+  se <- sqrt(var(replicate(20, mse(data[sample(1:nrow(data), replace = TRUE),]))))
+  return(data.frame(metric = "mse", coef = coef, se = se))
+}
+
 metric_rsqared_old <- function(predicted_lp, observed_outcome) {
   data <- data.frame(predicted_lp = predicted_lp, observed_outcome = observed_outcome)
   coef <- rsq(data)
@@ -107,13 +123,21 @@ evaluate_performance_continuous <- function(test_data, model) {
 
 evaluate_performance_continuous_new_studies <- function(test_data, model){
 
-  evaluate_performance_continuous_generic(test_data = test_data, model = model, predict_function = predict_with_new_intercept_data)
+  evaluate_performance_continuous_generic(
+    test_data = test_data,
+    model = model,
+    predict_function = predict_with_new_intercept_data
+    )
 
 }
 
 
 evaluate_performance_continuous_new_studies0 <- function(test_data, model) {
-  evaluate_performance_continuous_generic(test_data = test_data, model = model, predict_function = predict_average_intercept)
+  evaluate_performance_continuous_generic(
+    test_data = test_data,
+    model = model,
+    predict_function = predict_average_intercept
+    )
 }
 
 evaluate_performance_continuous_generic <-  function(test_data, model, predict_function) {
@@ -140,6 +164,7 @@ evaluate_performance_cont_obs_pred <- function(observed, predicted) {
     metric_calib_slope_cont(predicted, observed),
     metric_calib_itl_cont(predicted, observed),
     metric_rsqared(predicted, observed),
+    metric_mse(predicted, observed),
     make.row.names = FALSE
   )
 }

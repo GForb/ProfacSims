@@ -1,4 +1,5 @@
 test_that("model_evaluate_pipeline", {
+  n_metrics <- 4 +1
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
   train_data <- generate_continuous(
     n_studies = 10,
@@ -16,7 +17,7 @@ test_that("model_evaluate_pipeline", {
     test_data_list = list(test_data),
     evaluate_performance = evaluate_performance_continuous,
     fit_model = model_lm_fixed_int)
-  expect_equal(nrow(cont_results), 4)
+  expect_equal(nrow(cont_results), n_metrics)
   expect_vector(dplyr::filter(cont_results, metric == "var_u")$betas[[1]])
 
   binary_results <- model_evaluate_pipeline(
@@ -24,12 +25,14 @@ test_that("model_evaluate_pipeline", {
     test_data_list = list(generate_cbcl()),
     evaluate_performance = evaluate_performance_binary,
     fit_model = model_logistic_cbcl_test)
-  expect_equal(nrow(cont_results), 4)
+  expect_equal(nrow(binary_results), 4)
 
 
 })
 
 test_that("model_evaluate_pipeline_fitted_model", {
+  n_metrics <- 4 +1
+
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
   train_data <- generate_continuous(
     n_studies = 10,
@@ -47,7 +50,7 @@ test_that("model_evaluate_pipeline_fitted_model", {
     test_data_list = list(test_data),
     evaluate_performance = evaluate_performance_continuous,
     model = model)
-  expect_equal(nrow(cont_results), 4)
+  expect_equal(nrow(cont_results), n_metrics)
   expect_vector(dplyr::filter(cont_results, metric == "var_u")$betas[[1]])
 
 
@@ -55,6 +58,8 @@ test_that("model_evaluate_pipeline_fitted_model", {
 
 
 test_that("sim_rep", {
+  n_metrics <- 4 +1
+
   sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
 
   train_data <- generate_continuous(
@@ -73,7 +78,7 @@ test_that("sim_rep", {
                          test_data = list(test_data),
                          evaluate_performance = evaluate_performance_continuous
   )
-  expect_equal(nrow(sim_results), 8)
+  expect_equal(nrow(sim_results), n_metrics*2)
   expect_equal(ncol(sim_results), 11)
 
 
@@ -93,12 +98,13 @@ test_that("sim_rep", {
 
 
 
-  expect_equal(nrow(sim_results), 8)
+  expect_equal(nrow(sim_results), n_metrics*2)
   expect_equal(ncol(sim_results), 11)
 
 })
 
 test_that("sim_rep_fitted_model",{
+  n_metrics <- 4 + 1
   model_function_list <- list("model_lmm_random_int_reml", "model_lm_fixed_int", "model_lm")
   sigmas <- get_sigmas(n_predictors = 12, ICC = 0.05, R2 = 0.5)
   train_data <- generate_continuous(n_studies = 10,  study_sample_size = 50, n_predictors = 12 ,sigmas = sigmas)
@@ -112,7 +118,7 @@ test_that("sim_rep_fitted_model",{
     intercepts_data = train_data)
 
   results <- sim_rep_fitted_model(fitted_model_list = model_list, test_data = test_data_existing, evaluate_performance = evaluate_performance_continuous)
-  expect_equal(nrow(results), 12)
+  expect_equal(nrow(results), n_metrics*3)
 
   test_data1 <-test_data <-  generate_continuous_new_studies(
     n_studies = 30,
@@ -141,6 +147,7 @@ test_that("sim_rep_fitted_model",{
 })
 
 test_that("sim_rep_continuous", {
+  n_metrics <- 4+1
   sigmas <-  get_sigmas(n_predictors = 12, ICC = 0.3, R2 = 0.7)
 
   sim_results <- sim_rep_continuous(
@@ -150,7 +157,7 @@ test_that("sim_rep_continuous", {
     study_sample_size_test = 5000,
     sigmas = sigmas
   )
-  expect_equal(nrow(sim_results), 8)
+  expect_equal(nrow(sim_results), n_metrics*2)
 
 })
 
@@ -181,14 +188,16 @@ test_that("sim_rep_continuous_new_test_studies", {
     predictor_intercepts = "random"
   )
 
-
-  expect_equal(nrow(sim_results), 12)
+  n_metrics <- 4 +1
+  expect_equal(nrow(sim_results), n_metrics*3)
 
 })
 
 
 
 test_that("do_simulation", {
+  n_metrics <- 4+1
+
   sim_results_test <- do_simulation(nreps = 1,
                                     sim_rep_fun = sim_rep_continuous,
                                     n_studies = 5,
@@ -198,7 +207,7 @@ test_that("do_simulation", {
                                     ICC = 0.3,
                                     R2 = 0.7,
                                     int_pred_corr = 0)
-  expect_equal(nrow(sim_results_test), 8)
+  expect_equal(nrow(sim_results_test), n_metrics*2)
 
 
   do_simulation(
@@ -225,6 +234,8 @@ test_that("do_simulation", {
 
 
 test_that("ipdma_simulation", {
+  n_metrics <- 4+1
+
   set.seed(1234)
   sim_params <- list(
     nreps = 1,
@@ -241,7 +252,7 @@ test_that("ipdma_simulation", {
   sim_results_test <- do.call(ipdma_simulation, sim_params)
 
 
-  expect_equal(nrow(sim_results_test), 128)
+  expect_equal(nrow(sim_results_test), 32*n_metrics)
   expect_equal(ncol(sim_results_test), 26)
 
   set.seed(1234)
