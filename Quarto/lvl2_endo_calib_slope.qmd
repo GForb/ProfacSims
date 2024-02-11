@@ -1,10 +1,10 @@
 ---
-title: "240131-cluster-x-betas - Model Performance"
+title: "240131-level-2-endo - Model Performance"
 format: html
 params:
   what: "Calibration Slope"
   file_name: "calib_slope"
-  sim_name: "240203-cluster-x"
+  sim_name: "240206-lvl2-endo"
 ---
 
 

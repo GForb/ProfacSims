@@ -11,7 +11,7 @@ db_table <- "sim_results_lvl2_endo"
 sim_name <- "240206-lvl2-endo"
 where = glue("sim_name = '{sim_name}'")
 
-always_include <- "n_studies, ICC, R2, study_sample_size_train, model, metric, est, tau2, b_w_ratio, pred_icc, batch_no "
+always_include <- "n_studies, ICC, R2, study_sample_size_train, model, metric, est, tau2, b_w_ratio, pred_icc, int_pred_corr, batch_no "
 
 save_folder <- here::here(glue("Results/Database-extracts/{sim_name}"))
 
