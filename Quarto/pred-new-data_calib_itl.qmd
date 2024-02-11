@@ -46,7 +46,7 @@ options(width = 999)
 
 full_table <- calib_itl |> 
   group_by(model, predict_method, n_studies , ICC, R2,study_sample_size_train, intercept_est_sample_size) |> 
-  quantiles_table_est() 
+  ProfacSims:::quantiles_table_est() 
 
 print(full_table)
 
@@ -98,7 +98,7 @@ ylab = "Calibration in the Large"
 ```
 
 ```{r, fig.height = 6}
-for(what in c("est", "tau")){
+for(what in c("est")){
   for(n_studies in c(4,8,16,32,64)){
       for(sample_size_train in c(50, 200, 1000)){
         for(myICC in c(0.05, 0.2)){

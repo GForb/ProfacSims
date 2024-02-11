@@ -1,0 +1,21 @@
+---
+title: "240131-cluster-x-betas"
+format: html
+---
+
+## Here we go:
+
+```{r echo = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240124-pred-new-data"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+data_raw <- readRDS(file = here(results_folder, "calib_itl.RDS"))
+```

@@ -89,7 +89,8 @@ ylab = "Calibration in the Large"
 ```{r, fig.height = 8}
 for(myICC in c(0, 0.05, 0.2)){
     for(sample_size_train in c(50, 200, 1000)){
-    plot <- calib_itl_adj |> 
+    plot_data <-   calib_itl_adj |> dplyr::filter(ICC == myICC, sample_size_train == sample_size_train)
+    plot <- plot_data |> 
       ProfacSims:::box_plot_ml_fixed(what = "tau", ylab = "Tau", facet_rows = ggplot2::vars(intercept_est_sample_size), facet_cols = ggplot2::vars(R2)) +
       labs(title = "Between study hetrogeneity in calibration in the large",
         subtitle = glue("ICC = {myICC}, study sample size = {sample_size_train}"))

@@ -14,7 +14,7 @@ library(here)
 library(glue)
 
 # Loading files:
-sim_name <- "240131-cluster-x"
+sim_name <- "240203-cluster-x"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
 data_raw <- readRDS(file = here(results_folder, "calib_itl.RDS")) 
@@ -36,7 +36,8 @@ for(myStudySize in c(50, 200, 1000)){
     filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
     ProfacSims:::box_plot_cluster_x() +
     ylab(glue("{what}")) +
-    labs(title = glue("{what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
+    labs(title = glue("{what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}")) +
+    ylim(-0.2, 0.2)
   
   print(plot)
   
