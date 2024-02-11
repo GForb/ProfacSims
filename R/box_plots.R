@@ -183,3 +183,16 @@ box_plot_by_pred_hetro <- function(data, what) {
 
     theme(legend.position = "top")
 }
+
+box_plot_many_pred <- function(data){
+  plot_data <- data |> mutate(model_num = factor(model) |> as.numeric())
+  plot_data |> ggplot2::ggplot(ggplot2::aes(x = model_num, y = est, group = model_num, color = model )) +
+    ggplot2::geom_boxplot(outlier.size = 0.1,) +
+    ggplot2::labs(
+      color = "Model:"
+    ) +
+    ggplot2::facet_grid(cols = ggplot2::vars(n_predictors), labeller = label_both) +
+    guides(color = guide_legend(nrow = 2)) +
+
+    theme(legend.position = "top")
+}

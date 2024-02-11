@@ -1,0 +1,48 @@
+---
+title: "Many pred - Model Performance"
+format: html
+params:
+  what: "Calibration Slope"
+  file_name: "calib_slope"
+  sim_name: "240211-many-pred"
+---
+
+
+```{r echo = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+what <- params$what
+sim_name <- params$sim_name
+file_name <- paste0(params$file_name, ".RDS")
+
+# Loading files:
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+data_raw <- readRDS(file = here(results_folder, file_name)) 
+data <- data_raw |> dplyr::filter(model != "Random intercept - ML", model != "Hausman - centred") |> tibble()
+cn <- colnames(data)
+
+
+```
+
+
+
+## `r what`
+
+```{r echo = FALSE}
+
+  plot <- data |>
+    ProfacSims:::box_plot_many_pred() 
+
+  
+  print(plot)
+  
+
+
+
+```
