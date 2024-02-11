@@ -134,7 +134,6 @@ ylab = "Calibration in the Large"
             
 ```
 
-
 ```{r, fig.height = 6}
 
        

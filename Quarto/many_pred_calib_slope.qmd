@@ -37,7 +37,11 @@ cn <- colnames(data)
 ```{r echo = FALSE}
 
   plot <- data |>
-    ProfacSims:::box_plot_many_pred() 
+    ProfacSims:::box_plot_many_pred() +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  ylab("Calibration slope")
 
   
   print(plot)

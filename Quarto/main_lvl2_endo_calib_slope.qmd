@@ -1,10 +1,10 @@
 ---
-title: "240131-cluster-x-betas - Model Performance"
+title: "240131-level-2-endo - Model Performance"
 format: html
 params:
   what: "Calibration Slope"
   file_name: "calib_slope"
-  sim_name: "240203-cluster-x"
+  sim_name: "240206-lvl2-endo"
 ---
 
 
@@ -34,14 +34,12 @@ cn <- colnames(data)
 
 ## `r what`
 
-
-
-```{r echo = FALSE}
-for(my_n_studies in c(4, 8, 16, 32, 64)){
-  for(myICC in c(0.05, 0.2)){
+```{r largeJ, echo = FALSE}
+for(my_n_studies in c(32)){
+  for(myICC in c(0.05)){
   plot <- data |> mutate(plot_value = est) |> 
     filter(n_studies == my_n_studies, ICC == myICC) |> 
-    ProfacSims:::box_plot_cluster_x() +
+    ProfacSims:::box_plot_lvl2_endo() +
     ylab(glue("{what}")) +
     labs(title = glue("{what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
     scale_y_continuous(limits = c(0.5, 1.5))    
@@ -55,20 +53,23 @@ for(my_n_studies in c(4, 8, 16, 32, 64)){
 
 
 ```
-## Between study hetrogenetiy in `r what`
 
-```{r echo = FALSE}
-for(my_n_studies in c(4, 8, 16, 32, 64)){
-  for(myICC in c(0.05, 0.2)){
-  plot <- data |> mutate(plot_value = sqrt(tau2)) |> 
+```{r smallJ, echo = FALSE}
+for(my_n_studies in c(4)){
+  for(myICC in c(0.05)){
+  plot <- data |> mutate(plot_value = est) |> 
     filter(n_studies == my_n_studies, ICC == myICC) |> 
-    ProfacSims:::box_plot_cluster_x() +
-     ylab(glue("Tau")) +
-    labs(title = glue("Between study hetrogeneity in {what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}"))
+    ProfacSims:::box_plot_lvl2_endo() +
+    ylab(glue("{what}")) +
+    labs(title = glue("{what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
+    scale_y_continuous(limits = c(0.5, 1.5))    
+
   
   print(plot)
   
   }
 }
+
+
 
 ```

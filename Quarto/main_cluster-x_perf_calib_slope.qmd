@@ -36,39 +36,43 @@ cn <- colnames(data)
 
 
 
-```{r echo = FALSE}
-for(my_n_studies in c(4, 8, 16, 32, 64)){
-  for(myICC in c(0.05, 0.2)){
+```{r big_J_slope, echo = FALSE, fig.height = 10}
+for(my_n_studies in c(32)){
+  for(myICC in c(0.05)){
   plot <- data |> mutate(plot_value = est) |> 
-    filter(n_studies == my_n_studies, ICC == myICC) |> 
+    filter(n_studies == my_n_studies, ICC == myICC, pred_icc > 0.1) |> 
     ProfacSims:::box_plot_cluster_x() +
     ylab(glue("{what}")) +
     labs(title = glue("{what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
-    scale_y_continuous(limits = c(0.5, 1.5))    
+    scale_y_continuous(limits = c(0.5, 2))    +
+    scale_x_continuous(breaks = c("0.2" = 1, "0.5" = 2, "0.9" = 3)) 
+
 
   
   print(plot)
   
   }
 }
-
-
-
 ```
-## Between study hetrogenetiy in `r what`
 
-```{r echo = FALSE}
-for(my_n_studies in c(4, 8, 16, 32, 64)){
-  for(myICC in c(0.05, 0.2)){
-  plot <- data |> mutate(plot_value = sqrt(tau2)) |> 
-    filter(n_studies == my_n_studies, ICC == myICC) |> 
+```{r four_slope, echo = FALSE, fig.height = 10}
+for(my_n_studies in c(4)){
+  for(myICC in c(0.05)){
+  plot <- data |> mutate(plot_value = est) |> 
+    filter(n_studies == my_n_studies, ICC == myICC, pred_icc > 0.1) |> 
     ProfacSims:::box_plot_cluster_x() +
-     ylab(glue("Tau")) +
-    labs(title = glue("Between study hetrogeneity in {what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}"))
+    ylab(glue("{what}")) +
+    labs(title = glue("{what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
+    scale_y_continuous(limits = c(0.5, 2))    +
+    scale_x_continuous(breaks = c("0.2" = 1, "0.5" = 2, "0.9" = 3)) 
+
+
   
   print(plot)
   
   }
 }
+
+
 
 ```
