@@ -103,7 +103,7 @@ mse <- DBI::dbGetQuery(db,
 ) |> correct_model_spelling()
 
 
-saveRDS(mse, file = here(save_folder, "mse"))
+saveRDS(mse, file = here(save_folder, "mse.RDS"))
 
 DBI::dbDisconnect(db)
 

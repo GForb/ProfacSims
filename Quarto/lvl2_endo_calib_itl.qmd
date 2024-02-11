@@ -2,8 +2,8 @@
 title: "240131-level-2-endo - Model Performance"
 format: html
 params:
-  what: "Calibration Slope"
-  file_name: "calib_slope"
+  what: "Calibration In the Large"
+  file_name: "calib_itl"
   sim_name: "240206-lvl2-endo"
 ---
 
@@ -32,17 +32,18 @@ cn <- colnames(data)
 
 
 
-## `r what`
+
+## Calib ITL
 
 ```{r echo = FALSE}
-for(my_n_studies in c(4, 8, 16, 32, 64)){
+for(myStudySize in c(50, 200, 1000)){
   for(myICC in c(0.05, 0.2)){
   plot <- data |> mutate(plot_value = est) |> 
-    filter(n_studies == my_n_studies, ICC == myICC) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
     ProfacSims:::box_plot_lvl2_endo() +
     ylab(glue("{what}")) +
-    labs(title = glue("{what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
-    scale_y_continuous(limits = c(0.5, 1.5))    
+    labs(title = glue("{what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}")) +
+    scale_y_continuous(breaks = c(-0.2, 0, 0.2), limits = c(-0.2, 0.2))    
 
   
   print(plot)
@@ -53,16 +54,18 @@ for(my_n_studies in c(4, 8, 16, 32, 64)){
 
 
 ```
-## Between study hetrogenetiy in `r what`
+## Tau
 
 ```{r echo = FALSE}
-for(my_n_studies in c(4, 8, 16, 32, 64)){
+for(myStudySize in c(50, 200, 1000)){
   for(myICC in c(0.05, 0.2)){
   plot <- data |> mutate(plot_value = sqrt(tau2)) |> 
-    filter(n_studies == my_n_studies, ICC == myICC) |> 
+    filter(study_sample_size_train == myStudySize, ICC == myICC) |> 
     ProfacSims:::box_plot_lvl2_endo() +
      ylab(glue("Tau")) +
-    labs(title = glue("Between study hetrogeneity in {what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}"))
+    scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3), limits = c(0, 0.3))   + 
+
+    labs(title = glue("Between study hetrogeneity in {what}"), subtitle = glue("Study sample size: {myStudySize}, ICC: {myICC}"))
   
   print(plot)
   
