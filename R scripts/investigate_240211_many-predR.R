@@ -3,6 +3,8 @@ library(tidyverse)
 sim_name <- "240211-many-pred"
 i <- 1
 
+betas <- data |> slice(5) |> select(betas)
+betas2 <- data |> slice(10) |> select(betas)
 
 results_folder <- here::here("Results/ClusterSims/", sim_name)
 save_time = lubridate::now()
