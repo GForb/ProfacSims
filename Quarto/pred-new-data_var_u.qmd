@@ -21,9 +21,6 @@ var_u <- readRDS(file = here(results_folder, "var_u.RDS"))
 
 ```
 
-
-
-
 ```{r, echo = FALSE}
 summaries_var_u <- var_u |> 
   group_by(n_studies, ICC, R2, study_sample_size_train, model, predict_method, intercept_est_sample_size) |> 
@@ -54,12 +51,35 @@ max_converge <- max(summaries_var_u$n)
 
 Across all scenarios and models including a random component, the minimum number of models reporting a random intercept variance is `r min_converge` and the maximum number is `r max_converge`.
 
-
 ```{r}
 n <- summaries_var_u |> filter(model == "Random intercept - REML" | model == "Random intercept - ML") |> select(n)
 min(n)
 max(n)
 ```
+```{r zeros_plot, fig.height = 6}
+for(myR2 in c(0.4)){
+  plot_data <- var_u |> 
+   filter(predict_method == "new0", R2 == myR2, ICC == 0.05)
+  plot <- plot_data |> 
+    ProfacSims:::var_u_zeros_plot()
+  
+  plot <- plot + ggplot2::ggtitle(glue("Random intercept variance: R-sqaured = {myR2}, ICC = 0.05")) 
+    print(plot)
+}
+```
+
+```{r var_u_plot, fig.height = 6}
+for(myR2 in c(0.4)){
+  plot_data <- var_u |> 
+   filter(predict_method == "new0", R2 == myR2, ICC == 0.05)
+  plot <- plot_data |> 
+    ProfacSims:::box_plot_error_var_u_no_facet_rows()
+  
+  plot <- plot + ggplot2::ggtitle(glue("Random intercept variance: R-sqaured = {myR2}, ICC = 0.05")) 
+    print(plot)
+}
+```
+
 ## Random intercept variance
 
 ```{r, fig.height = 6}
@@ -73,6 +93,3 @@ for(myR2 in c(0.4, 0.7)){
     print(plot)
 }
 ```
-
-
-
