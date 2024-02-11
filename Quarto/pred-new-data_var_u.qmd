@@ -56,7 +56,7 @@ n <- summaries_var_u |> filter(model == "Random intercept - REML" | model == "Ra
 min(n)
 max(n)
 ```
-```{r zeros_plot, fig.height = 6}
+```{r zeros_plot, fig.height = 4}
 for(myR2 in c(0.4)){
   plot_data <- var_u |> 
    filter(predict_method == "new0", R2 == myR2, ICC == 0.05)
@@ -68,7 +68,7 @@ for(myR2 in c(0.4)){
 }
 ```
 
-```{r var_u_plot, fig.height = 6}
+```{r var_u_plot, fig.height = 4}
 for(myR2 in c(0.4)){
   plot_data <- var_u |> 
    filter(predict_method == "new0", R2 == myR2, ICC == 0.05)

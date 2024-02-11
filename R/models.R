@@ -4,7 +4,6 @@ model_lm_cbcl_test <- function(data) {
   return(model)
 
 }
-attr(model_lm_cbcl_test, "name") <- "lm1"
 
 model_lm_cbcl_test2 <- function(data) {
   model <- stats::lm("cbcl ~ cbcl2", data = data)
@@ -12,7 +11,6 @@ model_lm_cbcl_test2 <- function(data) {
   return(model)
 
 }
-attr(model_lm_cbcl_test2, "name") <- "lm2"
 
 model_logistic_cbcl_test <- function(data) {
   model <- stats::glm("cbcl_bin ~ studyid + cbcl2", data = data, family = binomial)
@@ -20,7 +18,6 @@ model_logistic_cbcl_test <- function(data) {
   return(model)
 
 }
-attr(model_logistic_cbcl_test, "name") <- "logistic"
 
 model_lm <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -31,16 +28,14 @@ model_lm <- function(data) {
   return(model)
 
 }
-attr(model_lm, "name") <- "Not adjusting for study"
 
 model_lm_fixed_int<- function(data) {
   x_text = data |> get_x_formula_text()
   formula = paste("y ~ studyid +", x_text) |> as.formula()
-  model <- stats::lm(formula, data = data, weights = data$wt)
+  model <- stats::lm(formula, data = data, , weights = data$wt)
   attr(model, "name") <- "Fixed intercept"
   return(model)
 }
-attr(model_lm_fixed_int, "name") <- "Fixed intercept"
 
 model_lmm_random_int_reml <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -49,7 +44,6 @@ model_lmm_random_int_reml <- function(data) {
   attr(model, "name") <- "Random intercetp - REML"
   return(model)
 }
-attr(model_lmm_random_int_reml, "name") <- "Random intercetp - REML"
 
 model_lmm_random_int_reml_weight <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -58,8 +52,6 @@ model_lmm_random_int_reml_weight <- function(data) {
   attr(model, "name") <- "Random intercetp - REML"
   return(model)
 }
-attr(model_lmm_random_int_reml_weight, "name") <- "Random intercetp - REML"
-
 
 model_lmm_random_int_ml <- function(data) {
   x_text = data |> get_x_formula_text()
@@ -68,56 +60,10 @@ model_lmm_random_int_ml <- function(data) {
   attr(model, "name") <- "Random intercetp - ML"
   return(model)
 }
-attr(model_lmm_random_int_ml, "name") <- "Random intercetp - ML"
-
-model_lmm_reml_x1bar <- function(data){
-  x1_b <- stats::aggregate(x1 ~ studyid, data = data, mean)
-  colnames(x1_b)[2] <- "x1_b"
-  data <- dplyr::left_join(data, x1_b, by = "studyid")
-
-  data$x1_w <- data$x1 - data$x1_b
-  formula = paste("y ~ x1_w + x1_b + (1|studyid)") |> as.formula()
-  model <- lme4::lmer(formula, data = data , weights = data$wt)
-  attr(model, "name") <- "Random intercetp - REML x1bar"
-  attr(model, "x1_centered") <- TRUE
-  return(model)
-}
-attr(model_lmm_reml_x1bar, "name") <- "Random intercetp - REML x1bar"
-
-
-
-model_lmm_lm_hausman <- function(data) {
-  random_model <- model_lmm_random_int_reml(data)
-  fixed_model <- model_lm_fixed_int(data)
-  htest <- phtest_glmer(glmerMod = random_model, glmMod = fixed_model)
-  if (htest$p.value <0.05) {
-    model <- fixed_model
-  } else {
-    model <- random_model
-  }
-  attr(model, "name") <- "Hausman"
-  return(model)
-}
-attr(model_lmm_lm_hausman, "name") <- "Hausman"
-
-model_lmm_lm_hausman_xbar <- function(data) {
-  random_model <- model_lmm_random_int_reml(data)
-  fixed_model <- model_lm_fixed_int(data)
-  htest <- phtest_glmer(glmerMod = random_model, glmMod = fixed_model)
-  if (htest$p.value <0.05) {
-    model <- fixed_model
-  } else {
-    model <- model_lmm_reml_x1bar(data)
-  }
-  attr(model, "name") <- "Hausman - centred"
-  return(model)
-}
-attr(model_lmm_lm_hausman, "name") <- "Hausman - centred"
-
 
 get_x_formula_text <- function(data) {
   data |>
-    dplyr::select(dplyr::starts_with("x", ignore.case = FALSE)) |>
+    dplyr::select(starts_with("x")) |>
     colnames() |>
     paste(collapse = " + ")
 }
@@ -162,33 +108,3 @@ predict_random_int_blup <- function(model, newdata) {
 
   return(alldata$blup)
 }
-
-
-phtest_glmer <- function (glmerMod, glmMod, ...)  {  ## changed function call
-
-  # code from here: https://stackoverflow.com/questions/23630214/hausmans-specification-test-for-glmer-from-lme4
-
-  coef.wi <- coef(glmMod)
-  coef.re <- lme4::fixef(glmerMod)  ## changed coef() to fixef() for glmer
-  vcov.wi <- stats::vcov(glmMod)
-  vcov.re <- stats::vcov(glmerMod)
-  names.wi <- names(coef.wi)
-  names.re <- names(coef.re)
-  coef.h <- names.re[names.re %in% names.wi]
-  coef.h <- coef.h[coef.h != c("(Intercept)")]
-  dbeta <- coef.wi[coef.h] - coef.re[coef.h]
-  df <- length(dbeta)
-  dvcov <- vcov.re[coef.h, coef.h] - vcov.wi[coef.h, coef.h]
-  stat <- abs(t(dbeta) %*% as.matrix(solve(dvcov)) %*% dbeta)  ## added as.matrix()
-  pval <- pchisq(stat, df = df, lower.tail = FALSE)
-  names(stat) <- "chisq"
-  parameter <- df
-  names(parameter) <- "df"
-  alternative <- "one model is inconsistent"
-  res <- list(statistic = stat, p.value = pval, parameter = parameter,
-              method = "Hausman Test",  alternative = alternative,
-              data.name=deparse(getCall(glmerMod)$data))  ## changed
-  class(res) <- "htest"
-  return(res)
-}
-
