@@ -1,0 +1,38 @@
+---
+title: "Prediction with new data for intercept - Supplementary material"
+format: pdf
+editor: visual
+---
+
+```{r echo = FALSE, include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240124-pred-new-data"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+
+
+```
+
+
+## Random intercept variance
+
+```{r, fig.height = 16, fig.height = 8, echo = FALSE}
+var_u <- readRDS(file = here(results_folder, "var_u.RDS"))
+
+for(myR2 in c(0.4, 0.7)){
+  plot_data <- var_u |> 
+   filter(predict_method == "new0", R2 == myR2)
+  plot <- plot_data |> 
+    ProfacSims:::box_plot_error_var_u() #
+  
+  plot <- plot + ggplot2::ggtitle(glue("Random intercept variance: R-sqaured = {myR2}")) 
+    print(plot)
+}
+```
