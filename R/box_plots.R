@@ -144,13 +144,14 @@ box_plot_by_pred_ss <- function(data, what) {
                    model == "Fixed intercept" ~ x - 0.07,
                    model == "Random intercept - REML" ~ x + 0.07,
                    model == "Random intercept - ML" ~ x + 0.21))
-
+    facet_cols = ggplot2::vars(R2)
+    facet_rows = ggplot2::vars(ICC)
     plot_data |> ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model )) +
       ggplot2::geom_boxplot(outlier.size = 0.1) +
       ggplot2::labs(
        x = "Intercept estimation sample size",
        color = "Model:"
       ) +
-      ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed") +
+      ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed", labeller = label_both) +
       theme(legend.position = "top")
 }
