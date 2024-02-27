@@ -82,7 +82,7 @@ ylab = "Calibration in the Large"
            filter(predict_method != "new_dynamic") 
 
           plot <- plot_data |> 
-            box_plot_by_pred_ss(what = "est") #ProfacSims:::
+            ProfacSims:::box_plot_by_pred_ss(what = "est") 
           
           plot <- plot + 
             labs(title = "Calibration in the large across all scenarios") +
@@ -102,7 +102,7 @@ ylab = "Calibration in the Large"
            mutate(tau = sqrt(tau2))
 
           plot <- plot_data |> 
-            ProfacSims:::box_plot_by_pred_hetro(what = "tau") 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
           
           plot <- plot + 
             labs(title = "Hetrogeneity in Calibration in the large",
@@ -123,7 +123,7 @@ ylab = "Calibration in the Large"
            mutate(tau = sqrt(tau2))
 
           plot <- plot_data |> 
-            ProfacSims:::box_plot_by_pred_hetro(what = "tau") 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
           
           plot <- plot + 
             labs(title = "Hetrogeneity in Calibration in the large",

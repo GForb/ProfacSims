@@ -148,6 +148,7 @@ box_plot_by_pred_ss <- function(data, what) {
     facet_rows = ggplot2::vars(ICC)
     plot_data |> ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model )) +
       ggplot2::geom_boxplot(outlier.size = 0.1) +
+      scale_x_continuous(breaks = c(1,2,3,4), labels = c("0 \n (marginal prediction)", "10", "50", "200")) +
       ggplot2::labs(
        x = "Intercept estimation sample size",
        color = "Model:"
