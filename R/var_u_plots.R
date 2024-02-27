@@ -6,7 +6,9 @@ box_plot_error_var_u <- function(sim_results) {
   sim_results_mod <- sim_results |>
     dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Random intercept - REML" ~ n_studies*2^-0.1,
                                                    model == "Random intercept - ML" ~ n_studies*2^0.1),
-                  sigma2_u = sigma_u^2
+                  sigma2_u = sigma_u^2,
+                  study_sample_size_train = factor(levels = c("50", "200", "1000"), labels = c("Study size: 50","Study size: 200", "Study size: 1000" ))
+
     )
 
   facet_cols <-  ggplot2::vars(study_sample_size_train)
@@ -19,7 +21,7 @@ box_plot_error_var_u <- function(sim_results) {
       cols = facet_cols,
       rows = facet_rows, switch = "y",
       scales = "free_y",
-      labeller = label_both) +
+      labeller = label_value) +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",

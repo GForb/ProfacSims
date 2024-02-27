@@ -135,20 +135,22 @@ box_plot_ml_fixed<- function(data,
 }
 
 box_plot_by_pred_ss <- function(data, what) {
-  plot_data <- data |> mutate(factor_int_est_ss = factor(intercept_est_sample_size),
-                 x = factor_int_est_ss |> as.numeric) |>
+  plot_data <- data |> dplyr::mutate(
+    factor_int_est_ss = factor(intercept_est_sample_size),
+     x = factor_int_est_ss |> as.numeric()
+    ) |>
                  dplyr::mutate(x = dplyr::case_when(
                    model == "Not adjusting for study" ~ x - 0.21,
                    model == "Fixed intercept" ~ x - 0.07,
                    model == "Random intercept - REML" ~ x + 0.07,
-                   model == "Random intercept - ML" ~ x + 0.21)) |>
+                   model == "Random intercept - ML" ~ x + 0.21))
 
     plot_data |> ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model )) +
-    ggplot2::geom_boxplot(outlier.size = 0.1,) +
-    ggplot2::labs(
-      x = "Intercept estimation sample size",
-      color = "Model:"
-    ) +
-    ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed") +
-    theme(legend.position = "top")
+      ggplot2::geom_boxplot(outlier.size = 0.1) +
+      ggplot2::labs(
+       x = "Intercept estimation sample size",
+       color = "Model:"
+      ) +
+      ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed") +
+      theme(legend.position = "top")
 }
