@@ -7,7 +7,8 @@ box_plot_error_var_u <- function(sim_results) {
     dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Random intercept - REML" ~ n_studies*2^-0.1,
                                                    model == "Random intercept - ML" ~ n_studies*2^0.1),
                   sigma2_u = sigma_u^2,
-                  study_sample_size_train = factor(levels = c("50", "200", "1000"), labels = c("Study size: 50","Study size: 200", "Study size: 1000" ))
+                  study_sample_size_train = factor(study_sample_size_train, levels = c("50", "200", "1000"), labels = c("Study size: 50","Study size: 200", "Study size: 1000" )),
+                  ICC = factor(ICC, levels = c("0", "0.05", "0.2"), labels = c("ICC: 0","ICC: 0.05", "ICC: 0.2"))
 
     )
 
