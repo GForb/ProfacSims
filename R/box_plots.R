@@ -156,7 +156,7 @@ box_plot_by_pred_ss <- function(data, what) {
       ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed", labeller = label_both) +
       theme(legend.position = "top") +
       guides(color = guide_legend(nrow = 2))+
-      scale_color_brewer(type = "div", palette = 2)
+      scale_color_brewer(type = "div", palette = 3)
 }
 
 box_plot_by_pred_ss_supp  <- function(data, what) {
