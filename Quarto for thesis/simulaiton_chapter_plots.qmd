@@ -93,3 +93,85 @@ calib_itl_stacked <- readRDS(file = here(results_folder, "calib_itl_stacked.RDS"
   
             
 ```
+
+## R-squared
+```{R}
+r_squared_stacked <- readRDS(file = here(results_folder, "r_squared_stacked.RDS"))
+
+```
+
+```{r r2_est, fig.height = 8, echo = FALSE}
+          plot_data <- r_squared_stacked |> 
+           filter(
+             predict_method != "new_dynamic", 
+             n_studies ==4, 
+             study_sample_size_train ==50) 
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "est") #
+          
+          plot <- plot + 
+            labs(
+              title = "R-squared",
+              subtitle = "Training data: 4 studies of size 50"
+            ) +
+            ylab("R-squared") +
+            scale_y_continuous(limits = c(0, NA))
+          print(plot)
+      
+```
+
+```{r r2_hetro_small, fig.height = 8}
+
+  my_n_studies <- 4        
+  my_sample_size_train =50  
+
+          plot_data <- r_squared_stacked |> 
+           filter(predict_method != "new_dynamic", n_studies == my_n_studies, study_sample_size_train == my_sample_size_train) |> 
+           mutate(tau = sqrt(tau2))
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
+          
+          plot <- plot + 
+            labs(title = "Hetrogeneity R-squared",
+                 subtitle = glue("Training data: {my_n_studies} studies of size {my_sample_size_train} ")) +
+            ylab("Tau")
+          print(plot)
+  
+            
+```
+
+```{r}
+dynamci_data <- 
+  bind_rows(calib_itl_stacked, calib_slope_stacked, r_squared_stacked)  |> 
+  filter(n_studies ==4, study_sample_size_train ==50, R2 ==0.4)
+```
+
+```{r dynamic_est, fig.height = 8}
+
+          plot <- dynamci_data |> 
+            ProfacSims:::box_plot_dynamic_vs(what = "est") 
+          
+          plot <- plot + 
+            labs(title = "Comparing dynamic predictions to new intercepts only: Estimates",
+                 subtitle = glue("Training data: 4 studies of size 50")) +
+            ylab("Estimate")
+          print(plot)
+  
+            
+```
+
+```{r dynamic_est, fig.height = 8}
+
+          plot <- dynamci_data |> 
+            ProfacSims:::box_plot_dynamic_vs(what = "tau") 
+          
+          plot <- plot + 
+            labs(title = "Comparing dynamic predictions to new intercepts only: Hetrogeneity",
+                 subtitle = glue("Training data: 4 studies of size 50")) +
+            ylab("Tau")
+          print(plot)
+  
+            
+```

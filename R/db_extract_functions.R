@@ -3,7 +3,7 @@ create_stacked_results <- function(data) {
   data0 <- data |> filter(predict_method == "new0", intercept_est_sample_size == 10) |>
     mutate(intercept_est_sample_size = 0)
   data_stacked <- data |> filter(predict_method != "new0") |> bind_rows(data0)
-  return(data)
+  return(data_stacked)
 }
 
 correct_model_spelling <- function(data) {
