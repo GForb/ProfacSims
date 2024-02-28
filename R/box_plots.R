@@ -143,7 +143,9 @@ box_plot_by_pred_ss <- function(data, what) {
                    model == "Not adjusting for study" ~ x - 0.21,
                    model == "Fixed intercept" ~ x - 0.07,
                    model == "Random intercept - REML" ~ x + 0.07,
-                   model == "Random intercept - ML" ~ x + 0.21))
+                   model == "Random intercept - ML" ~ x + 0.21)) |>
+    mutate(model = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - REML",  "Random intercept - ML")))
+
     facet_cols = ggplot2::vars(R2)
     facet_rows = ggplot2::vars(ICC)
     plot_data |> ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model )) +
@@ -169,7 +171,7 @@ box_plot_by_pred_ss_supp  <- function(data, what) {
       model == "Fixed intercept" ~ x - 0.07,
       model == "Random intercept - REML" ~ x + 0.07,
       model == "Random intercept - ML" ~ x + 0.21)) |>
-    mutate(model = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - REML",  "Random intercept - ML")),
+    dplyr::mutate(model = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - REML",  "Random intercept - ML")),
            StudySize = study_sample_size_train)
   facet_cols = ggplot2::vars(StudySize)
   facet_rows = ggplot2::vars(ICC, R2)
@@ -185,5 +187,5 @@ box_plot_by_pred_ss_supp  <- function(data, what) {
                         scales = "fixed", labeller = label_both) +
     theme(legend.position = "top") +
     guides(color = guide_legend(nrow = 2)) +
-    scale_color_brewer(type = "div", palette = 2)
+    scale_color_brewer(type = "div", palette = 3)
 }
