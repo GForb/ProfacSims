@@ -14,14 +14,8 @@ where = glue("sim_name = '{sim_name}'")
 save_folder <- here::here(glue("Results/Database-extracts/{sim_name}"))
 
 
-correct_model_spelling <- function(data) {
-  data <- data |>
-    mutate(
-      model = case_when(model == "Random intercetp - ML" ~ "Random intercept - ML",
-                        model == "Random intercetp - REML" ~ "Random intercept - REML",
-                        TRUE ~ model))
 
-}
+
 
 
 db <- dbConnect(RSQLite::SQLite(), here("Results/Database/sim_results.db"))
@@ -53,9 +47,14 @@ calib_itl <-  DBI::dbGetQuery(db,
     FROM {table}
     WHERE {where}  AND metric = 'calib_itl'
   ")
-) |> correct_model_spelling()
+) |>
+  correct_model_spelling() |>
+  mutate(tau = sqrt(tau2))
 
 saveRDS(calib_itl, file = here(save_folder, "calib_itl.RDS"))
+
+calib_itl_stacked <- create_stacked_results(calib_itl)
+saveRDS(calib_itl_stacked, file = here(save_folder, "calib_itl_stacked.RDS"))
 
 # Calib-Slope
 calib_slope <-  DBI::dbGetQuery(db,
@@ -64,10 +63,15 @@ calib_slope <-  DBI::dbGetQuery(db,
     FROM {table}
     WHERE {where}  AND metric = 'calib_slope'
   ")
-) |> correct_model_spelling()
+) |>
+  correct_model_spelling() |>
+  mutate(tau = sqrt(tau2))
 
 saveRDS(calib_slope, file = here(save_folder, "calib_slope.RDS"))
 
+
+calib_slope_stacked <- create_stacked_results(calib_slope)
+saveRDS(calib_slope_stacked, file = here(save_folder, "calib_slope_stacked.RDS"))
 
 # R-squared
 
@@ -77,9 +81,16 @@ r_squared <- DBI::dbGetQuery(db,
     FROM {table}
     WHERE {where}  AND metric = 'r-squared'
   ")
-) |> correct_model_spelling()
+) |>
+  correct_model_spelling() |>
+  mutate(tau = sqrt(tau2))
 
 saveRDS(r_squared, file = here(save_folder, "r_squared.RDS"))
+
+
+r_squared_stacked <- create_stacked_results(r_squared)
+saveRDS(r_squared_stacked, file = here(save_folder, "r_squared_stacked.RDS"))
+
 
 DBI::dbDisconnect(db)
 

@@ -1,0 +1,95 @@
+---
+title: "Prediction with new data for intercept - Supplementary material"
+format: 
+  html:
+    number-sections: True
+    fig-height: 10
+    fig-width: 8
+editor: source
+execute: 
+  echo: FALSE
+---
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240124-pred-new-data"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+
+
+```
+
+## Calibration in the large
+```{R}
+calib_itl_stacked <- readRDS(file = here(results_folder, "calib_itl_stacked.RDS"))
+
+```
+
+```{r calib_itl_est, fig.height = 8, echo = FALSE}
+          plot_data <- calib_itl_stacked |> 
+           filter(
+             predict_method != "new_dynamic", 
+             n_studies ==4, 
+             study_sample_size_train ==50) 
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "est") #
+          
+          plot <- plot + 
+            labs(
+              title = "Calibration in the large",
+              subtitle = "Training data: 4 studies of size 50"
+            ) +
+            ylab("Calibration in the large")
+          print(plot)
+      
+```
+
+```{r calib_itl_hetro_small, fig.height = 8}
+
+  my_n_studies <- 4        
+  my_sample_size_train =50  
+
+          plot_data <- calib_itl_stacked |> 
+           filter(predict_method != "new_dynamic", n_studies == my_n_studies, study_sample_size_train == my_sample_size_train) |> 
+           mutate(tau = sqrt(tau2))
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
+          
+          plot <- plot + 
+            labs(title = "Hetrogeneity in Calibration in the large",
+                 subtitle = glue("Training data: {my_n_studies} studies of size {my_sample_size_train} ")) +
+            ylab("Tau")
+          print(plot)
+  
+            
+```
+
+```{r calib_itl_hetro_large, fig.height = 8}
+
+  my_n_studies <- 64        
+  my_sample_size_train =1000  
+
+          plot_data <- calib_itl_stacked |> 
+           filter(predict_method != "new_dynamic", n_studies == my_n_studies, study_sample_size_train == my_sample_size_train) |> 
+           mutate(tau = sqrt(tau2))
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
+          
+          plot <- plot + 
+            labs(title = "Hetrogeneity in Calibration in the large",
+                 subtitle = glue("Training data: {my_n_studies} studies of size {my_sample_size_train} ")) +
+            ylab("Tau")
+          print(plot)
+  
+            
+```

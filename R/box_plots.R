@@ -159,7 +159,7 @@ box_plot_by_pred_ss <- function(data, what) {
       scale_color_brewer(type = "div", palette = 2)
 }
 
-box_plot_by_pred_ss_supp <- box_plot_by_pred_ss <- function(data, what) {
+box_plot_by_pred_ss_supp  <- function(data, what) {
   plot_data <- data |> dplyr::mutate(
     factor_int_est_ss = factor(intercept_est_sample_size),
     x = factor_int_est_ss |> as.numeric(),
