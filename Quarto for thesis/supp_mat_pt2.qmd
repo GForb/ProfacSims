@@ -3,7 +3,7 @@ title: "Prediction with new data for intercept - Supplementary material part 2"
 format: 
   pdf:
     number-sections: True
-    fig-height: 4.5
+    fig-height: 10
     fig-width: 8
 editor: visual
 execute: 
@@ -24,10 +24,9 @@ library(glue)
 sim_name <- "240211_cluster-x"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-studies_vector <- c(4)
+studies_vector <- c(4, 8)
 icc_vector <- c(0.05, 0.2)
 ```
-{{< pagebreak >}}
 ## Calibration in the large
 ```{R}
 calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |> 
@@ -40,20 +39,18 @@ calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |>
 ```{r calib_itl_est}
 calib_itl$plot_value = calib_itl$est
 for(my_n_studies in studies_vector){
-  for(myICC in icc_vector){
-    plot_data <- calib_itl |> filter(n_studies ==my_n_studies, myICC ==myICC) 
+    plot_data <- calib_itl |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x_sup() + #
         ylab(glue("Calibration In the Large")) +
         scale_y_continuous(limits = c(-0.25,0.25)) +
         labs(
               title = "Calibration in the large",
-              subtitle = glue("Training data: {my_n_studies}, ICC: {myICC}")
+              subtitle = glue("Training data: {my_n_studies} studies")
             )
       
         print(plot)
   }
-}
 ```
 
 
@@ -63,20 +60,71 @@ for(my_n_studies in studies_vector){
 ```{r calib_itl_hetro}
 calib_itl$plot_value = sqrt(calib_itl$tau2)
 for(my_n_studies in studies_vector){
-  for(myICC in icc_vector){
-    plot_data <- calib_itl |> filter(n_studies ==my_n_studies, myICC ==myICC) 
+    plot_data <- calib_itl |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x_sup() + #
         ylab(glue("Calibration In the Large")) +
         labs(
               title = "Between study Hetrogeneity in Calibration in the large",
-              subtitle = glue("Training data: {my_n_studies}, ICC: {myICC}")
+              subtitle = glue("Training data: {my_n_studies} studies")
             ) +
         ylab("Tau")
       
+        if(my_n_studies <20){
+          plot <- plot +  scale_y_continuous(limits = c(0, 0.5))
+
+        }
+      
         print(plot)
   }
-}
+
+```
+
+## Calibration Slope
+```{R}
+calib_slope <- readRDS(file = here(results_folder, "calib_slope.RDS")) |> 
+  filter(model != "Random intercept - ML", model != "Hausman - centred") |> 
+  ProfacSims:::correct_model_spelling()
+
+```
+
+### Estimates
+```{r calib_slope_est}
+calib_slope$plot_value = calib_slope$est
+for(my_n_studies in studies_vector){
+    plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
+      plot <- plot_data |> 
+        ProfacSims:::box_plot_cluster_x_sup() + #
+        ylab(glue("Calibration In the Large")) +
+        labs(
+              title = "Calibration Slope",
+              subtitle = glue("Training data: {my_n_studies} studies")
+            ) +  scale_y_continuous(limits = c(0.75, 1.75))
+        
+      
+        print(plot)
+  }
 ```
 
 
+
+### Hetrogeneity
+
+```{r calib_slope_hetro}
+calib_slope$plot_value = sqrt(calib_slope$tau2)
+for(my_n_studies in studies_vector){
+    plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
+      plot <- plot_data |> 
+        ProfacSims:::box_plot_cluster_x_sup() + #
+        ylab(glue("Calibration In the Large")) +
+        labs(
+              title = "Between study Hetrogeneity in Calibration Slope",
+              subtitle = glue("Training data: {my_n_studies} studies")
+            ) +
+        ylab("Tau") +  scale_y_continuous(limits = c(0, 0.1))
+      
+      
+        print(plot)
+  }
+
+```
