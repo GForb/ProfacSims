@@ -1,13 +1,14 @@
 ---
 title: "Prediction with new data for intercept - Supplementary material part 2"
 format: 
-  html:
+  pdf:
     number-sections: True
-    fig-height: 10
+    fig-height: 4.5
     fig-width: 8
 editor: visual
 execute: 
   echo: FALSE
+  warning: FALSE
 
 ---
 
@@ -23,10 +24,10 @@ library(glue)
 sim_name <- "240211_cluster-x"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-
-
+studies_vector <- c(4, 8, 16, 32, 64)
+icc_vector <- c(0.05, 0.2)
 ```
-
+{{< pagebreak >}}
 ## Calibration in the large
 ```{R}
 calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |> 
@@ -38,8 +39,8 @@ calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |>
 ### Estimates
 ```{r calib_itl_est}
 calib_itl$plot_value = calib_itl$est
-for(my_n_studies in c(4, 8, 16, 32, 64)){
-  for(myICC in c(0.05, 0.2)){
+for(my_n_studies in studies_vector){
+  for(myICC in icc_vector){
     plot_data <- calib_itl |> filter(n_studies ==my_n_studies, myICC ==myICC) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x() + #
@@ -61,8 +62,8 @@ for(my_n_studies in c(4, 8, 16, 32, 64)){
 
 ```{r calib_itl_hetro}
 calib_itl$plot_value = sqrt(calib_itl$tau2)
-for(my_n_studies in c(4, 8, 16, 32, 64)){
-  for(myICC in c(0.05, 0.2)){
+for(my_n_studies in studies_vector){
+  for(myICC in icc_vector){
     plot_data <- calib_itl |> filter(n_studies ==my_n_studies, myICC ==myICC) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x() + #
