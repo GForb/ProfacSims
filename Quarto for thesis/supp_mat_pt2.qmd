@@ -47,7 +47,7 @@ for(my_n_studies in studies_vector){
         labs(
               title = "Calibration in the large",
               subtitle = glue("Training data: {my_n_studies} studies")
-            ) 
+            ) +
         
       
         print(plot)

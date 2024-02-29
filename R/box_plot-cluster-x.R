@@ -27,5 +27,5 @@ box_plot_cluster_x_sup <- function(data) {
     facet_grid(rows = vars(study_sample_size_train, ICC), cols = vars(b_w_ratio), labeller = label_value) +
     guides(color = guide_legend(nrow = 2)) +
     theme(legend.position = "top") +
-    scale_colour_viridis_d(option = "H", direction = -1)
+    scale_color_brewer(type = "seq", palette = "YlGnBu")
 }
