@@ -93,7 +93,37 @@ calib_itl_stacked <- readRDS(file = here(results_folder, "calib_itl_stacked.RDS"
   
             
 ```
+## Calibration slope
+```{R}
+calib_slope_stacked <- readRDS(file = here(results_folder, "calib_slope_stacked.RDS"))
 
+
+# Loading files:
+results_folder_many_pred <- here("Results", "Database-extracts", "240211-many-pred")
+
+data_many_pred <- readRDS(file = here(results_folder_many_pred, "calib_slope.RDS")) 
+
+
+
+
+```
+
+```{r calib_slope_many_pred}
+
+  plot <- data_many_pred |>
+    ProfacSims:::box_plot_by_pred_ss(what = "est") +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  ylab("Calibration slope")
+
+  
+  print(plot)
+
+
+
+
+```
 ## R-squared
 ```{R}
 r_squared_stacked <- readRDS(file = here(results_folder, "r_squared_stacked.RDS"))
@@ -162,9 +192,31 @@ dynamci_data <-
             
 ```
 
-```{r dynamic_est, fig.height = 8}
+```{r dynamic_tau, fig.height = 8}
 
           plot <- dynamci_data |> 
+            ProfacSims:::box_plot_dynamic_vs(what = "tau") 
+          
+          plot <- plot + 
+            labs(title = "Comparing dynamic predictions to new intercepts only: Hetrogeneity",
+                 subtitle = glue("Training data: 4 studies of size 50")) +
+            ylab("Tau")
+          print(plot)
+  
+            
+```
+```{r}
+
+```
+
+
+```{r dynamic_tau_large, fig.height = 8}
+
+dynamci_data_large <- 
+  bind_rows(calib_itl_stacked, calib_slope_stacked, r_squared_stacked)  |> 
+  filter(n_studies ==8, study_sample_size_train ==200, R2 ==0.4)
+
+          plot <- dynamci_data_large |> 
             ProfacSims:::box_plot_dynamic_vs(what = "tau") 
           
           plot <- plot + 

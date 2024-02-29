@@ -1,0 +1,27 @@
+---
+title: "Prediction with new data for intercept - Supplementary material"
+format: 
+  html:
+    number-sections: True
+    fig-height: 10
+    fig-width: 8
+editor: source
+execute: 
+  echo: FALSE
+---
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+# Loading files:
+sim_name <- "240124-pred-new-data"
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+
+
+```

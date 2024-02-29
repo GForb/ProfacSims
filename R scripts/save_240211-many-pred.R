@@ -2,7 +2,7 @@ library(DBI)
 library(RSQLite)
 library(glue)
 
-db_table <- "sim_results_many_pred"
+db_table <- "sim_results_many_pred_v2"
 sim_name <- "240211-many-pred"
 db <- dbConnect(RSQLite::SQLite(), "Results/Database/sim_results.db")
 
