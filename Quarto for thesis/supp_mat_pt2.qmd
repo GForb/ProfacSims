@@ -44,7 +44,34 @@ for(my_n_studies in c(4, 8, 16, 32, 64)){
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x() + #
         ylab(glue("Calibration In the Large")) +
-        scale_y_continuous(limits = c(-0.5,0.5))
+        scale_y_continuous(limits = c(-0.25,0.25)) +
+        labs(
+              title = "Calibration in the large",
+              subtitle = glue("Training data: {my_n_studies}, ICC: {myICC}")
+            )
+      
+        print(plot)
+  }
+}
+```
+
+
+
+### Hetrogeneity
+
+```{r calib_itl_hetro}
+calib_itl$plot_value = sqrt(calib_itl$tau2)
+for(my_n_studies in c(4, 8, 16, 32, 64)){
+  for(myICC in c(0.05, 0.2)){
+    plot_data <- calib_itl |> filter(n_studies ==my_n_studies, myICC ==myICC) 
+      plot <- plot_data |> 
+        ProfacSims:::box_plot_cluster_x() + #
+        ylab(glue("Calibration In the Large")) +
+        labs(
+              title = "Between study Hetrogeneity in Calibration in the large",
+              subtitle = glue("Training data: {my_n_studies}, ICC: {myICC}")
+            ) +
+        ylab("Tau")
       
         print(plot)
   }
