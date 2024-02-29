@@ -15,5 +15,5 @@ box_plot_cluster_x <- function(data) {
     facet_grid(rows = vars(study_sample_size_train), cols = vars(b_w_ratio), labeller = label_both) +
     guides(color = guide_legend(nrow = 2)) +
     theme(legend.position = "top") +
-    scale_color_brewer(type = "div", palette = 3)
+    scale_color_brewer(type = "seq", palette = "YlGnBu")
 }

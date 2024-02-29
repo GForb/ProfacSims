@@ -11,6 +11,7 @@ correct_model_spelling <- function(data) {
     mutate(
       model = case_when(model == "Random intercetp - ML" ~ "Random intercept - ML",
                         model == "Random intercetp - REML" ~ "Random intercept - REML",
+                        model == "Random intercetp - REML x1bar" ~ "Random intercept - REML x1bar"
                         TRUE ~ model))
 
 }

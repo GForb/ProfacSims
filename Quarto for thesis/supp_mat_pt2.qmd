@@ -29,7 +29,8 @@ results_folder <- here("Results", "Database-extracts", sim_name)
 
 ## Calibration in the large
 ```{R}
-calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS"))
+calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |> 
+  filter(model != "Random intercept - ML")
 
 ```
 
@@ -37,8 +38,8 @@ calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS"))
 calib_itl$plot_value = calib_itl$est
 plot <- calib_itl |> 
     ProfacSims:::box_plot_cluster_x() +
-    ylab(glue("Calibration In the Large")) +
-  y
+    ylab(glue("Calibration In the Large")) 
+  
   
   print(plot)
 
