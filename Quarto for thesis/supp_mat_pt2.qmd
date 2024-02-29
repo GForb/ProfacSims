@@ -30,7 +30,8 @@ results_folder <- here("Results", "Database-extracts", sim_name)
 ## Calibration in the large
 ```{R}
 calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |> 
-  filter(model != "Random intercept - ML")
+  filter(model != "Random intercept - ML", model != "Hausman - centred") |> 
+  ProfacSims:::correct_model_spelling()
 
 ```
 
