@@ -91,5 +91,16 @@ r_squared <- DBI::dbGetQuery(db,
 
 saveRDS(r_squared, file = here(save_folder, "r_squared.RDS"))
 
+mse <- DBI::dbGetQuery(db,
+                       glue(
+                         "SELECT {always_include}
+    FROM {db_table}
+    WHERE {where}  AND metric = 'mse'
+  ")
+) |> correct_model_spelling()
+
+
+saveRDS(mse, file = here(save_folder, "mse.RDS"))
+
 DBI::dbDisconnect(db)
 

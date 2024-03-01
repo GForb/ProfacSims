@@ -1,4 +1,4 @@
-box_plot_cluster_x_sup <- function(data) {
+box_plot_cluster_x_no_facet <- function(data) {
   plot_data <- data |>
     dplyr::mutate(
        pred_icc_factor = factor(pred_icc),
@@ -24,8 +24,18 @@ box_plot_cluster_x_sup <- function(data) {
     geom_boxplot(outlier.size = 0.001) +
     scale_x_continuous(breaks = c("0" = 1, "0.05" = 2, "0.2" = 3, "0.5" = 4, "0.9" = 5)) +
     xlab("Predictor ICC") +
-    facet_grid(rows = vars(study_sample_size_train, ICC), cols = vars(b_w_ratio), labeller = label_value) +
     guides(color = guide_legend(nrow = 2)) +
     theme(legend.position = "top") +
     scale_color_brewer(type = "seq", palette = "YlGnBu")
 }
+
+box_plot_cluster_x_main <- function(data) {
+ box_plot_cluster_x_no_facet(data) +
+   facet_grid(rows = vars(study_sample_size_train), cols = vars(b_w_ratio), labeller = label_value)
+}
+
+box_plot_cluster_x_sup <- function(data) {
+  box_plot_cluster_x_no_facet(data) +
+    facet_grid(rows = vars(study_sample_size_train, ICC), cols = vars(b_w_ratio), labeller = label_value)
+}
+
