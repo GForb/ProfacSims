@@ -3,7 +3,7 @@ title: "Prediction with new data for intercept - Supplementary material"
 format: 
   html:
     number-sections: True
-    fig-height: 10
+    fig-height: 5
     fig-width: 8
 editor: source
 execute: 
@@ -19,7 +19,7 @@ library(here)
 library(glue)
 
 # Loading files:
-sim_name <- "240211_cluster-x"
+sim_name <- "240206-lvl2-endo"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
 my_n_studies <- 32
@@ -48,17 +48,17 @@ calib_slope <- readRDS(file = here(results_folder, "calib_slope.RDS")) |>
 ```
 
 ### Estimates
-```{r cluster_x_calib_slope_est}
+```{r lvl2_endo_calib_slope_est}
 calib_slope$plot_value = calib_slope$est
     plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_main() + # 
+        box_plot_lvl2_endo_main() + #  ProfacSims:::
         ylab(glue("Calibration Slope")) +
         labs(
               title = "Calibration Slope",
               subtitle = glue("Training data: {my_n_studies} studies, ICC: {my_icc}")
             ) +  
-        scale_y_continuous(limits = c(0.75, 1.75)) 
+        scale_y_continuous(limits = c(0.5, 1.5)) 
            
 
         
@@ -67,17 +67,17 @@ calib_slope$plot_value = calib_slope$est
 
 ```
 
-```{r cluster_x_calib_slope_est_small}
+```{r lvl2_endo_calib_slope_est_small}
 calib_slope$plot_value = calib_slope$est
     plot_data <- calib_slope |> filter(n_studies ==4) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_main() + # 
+        ProfacSims:::box_plot_lvl2_endo_main() + # 
         ylab(glue("Calibration Slope")) +
         labs(
               title = "Calibration Slope",
               subtitle = glue("Training data: 4 studies, ICC: {my_icc}")
             ) +  
-        scale_y_continuous(limits = c(0.75, 1.75)) 
+        scale_y_continuous(limits = c(0.5, 1.5)) 
            
 
         
@@ -97,12 +97,12 @@ mse <- readRDS(file = here(results_folder, "mse.RDS")) |>
 
 ```
 
-```{r cluster_x_mse_est}
+```{r lvl2_endo_mse_est}
 mse$plot_value = mse$est
 
     plot_data <- mse |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_main() + # 
+        ProfacSims:::box_plot_lvl2_endo_main() + # 
         ylab(glue("Mean Squared Error")) +
         labs(
               title = "Mean Squared Error",
