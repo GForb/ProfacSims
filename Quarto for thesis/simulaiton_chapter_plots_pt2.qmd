@@ -22,8 +22,13 @@ library(glue)
 sim_name <- "240211_cluster-x"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-studies_vector <- c(4, 8, 16, 32, 64)
+my_n_studies <- 32
+my_icc <- 0.05
+
 icc_vector <- c(0.05, 0.2)
+
+
+cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#CC79A7")
 ```
 ## Calibration in the large
 ```{R}
@@ -45,16 +50,17 @@ calib_slope <- readRDS(file = here(results_folder, "calib_slope.RDS")) |>
 ### Estimates
 ```{r calib_slope_est}
 calib_slope$plot_value = calib_slope$est
-my_n_studies <- 32
-my_icc <- 0.05
     plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_main() + #
-        ylab(glue("Calibration In the Large")) +
+        ProfacSims:::box_plot_cluster_x_main() + # 
+        ylab(glue("Calibration Slope")) +
         labs(
               title = "Calibration Slope",
-              subtitle = glue("Training data: {my_n_studies} studies, ICC: {my_icc")
-            ) +  scale_y_continuous(limits = c(0.75, 1.75))
+              subtitle = glue("Training data: {my_n_studies} studies, ICC: {my_icc}")
+            ) +  
+        scale_y_continuous(limits = c(0.75, 1.75)) +
+           scale_colour_manual(values=cbp1)
+
         
       
         print(plot)
@@ -72,3 +78,20 @@ mse <- readRDS(file = here(results_folder, "mse.RDS")) |>
 
 ```
 
+```{r mse_est}
+mse$plot_value = mse$est
+
+    plot_data <- mse |> filter(n_studies ==my_n_studies) 
+      plot <- plot_data |> 
+        ProfacSims:::box_plot_cluster_x_main() + # 
+        ylab(glue("Mean Squared Error")) +
+        labs(
+              title = "Mean Squared Error",
+              subtitle = glue("Training data: {my_n_studies} studies, ICC: {my_icc}")
+            ) +  scale_y_continuous(limits = c(0.575, NA)) +
+    scale_color_viridis_d(option = "H")
+        
+      
+        print(plot)
+
+```

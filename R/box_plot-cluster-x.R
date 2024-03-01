@@ -1,4 +1,7 @@
 box_plot_cluster_x_no_facet <- function(data) {
+  cbp1 <- c("#999999", "#E69F00", "#56B4E9", "#CC79A7", "#009E73")
+
+
   plot_data <- data |>
     dplyr::mutate(
        pred_icc_factor = factor(pred_icc),
@@ -26,7 +29,7 @@ box_plot_cluster_x_no_facet <- function(data) {
     xlab("Predictor ICC") +
     guides(color = guide_legend(nrow = 2)) +
     theme(legend.position = "top") +
-    scale_color_brewer(type = "seq", palette = "YlGnBu")
+    scale_colour_manual(values=cbp1)
 }
 
 box_plot_cluster_x_main <- function(data) {
