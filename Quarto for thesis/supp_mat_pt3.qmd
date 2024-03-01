@@ -1,5 +1,5 @@
 ---
-title: "Supplementary material part 2: Clustering of predictors and differing between and within assosiations."
+title: "Supplementary material part 3: Clustering of predictors and level 2 endogeneity."
 format: 
   pdf:
     number-sections: True
@@ -22,10 +22,10 @@ library(here)
 library(glue)
 
 # Loading files:
-sim_name <- "240211_cluster-x"
+sim_name <- "240206-lvl2-endo"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-studies_vector <- c(4, 8, 16, 32, 64)
+studies_vector <- c(4, 8, 16, 32)
 icc_vector <- c(0.05, 0.2)
 ```
 ## Calibration in the large
@@ -42,7 +42,7 @@ calib_itl$plot_value = calib_itl$est
 for(my_n_studies in studies_vector){
     plot_data <- calib_itl |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_sup() + #
+        ProfacSims:::box_plot_lvl2_endo_sup() + #
         ylab(glue("Calibration In the Large")) +
         scale_y_continuous(limits = c(-0.25,0.25)) +
         labs(
@@ -64,7 +64,7 @@ calib_itl$plot_value = sqrt(calib_itl$tau2)
 for(my_n_studies in studies_vector){
     plot_data <- calib_itl |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_sup() + #
+        ProfacSims:::box_plot_lvl2_endo_sup() + #
         ylab(glue("Calibration In the Large")) +
         labs(
               title = "Between study Hetrogeneity in Calibration in the large",
@@ -96,7 +96,7 @@ calib_slope$plot_value = calib_slope$est
 for(my_n_studies in studies_vector){
     plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_sup() + #
+        ProfacSims:::box_plot_lvl2_endo_sup() + #
         ylab(glue("Calibration In the Large")) +
         labs(
               title = "Calibration Slope",
@@ -117,7 +117,7 @@ calib_slope$plot_value = sqrt(calib_slope$tau2)
 for(my_n_studies in studies_vector){
     plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_sup() + #
+        ProfacSims:::box_plot_lvl2_endo_sup() + #
         ylab(glue("Calibration In the Large")) +
         labs(
               title = "Between study Hetrogeneity in Calibration Slope",
@@ -146,7 +146,7 @@ mse$plot_value = mse$est
 for(my_n_studies in studies_vector){
     plot_data <- mse |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_sup() + #
+        ProfacSims:::box_plot_lvl2_endo_sup() + #
         ylab(glue("Calibration In the Large")) +
         labs(
               title = "Mean Squared Error",
@@ -171,7 +171,7 @@ mse$plot_value = sqrt(mse$tau2)
 for(my_n_studies in studies_vector){
     plot_data <- mse |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        ProfacSims:::box_plot_cluster_x_sup() + #
+        ProfacSims:::box_plot_lvl2_endo_sup() + #
         ylab(glue("Calibration In the Large")) +
         labs(
               title = "Between study Hetrogeneity in Mean Squared Error",

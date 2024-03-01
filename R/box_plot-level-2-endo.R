@@ -20,7 +20,7 @@ box_plot_lvl2_endo_no_facets <-  function(data) {
       x = pred_icc_factor_no +(model_number-3)/10,
       study_sample_size_train = factor(study_sample_size_train, levels = c("50", "200", "1000"), labels = c("Study size: 50","Study size: 200", "Study size: 1000" )),
       int_pred_corr = factor(int_pred_corr, levels = c("0", "0.2", "0.5"), labels = c("corr(u,x): 0","Corr(u,x): 0.2", "Corr(u,x): 0.5" )),
-
+      ICC = factor(ICC, levels = c("0", "0.05", "0.2"), labels = c("ICC: 0","ICC: 0.05", "ICC: 0.2"))
     )
 
   plot_data |> ggplot2::ggplot(mapping = aes(x = x, y = plot_value, colour = model, group = x)) +
@@ -35,5 +35,10 @@ box_plot_lvl2_endo_no_facets <-  function(data) {
 box_plot_lvl2_endo_main <- function(data) {
   box_plot_lvl2_endo_no_facets(data) +
     facet_grid(rows = vars(study_sample_size_train), cols = vars(int_pred_corr), labeller = label_value)
+}
+
+box_plot_lvl2_endo_sup <- function(data) {
+  box_plot_lvl2_endo_no_facets(data) +
+    facet_grid(rows = vars(study_sample_size_train, ICC), cols = vars(int_pred_corr), labeller = label_value)
 }
 

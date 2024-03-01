@@ -52,7 +52,7 @@ calib_slope <- readRDS(file = here(results_folder, "calib_slope.RDS")) |>
 calib_slope$plot_value = calib_slope$est
     plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
-        box_plot_lvl2_endo_main() + #  ProfacSims:::
+        ProfacSims:::box_plot_lvl2_endo_main() + #  
         ylab(glue("Calibration Slope")) +
         labs(
               title = "Calibration Slope",
