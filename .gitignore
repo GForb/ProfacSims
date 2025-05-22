@@ -1,7 +1,7 @@
 .Rproj.user
 .Rhistory
 .RData
-Results
+
 *.dta
 **/*.png
 *.html
@@ -26,3 +26,6 @@ old_user/*
 *.docx
 *.RDS
 *.db
+*output.array*
+Results/Dataabse*
+Results/Database-extracts*
