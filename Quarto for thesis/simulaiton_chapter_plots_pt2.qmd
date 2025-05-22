@@ -30,6 +30,16 @@ icc_vector <- c(0.05, 0.2)
 
 cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#CC79A7")
 ```
+
+## Var_u
+```{R}
+var_u <- readRDS(file = here(results_folder, "var_u.RDS")) |> 
+  filter(model != "Random intercept - ML", model != "Hausman - centred") |> 
+  ProfacSims:::correct_model_spelling()
+
+```
+
+
 ## Calibration in the large
 ```{R}
 calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |> 
@@ -37,7 +47,34 @@ calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |>
   ProfacSims:::correct_model_spelling()
 
 ```
-No plots
+
+
+
+
+```{r cluster_x_calib_itl_hetro_small, fig.height = 4}
+my_n_studies <- 4
+my_icc <- 0.05
+my_study_size <- 50
+
+calib_itl$plot_value <-  sqrt(calib_itl$tau2)
+    plot_data <- calib_itl |> filter(n_studies ==my_n_studies, ICC == my_icc, study_sample_size_train == my_study_size) 
+      plot <- plot_data |> 
+        ProfacSims:::box_plot_cluster_x_main() + # 
+        ylab(glue("Tau")) +
+        labs(
+              title = "Between Study Hetrogeneity in Calibrtion in the Large",
+              subtitle = glue("Training data: {my_n_studies} studies, of size {my_study_size}. ICC: {my_icc}")
+            ) +  
+        scale_y_continuous(limits = c(0, 0.4)) 
+           
+
+        
+      
+        print(plot)
+
+```
+
+
 
 ## Calibration Slope
 ```{R}

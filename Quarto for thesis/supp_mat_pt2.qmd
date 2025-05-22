@@ -10,7 +10,6 @@ editor: visual
 execute: 
   echo: FALSE
   warning: FALSE
-
 ---
 
 ```{r include = FALSE}
@@ -25,10 +24,12 @@ library(glue)
 sim_name <- "240211_cluster-x"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-studies_vector <- c(4, 8, 16, 32, 64)
+studies_vector <- c(4, 8, 16, 32)
 icc_vector <- c(0.05, 0.2)
 ```
+
 ## Calibration in the large
+
 ```{R}
 calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |> 
   filter(model != "Random intercept - ML", model != "Hausman - centred") |> 
@@ -37,6 +38,7 @@ calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS")) |>
 ```
 
 ### Estimates
+
 ```{r calib_itl_est}
 calib_itl$plot_value = calib_itl$est
 for(my_n_studies in studies_vector){
@@ -55,8 +57,6 @@ for(my_n_studies in studies_vector){
   }
 ```
 
-
-
 ### Hetrogeneity
 
 ```{r calib_itl_hetro}
@@ -65,7 +65,7 @@ for(my_n_studies in studies_vector){
     plot_data <- calib_itl |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x_sup() + #
-        ylab(glue("Calibration In the Large")) +
+        ylab(glue("Tau")) +
         labs(
               title = "Between study Hetrogeneity in Calibration in the large",
               subtitle = glue("Training data: {my_n_studies} studies")
@@ -83,6 +83,7 @@ for(my_n_studies in studies_vector){
 ```
 
 ## Calibration Slope
+
 ```{R}
 calib_slope <- readRDS(file = here(results_folder, "calib_slope.RDS")) |> 
   filter(model != "Random intercept - ML", model != "Hausman - centred") |> 
@@ -91,24 +92,42 @@ calib_slope <- readRDS(file = here(results_folder, "calib_slope.RDS")) |>
 ```
 
 ### Estimates
+
 ```{r calib_slope_est}
 calib_slope$plot_value = calib_slope$est
 for(my_n_studies in studies_vector){
     plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x_sup() + #
-        ylab(glue("Calibration In the Large")) +
+        ylab(glue("Calibration Slope")) +
         labs(
               title = "Calibration Slope",
               subtitle = glue("Training data: {my_n_studies} studies")
-            ) +  scale_y_continuous(limits = c(0.75, 1.75))
+            ) +  scale_y_continuous(limits = c(0.75, 1.75))+
+        geom_hline(yintercept = 1,  linetype = 2)
         
       
         print(plot)
   }
 ```
 
-
+```{r calib_slope_low_cluster}
+calib_slope$plot_value = calib_slope$est
+for(my_n_studies in studies_vector){
+    plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
+      plot <- plot_data |> 
+        ProfacSims:::box_plot_cluster_x_sup() + #
+        ylab(glue("Calibration Slope")) +
+        labs(
+              title = "Calibration Slope",
+              subtitle = glue("Training data: {my_n_studies} studies")
+            ) +  scale_y_continuous(limits = c(0.75, 1.75))+
+        geom_hline(yintercept = 1,  linetype = 2)
+        
+      
+        print(plot)
+  }
+```
 
 ### Hetrogeneity
 
@@ -118,7 +137,7 @@ for(my_n_studies in studies_vector){
     plot_data <- calib_slope |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x_sup() + #
-        ylab(glue("Calibration In the Large")) +
+        ylab(glue("Tau")) +
         labs(
               title = "Between study Hetrogeneity in Calibration Slope",
               subtitle = glue("Training data: {my_n_studies} studies")
@@ -131,8 +150,8 @@ for(my_n_studies in studies_vector){
 
 ```
 
-
 ## MSE
+
 ```{R}
 mse <- readRDS(file = here(results_folder, "mse.RDS")) |> 
   filter(model != "Random intercept - ML", model != "Hausman - centred") |> 
@@ -141,13 +160,14 @@ mse <- readRDS(file = here(results_folder, "mse.RDS")) |>
 ```
 
 ### Estimates
+
 ```{r mse_est}
 mse$plot_value = mse$est
 for(my_n_studies in studies_vector){
     plot_data <- mse |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x_sup() + #
-        ylab(glue("Calibration In the Large")) +
+        ylab(glue("Mean Squared Error")) +
         labs(
               title = "Mean Squared Error",
               subtitle = glue("Training data: {my_n_studies} studies")) 
@@ -162,8 +182,6 @@ for(my_n_studies in studies_vector){
 }
 ```
 
-
-
 ### Hetrogeneity
 
 ```{r mse_hetro}
@@ -172,7 +190,7 @@ for(my_n_studies in studies_vector){
     plot_data <- mse |> filter(n_studies ==my_n_studies) 
       plot <- plot_data |> 
         ProfacSims:::box_plot_cluster_x_sup() + #
-        ylab(glue("Calibration In the Large")) +
+        ylab(glue("Tau")) +
         labs(
               title = "Between study Hetrogeneity in Mean Squared Error",
               subtitle = glue("Training data: {my_n_studies} studies")
@@ -184,4 +202,3 @@ for(my_n_studies in studies_vector){
   }
 
 ```
-

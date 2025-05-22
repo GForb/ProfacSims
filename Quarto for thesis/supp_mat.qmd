@@ -1,14 +1,14 @@
 ---
-title: "Prediction with new data for intercept - Supplementary material"
+title: "Supplementary material: Predictors independently, identially distributed"
 format: 
-  html:
+  pdf:
+    toc: True
     number-sections: True
     fig-height: 10
     fig-width: 8
-editor: visual
+editor: source
 execute: 
   echo: FALSE
-
 ---
 
 ```{r include = FALSE}
@@ -23,10 +23,9 @@ library(glue)
 sim_name <- "240124-pred-new-data"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-
+studies_vector <- c(4,8,16,32)
 
 ```
-
 
 ## Random intercept variance
 
@@ -42,17 +41,19 @@ var_u <- readRDS(file = here(results_folder, "var_u.RDS"))
     print(plot)
 
 ```
+
 ## Calibration in the large
+
 ```{R}
 calib_itl_stacked <- readRDS(file = here(results_folder, "calib_itl_stacked.RDS"))
 
 ```
 
-
 ### Estimates
+
 ```{r calib_itl_est}
 
-for(my_n_studies in c(4,8,16,32,64)){
+for(my_n_studies in studies_vector){
      plot_data <- calib_itl_stacked |> 
            filter(
              predict_method != "new_dynamic", 
@@ -75,11 +76,11 @@ for(my_n_studies in c(4,8,16,32,64)){
        
 ```
 
-
 ### Hetrogeneity
+
 ```{r calib_itl_hetro}
 
-for(my_n_studies in c(4,8,16,32,64)){
+for(my_n_studies in studies_vector){
      plot_data <- calib_itl_stacked |> 
            filter(
              predict_method != "new_dynamic", 
@@ -103,16 +104,17 @@ for(my_n_studies in c(4,8,16,32,64)){
 ```
 
 ## Calibration Slope
+
 ```{R}
 calib_slope_stacked <- readRDS(file = here(results_folder, "calib_slope_stacked.RDS"))
 
 ```
 
-
 ### Estimates
+
 ```{r calib_slope_est}
 
-for(my_n_studies in c(4,8,16,32,64)){
+for(my_n_studies in studies_vector){
      plot_data <- calib_slope_stacked |> 
            filter(
              predict_method != "new_dynamic", 
@@ -135,11 +137,11 @@ for(my_n_studies in c(4,8,16,32,64)){
        
 ```
 
-
 ### Hetrogeneity
+
 ```{r calib_slope_hetro}
 
-for(my_n_studies in c(4,8,16,32,64)){
+for(my_n_studies in studies_vector){
      plot_data <- calib_slope_stacked |> 
            filter(
              predict_method != "new_dynamic", 
@@ -162,18 +164,17 @@ for(my_n_studies in c(4,8,16,32,64)){
        
 ```
 
-
-
 ## R-squared
+
 ```{R}
 r_squared_stacked <- readRDS(file = here(results_folder, "r_squared_stacked.RDS"))
 ```
 
-
 ### Estimates
+
 ```{r r_squared_est, warning = FALSE}
 
-for(my_n_studies in c(4,8,16,32,64)){
+for(my_n_studies in studies_vector){
      plot_data <- r_squared_stacked |> 
            filter(
              predict_method != "new_dynamic", 
@@ -197,11 +198,11 @@ for(my_n_studies in c(4,8,16,32,64)){
        
 ```
 
-
 ### Hetrogeneity
+
 ```{r r_squared_hetro, warning = FALSE}
 
-for(my_n_studies in c(4,8,16,32,64)){
+for(my_n_studies in studies_vector){
      plot_data <- r_squared_stacked |> 
            filter(
              predict_method != "new_dynamic", 
@@ -223,6 +224,3 @@ for(my_n_studies in c(4,8,16,32,64)){
 }     
        
 ```
-
-
-

@@ -21,7 +21,7 @@ library(glue)
 # Loading files:
 sim_name <- "240124-pred-new-data"
 results_folder <- here("Results", "Database-extracts", sim_name)
-
+devtools::load_all()
 
 
 ```
@@ -60,9 +60,18 @@ calib_itl_stacked <- readRDS(file = here(results_folder, "calib_itl_stacked.RDS"
           plot_data <- calib_itl_stacked |> 
            filter(predict_method != "new_dynamic", n_studies == my_n_studies, study_sample_size_train == my_sample_size_train) |> 
            mutate(tau = sqrt(tau2))
-
+          
+          ri_sd <- plot_data |> 
+            filter(predict_method == "new0") |> 
+            select(R2, ICC, sigma_u) |> 
+            group_by(R2, ICC) |> 
+            summarise(sigma_u = mean(sigma_u)) |> 
+            ungroup()
+          
+          
           plot <- plot_data |> 
-            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") +
+            geom_hline(data = ri_sd, aes(yintercept = sigma_u), linetype = "dashed", color = "black") 
           
           plot <- plot + 
             labs(title = "Hetrogeneity in Calibration in the large",
@@ -82,8 +91,18 @@ calib_itl_stacked <- readRDS(file = here(results_folder, "calib_itl_stacked.RDS"
            filter(predict_method != "new_dynamic", n_studies == my_n_studies, study_sample_size_train == my_sample_size_train) |> 
            mutate(tau = sqrt(tau2))
 
+            ri_sd <- plot_data |> 
+            filter(predict_method == "new0") |> 
+            select(R2, ICC, sigma_u) |> 
+            group_by(R2, ICC) |> 
+            summarise(sigma_u = mean(sigma_u)) |> 
+            ungroup()
+          
+          
           plot <- plot_data |> 
-            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") +
+            geom_hline(data = ri_sd, aes(yintercept = sigma_u), linetype = "dashed", color = "black") 
+          
           
           plot <- plot + 
             labs(title = "Hetrogeneity in Calibration in the large",

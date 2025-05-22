@@ -7,7 +7,6 @@ params:
   sim_name: "240206-lvl2-endo"
 ---
 
-
 ```{r echo = FALSE}
 library(tidyverse)
 library(ggplot2)
@@ -32,9 +31,11 @@ cn <- colnames(data)
 
 
 
+
 ## `r what`
 
-```{r largeJ, echo = FALSE,  fig.height = 10}
+
+```{r largeJ, echo = FALSE}
 for(my_n_studies in c(32)){
   for(myICC in c(0.05)){
   plot <- data |> mutate(plot_value = est) |> 
@@ -54,10 +55,7 @@ for(my_n_studies in c(32)){
 
 ```
 
-
-
-
-```{r smallJ, echo = FALSE,  fig.height = 10}
+```{r smallJ, echo = FALSE}
 for(my_n_studies in c(4)){
   for(myICC in c(0.05)){
   plot <- data |> mutate(plot_value = est) |> 
@@ -73,35 +71,7 @@ for(my_n_studies in c(4)){
   }
 }
 
-```
-
-
-## MSE
-
-```{r mse_largeJ, echo = FALSE,  fig.height = 10}
-
-file_name <- "mse.RDS"
-
-data_raw_mse <- readRDS(file = here(results_folder, file_name)) 
-data_mse <- data_raw_mse |> dplyr::filter(model != "Random intercept - ML", model != "Hausman - centred") |> tibble()
-
-
-
-for(my_n_studies in c(32)){
-  for(myICC in c(0.05)){
-  plot <- data_mse |> mutate(plot_value = est) |> 
-    filter(n_studies == my_n_studies, ICC == myICC) |> 
-    ProfacSims:::box_plot_lvl2_endo() +
-    ylab("MSE") +
-    labs(title = "MSE", subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
-    scale_y_continuous(limits = c(0.59, 0.63))    
-
-  
-  print(plot)
-  
-  }
-}
-
 
 
 ```
+

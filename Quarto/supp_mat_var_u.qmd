@@ -20,6 +20,7 @@ results_folder <- here("Results", "Database-extracts", sim_name)
 
 ```
 
+
 ## Random intercept variance
 
 ```{r, fig.height = 16, fig.height = 8, echo = FALSE}

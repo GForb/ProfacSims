@@ -16,9 +16,15 @@ library(glue)
 sim_name <- "240124-pred-new-data"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-calib_itl <- readRDS(file = here(results_folder, "calib_itl.RDS"))
+calib_itl_raw <- readRDS(file = here(results_folder, "calib_itl.RDS"))
 
+calib_itl <- calib_itl_raw |> filter(model != "Not adjusting for study") |> 
+  filter(!(predict_method == "new0" & model != "Fixed intercept"))
 
+calib_itl0 <- calib_itl_raw |> filter(predict_method == "new0", intercept_est_sample_size == 10) |> 
+  mutate(intercept_est_sample_size = 0)
+
+calib_itl_stacked <- calib_itl_raw |> filter(predict_method != "new0") |> bind_rows(calib_itl0)
 ```
 
 ## Ns
@@ -38,22 +44,132 @@ min(counts$n_est)
 max(counts$n_est)        
 ```
 
-counts = calib_itl 
+## Table
+
+```{r, echo = FALSE}
+options(width = 999)
+
+full_table <- calib_itl |> 
+  group_by(model, predict_method, n_studies , ICC, R2,study_sample_size_train, intercept_est_sample_size) |> 
+  ProfacSims:::quantiles_table_est() 
+
+print(full_table)
+
+extreme_table <- full_table |> filter(p005 < -0.1 | p95 > 0.1)
+
+extreme_table |> filter(predict_method == "new0", intercept_est_sample_size ==10)
+extreme_table |> filter(predict_method != "new0")
+
+```
+
+Fixed intercept, average intercepts, when ICC is 0.05 or 0.2 has variable Calib In The Large.
+
+Random intercept models, estimated with maximum liklihood, when number of studies is 4, sample size 50, new dynamic or new_studies.
+
+counts = calib_itl
 
 ## Calibration in the large
 
+```{r, echo = FALSE}
+what = "est"
+ylab = "Calibration in the Large"
+```
 
+```{r calib_itl_all, fig.height = 4}
 
+       
+          plot_data <- calib_itl_stacked |> 
+           filter(predict_method != "new_dynamic") 
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "est") 
+          
+          plot <- plot + 
+            labs(title = "Calibration in the large across all scenarios") +
+            ylab("Calibration in the large")
+          print(plot)
+  
+            
+```
+
+```{r calib_itl_hetro_small, fig.height = 8}
+
+  my_n_studies <- 4        
+  my_sample_size_train =50  
+
+          plot_data <- calib_itl_stacked |> 
+           filter(predict_method != "new_dynamic", n_studies == my_n_studies, study_sample_size_train == my_sample_size_train) |> 
+           mutate(tau = sqrt(tau2))
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
+          
+          plot <- plot + 
+            labs(title = "Hetrogeneity in Calibration in the large",
+                 subtitle = glue("Training data: {my_n_studies} studies of size {my_sample_size_train} ")) +
+            ylab("Tau")
+          print(plot)
+  
+            
+```
+
+```{r calib_itl_hetro_large, fig.height = 8}
+
+  my_n_studies <- 64        
+  my_sample_size_train =1000  
+
+          plot_data <- calib_itl_stacked |> 
+           filter(predict_method != "new_dynamic", n_studies == my_n_studies, study_sample_size_train == my_sample_size_train) |> 
+           mutate(tau = sqrt(tau2))
+
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_pred_ss(what = "tau") 
+          
+          plot <- plot + 
+            labs(title = "Hetrogeneity in Calibration in the large",
+                 subtitle = glue("Training data: {my_n_studies} studies of size {my_sample_size_train} ")) +
+            ylab("Tau")
+          print(plot)
+  
+            
+```
 
 ```{r, fig.height = 6}
-for(what in c("est", "tau")){
-  for(myR2 in c(0.4, 0.7)){
-    for(myICC in c(0, 0.05, 0.2)){
-      for(n_studies in c(4,8,16,32,64)){
-        for(sample_size_train in c(50, 200, 1000)){
+
        
           plot_data <- calib_itl |> 
-           filter(R2 == myR2, ICC == myICC, n_studies == n_studies, study_sample_size_train == sample_size_train)
+           filter(ICC ==0)
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Calibration in the large")
+          
+          plot <- plot + labs(title = "Calibration in the large across all scenarios when ICC = 0")
+          print(plot)
+  
+            
+```
+
+```{r, fig.height = 6}
+
+       
+          plot_data <- calib_itl |> 
+           filter(model == "Fixed intercept", predict_method != "new0")
+          plot <- plot_data |> 
+            ProfacSims:::box_plot_by_predict_method(what = "est", ylab = "Calibration in the large")
+          plot <- plot + labs(title = "Calibration in the large for models with fixed intercepts")
+          print(plot)
+  
+            
+```
+
+```{r, fig.height = 6}
+for(what in c("est")){
+  for(n_studies in c(4,8,16,32,64)){
+      for(sample_size_train in c(50, 200, 1000)){
+        for(myICC in c(0.05, 0.2)){
+          for(myR2 in c(0.4, 0.7)){
+             
+          plot_data <- calib_itl |> 
+           filter(R2 == myR2, ICC == myICC, n_studies == n_studies, study_sample_size_train == sample_size_train, model != "Fixed intercept")
           plot <- plot_data |> 
             ProfacSims:::box_plot_by_predict_method(what = what, ylab = what)
           
@@ -69,4 +185,3 @@ for(what in c("est", "tau")){
   }
 }
 ```
-

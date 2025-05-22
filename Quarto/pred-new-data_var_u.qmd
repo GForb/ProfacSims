@@ -56,6 +56,7 @@ n <- summaries_var_u |> filter(model == "Random intercept - REML" | model == "Ra
 min(n)
 max(n)
 ```
+
 ```{r zeros_plot, fig.height = 4}
 for(myR2 in c(0.4)){
   plot_data <- var_u |> 

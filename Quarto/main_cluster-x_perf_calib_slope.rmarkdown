@@ -1,0 +1,78 @@
+---
+title: "240131-cluster-x-betas - Model Performance"
+format: html
+params:
+  what: "Calibration Slope"
+  file_name: "calib_slope"
+  sim_name: "240203-cluster-x"
+---
+
+```{r echo = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+library(RSQLite)
+library(here)
+library(glue)
+
+what <- params$what
+sim_name <- params$sim_name
+file_name <- paste0(params$file_name, ".RDS")
+
+# Loading files:
+results_folder <- here("Results", "Database-extracts", sim_name)
+
+data_raw <- readRDS(file = here(results_folder, file_name)) 
+data <- data_raw |> dplyr::filter(model != "Random intercept - ML", model != "Hausman - centred") |> tibble()
+cn <- colnames(data)
+
+
+```
+
+
+
+
+## `r what`
+
+
+
+
+```{r big_J_slope, echo = FALSE, fig.height = 10}
+for(my_n_studies in c(32)){
+  for(myICC in c(0.05)){
+  plot <- data |> mutate(plot_value = est) |> 
+    filter(n_studies == my_n_studies, ICC == myICC, pred_icc > 0.1) |> 
+    ProfacSims:::box_plot_cluster_x() +
+    ylab(glue("{what}")) +
+    labs(title = glue("{what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
+    scale_y_continuous(limits = c(0.5, 2))    +
+    scale_x_continuous(breaks = c("0.2" = 1, "0.5" = 2, "0.9" = 3)) 
+
+
+  
+  print(plot)
+  
+  }
+}
+
+
+```{r four_slope, echo = FALSE, fig.height = 10}
+for(my_n_studies in c(4)) {
+  for(myICC in c(0.05)){
+  plot <- data |> mutate(plot_value = est) |> 
+    filter(n_studies == my_n_studies, ICC == myICC, pred_icc > 0.1) |> 
+    ProfacSims:::box_plot_cluster_x() +
+    ylab(glue("{what}")) +
+    labs(title = glue("{what}"), subtitle = glue("N studies: {my_n_studies}, ICC: {myICC}")) +
+    scale_y_continuous(limits = c(0.5, 2))    +
+    scale_x_continuous(breaks = c("0.2" = 1, "0.5" = 2, "0.9" = 3)) 
+
+  
+  print(plot)
+  
+  }
+}
+
+
+```
+
