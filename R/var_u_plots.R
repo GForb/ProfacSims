@@ -93,6 +93,29 @@ box_plot_error_var_u_no_facet_rows <- function(sim_results) {
   return(plot)
 }
 
+
+box_plot_error_var_iscb <- function(sim_results) {
+  sim_results_mod <- sim_results |>
+    dplyr::mutate(n_studies_mod = dplyr::case_when(model == "REML" ~ n_studies*2^-0.1,
+                                                   model ==  "Maximum Liklihood" ~ n_studies*2^0.1),
+                  sigma2_u = sigma_u^2
+    )
+  
+  plot <- sim_results_mod |>  ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = est, group = n_studies_mod, color = model )) +
+    ggplot2::geom_boxplot(outlier.size = 0.1) +
+    ggplot2::geom_hline(ggplot2::aes(yintercept = sigma2_u, linetype = "True random intercept variance"), linetype = "dashed") +
+    ggplot2::scale_x_continuous(trans='log2') +
+    ggplot2::labs(
+      x = "Number of studies (log scale)",
+      y = "Estimated Random intercept variance",
+      model = ""
+    ) +
+    theme(legend.position = "top")
+  
+  return(plot)
+}
+
+
 var_u_zeros_plot <- function(sim_results) {
   sim_results_mod <- sim_results |>
     dplyr::mutate(n_studies_mod = dplyr::case_when(model == "Random intercept - REML" ~ n_studies*2^-0.1,

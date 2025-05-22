@@ -23,3 +23,6 @@ Quarto/december_sims_files/libs/bootstrap/bootstrap-icons.css
 *.png
 *.pdf
 old_user/*
+*.docx
+*.RDS
+*.db

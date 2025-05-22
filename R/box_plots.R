@@ -1,6 +1,4 @@
 
-
-
 box_plot_est_by_model <- function(data, outliers = TRUE) {
   model_offset <- 0.14
   data <- data |> add_n_studies_mod(model_offset)
@@ -135,93 +133,50 @@ box_plot_ml_fixed<- function(data,
 }
 
 box_plot_by_pred_ss <- function(data, what) {
-  plot_data <- data |> dplyr::mutate(
-    factor_int_est_ss = factor(intercept_est_sample_size),
-     x = factor_int_est_ss |> as.numeric()
-    ) |>
+  
+  plot_data <- data |> mutate(factor_int_est_ss = factor(intercept_est_sample_size),
+                 x = factor_int_est_ss |> as.numeric()) |>
                  dplyr::mutate(x = dplyr::case_when(
                    model == "Not adjusting for study" ~ x - 0.21,
                    model == "Fixed intercept" ~ x - 0.07,
                    model == "Random intercept - REML" ~ x + 0.07,
-                   model == "Random intercept - ML" ~ x + 0.21)) |>
-    mutate(model = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - REML",  "Random intercept - ML")))
+                   model == "Random intercept - ML" ~ x + 0.21)) 
 
-    facet_cols = ggplot2::vars(R2)
-    facet_rows = ggplot2::vars(ICC)
+  
     plot_data |> ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model )) +
-      ggplot2::geom_boxplot(outlier.size = 0.1) +
-      scale_x_continuous(breaks = c(1,2,3,4), labels = c("0 \n (marginal prediction)", "10", "50", "200")) +
-      ggplot2::labs(
-       x = "Intercept estimation sample size",
-       color = "Model:"
-      ) +
-      ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed", labeller = label_both) +
-      theme(legend.position = "top") +
-      guides(color = guide_legend(nrow = 2)) +
-      scale_color_brewer(type = "div", palette = 3)
-}
-
-box_plot_dynamic_vs <- function(data, what) {
-  plot_data <- data |>
-    dplyr::filter(
-      predict_method == "new_dynamic" | predict_method == "new_studies",
-      intercept_est_sample_size != 0,
-      model == "Fixed intercept" | model == "Random intercept - REML"
-    ) |>
-    dplyr::mutate(predict_method = case_when(predict_method == "new_dynamic" ~ "Dynamic",
-                                             predict_method == "new_studies" ~ "New intercepts"),
-                  model_method = paste(model, predict_method, sep = ": ")) |>
-    dplyr::mutate(
-      factor_int_est_ss = factor(intercept_est_sample_size),
-      x = factor_int_est_ss |> as.numeric()
-    ) |>
-    dplyr::mutate(x = dplyr::case_when(
-      model_method == "Fixed intercept: New intercepts" ~ x - 0.21,
-      model_method == "Fixed intercept: Dynamic" ~ x - 0.07,
-      model_method == "Random intercept - REML: New intercepts" ~ x + 0.07,
-      model_method == "Random intercept - REML: Dynamic" ~ x + 0.21)) |>
-    dplyr::mutate(model_method = ordered(model_method, levels = c("Fixed intercept: New intercepts", "Fixed intercept: Dynamic", "Random intercept - REML: New intercepts",  "Random intercept - REML: Dynamic")))
-
-  facet_cols = ggplot2::vars(ICC)
-  facet_rows = ggplot2::vars(metric)
-  plot_data |> ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model_method )) +
-    ggplot2::geom_boxplot(outlier.size = 0.1) +
-    scale_x_continuous(breaks = c(1,2,3), labels = c("10", "50", "200")) +
+    ggplot2::geom_boxplot(outlier.size = 0.1,) +
     ggplot2::labs(
       x = "Intercept estimation sample size",
       color = "Model:"
     ) +
-    ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "free_y", labeller = label_both) +
+    ggplot2::facet_grid(cols = ggplot2::vars(R2), rows = ggplot2::vars(ICC), switch = "y", scales = "fixed") +
     theme(legend.position = "top") +
-    guides(color = guide_legend(nrow = 2)) +
-    scale_color_brewer(type = "div", palette = 3)
+      guides(color = guide_legend(nrow = 2)) +
+      scale_color_brewer(type = "div", palette = 3)
+    
 }
 
-box_plot_by_pred_ss_supp  <- function(data, what) {
-  plot_data <- data |> dplyr::mutate(
-    factor_int_est_ss = factor(intercept_est_sample_size),
-    x = factor_int_est_ss |> as.numeric(),
-  ) |>
+box_plot_by_pred_ss_supp <- function(data, what) {
+  plot_data <- data |> mutate(factor_int_est_ss = factor(intercept_est_sample_size),
+                              x = factor_int_est_ss |> as.numeric()) |>
     dplyr::mutate(x = dplyr::case_when(
       model == "Not adjusting for study" ~ x - 0.21,
       model == "Fixed intercept" ~ x - 0.07,
       model == "Random intercept - REML" ~ x + 0.07,
-      model == "Random intercept - ML" ~ x + 0.21)) |>
-    dplyr::mutate(model = ordered(model, levels = c("Not adjusting for study", "Fixed intercept", "Random intercept - REML",  "Random intercept - ML")),
-           StudySize = study_sample_size_train)
-  facet_cols = ggplot2::vars(StudySize)
+      model == "Random intercept - ML" ~ x + 0.21),
+      StudySize = study_sample_size_train) 
+  
+  facet_cols =  ggplot2::vars(StudySize)
   facet_rows = ggplot2::vars(ICC, R2)
+  
   plot_data |> ggplot2::ggplot(ggplot2::aes(x = x, y = .data[[what]], group = x, color = model )) +
-    ggplot2::geom_boxplot(outlier.size = 0.1) +
-    scale_x_continuous(breaks = c(1,2,3,4), labels = c("0 \n (marginal prediction)", "10", "50", "200")) +
+    ggplot2::geom_boxplot(outlier.size = 0.1,) +
     ggplot2::labs(
       x = "Intercept estimation sample size",
       color = "Model:"
     ) +
-    ggplot2::facet_grid(cols = facet_cols,
-                        rows = facet_rows, switch = "y",
-                        scales = "fixed", labeller = label_both) +
-    theme(legend.position = "top") +
+    ggplot2::facet_grid(cols = facet_cols, rows = facet_rows, switch = "y", scales = "fixed", labeller = label_both) +
+    theme(legend.position = "top") + 
     guides(color = guide_legend(nrow = 2)) +
     scale_color_brewer(type = "div", palette = 3)
 }
