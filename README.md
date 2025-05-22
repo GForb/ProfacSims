@@ -13,7 +13,7 @@ pak::pak("GForb/ProfacSims")
 ```
 
 ## To run the simualtions
-Load the repoa as a package using laod_all()
+Load the repo as a package using laod_all()
 
 use the funciton `ipdma_simulation` to run the simulations. This takes a list of simulation parameters as arguments and 
 
