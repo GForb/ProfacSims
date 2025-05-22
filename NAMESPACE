@@ -2,3 +2,5 @@
 
 export(generate_continuous)
 export(ipdma_prediction_pipeline)
+export(ipdma_prediction_pipeline_dynamic)
+export(sim_rep_continuous_inv)
