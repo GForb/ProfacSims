@@ -1,0 +1,21 @@
+1. Copy template folder
+2. Edit run_sims.R to do 1 rep of the required simulation
+3. Edit batch-job.sh to have the right time, the right number of reps and the right folder path
+4. In terminal navigate to the directory hoc-files. Run the send-sim.sh script
+	./send-sim.sh 160122-pred-new-data
+5. Login to the cluster using terminal command ssh create
+5. On the cluster install the latest version of Prefect sims:
+	- Run R
+	- 
+6. On the cluster navigate to the correct folder in the scratch directory
+  - module load r/4.2.2-gcc-10.3.0-withx-rmath-standalone-python3+-chk-version
+  - R
+  - devtools::install_github("GForb/ProfacSims", upgrade= "never")
+
+7. On the cluster navigate to the correct directory
+  - cd ../../scratch/users/k1811974
+  - cd ProfacSims
+  - cd sim_folder
+
+8. On the cluster submit the job with command sbatch batch-job.sh
+9 check the queue with squeue -u k1811974 
