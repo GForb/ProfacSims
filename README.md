@@ -31,3 +31,9 @@ Once results have been returned from the cluster, they are saved to a database `
 The files which save the results to the database are in `R scripts/Saving Results`.
 Extracts of results for each simulation batch are extracted using the scripts in `Database Extracts and scripts` and saved to a folder called `Results/Database-extracts` (not saved to repo).
 These extracts are then used in the quarto files and r scripts that create the material included in the PhD thesis.
+
+
+## Where were the plots included in the thesis created
+The plots used in the main content of the thesis are created in the quarto files in the folder "Quarto for thesis". The individual pngs can be found in the files folders for the different png files.
+
+The supplementary material is generated in the Latex for thesis folder. The plots are saved as pdf then read in by a latex file. The plots and latex file are created by files in this folder.
