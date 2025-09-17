@@ -199,30 +199,30 @@ dynamci_data <-
 
 ```{r dynamic_est, fig.height = 8}
 
-          plot <- dynamci_data |> 
-            ProfacSims:::box_plot_dynamic_vs(what = "est") 
-          
-          plot <- plot + 
+          plot <- dynamci_data |>
+            ProfacSims:::box_plot_dynamic_vs(what = "est")
+
+          plot <- plot +
             labs(title = "Comparing dynamic predictions to new intercepts only: Estimates",
                  subtitle = glue("Training data: 4 studies of size 50")) +
             ylab("Estimate")
           print(plot)
-  
-            
+
+
 ```
 
 ```{r dynamic_tau, fig.height = 8}
 
-          plot <- dynamci_data |> 
-            ProfacSims:::box_plot_dynamic_vs(what = "tau") 
-          
-          plot <- plot + 
+          plot <- dynamci_data |>
+            ProfacSims:::box_plot_dynamic_vs(what = "tau")
+
+          plot <- plot +
             labs(title = "Comparing dynamic predictions to new intercepts only: Hetrogeneity",
                  subtitle = glue("Training data: 4 studies of size 50")) +
             ylab("Tau")
           print(plot)
-  
-            
+
+
 ```
 ```{r}
 
@@ -231,18 +231,18 @@ dynamci_data <-
 
 ```{r dynamic_tau_large, fig.height = 8}
 
-dynamci_data_large <- 
-  bind_rows(calib_itl_stacked, calib_slope_stacked, r_squared_stacked)  |> 
+dynamci_data_large <-
+  bind_rows(calib_itl_stacked, calib_slope_stacked, r_squared_stacked)  |>
   filter(n_studies ==8, study_sample_size_train ==200, R2 ==0.4)
 
-          plot <- dynamci_data_large |> 
-            ProfacSims:::box_plot_dynamic_vs(what = "tau") 
-          
-          plot <- plot + 
+          plot <- dynamci_data_large |>
+            ProfacSims:::box_plot_dynamic_vs(what = "tau")
+
+          plot <- plot +
             labs(title = "Comparing dynamic predictions to new intercepts only: Hetrogeneity",
                  subtitle = glue("Training data: 4 studies of size 50")) +
             ylab("Tau")
           print(plot)
-  
-            
+
+
 ```
