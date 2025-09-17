@@ -133,7 +133,7 @@ var_u_zeros_plot <- function(sim_results) {
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",
-      y = "Proportion of sim results with zero random intercept variance",
+      y = "Proportion of results with random intercept variance = 0",
     ) +
     theme(legend.position = "top")
 
