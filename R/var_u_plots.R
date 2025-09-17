@@ -82,7 +82,7 @@ box_plot_error_var_u_no_facet_rows <- function(sim_results) {
   plot <- sim_results_mod |>  ggplot2::ggplot(ggplot2::aes(x = n_studies_mod, y = est, group = n_studies_mod, color = model )) +
     ggplot2::geom_boxplot(outlier.size = 0.1) +
     ggplot2::geom_hline(ggplot2::aes(yintercept = sigma2_u, linetype = "True random intercept variance"), linetype = "dashed") +
-    ggplot2::facet_grid(cols = facet_cols, switch = "y", scales = "free_y", labeller = label_both) +
+    ggplot2::facet_grid(cols = facet_cols, switch = "y", scales = "free_y", labeller = label_value) +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",

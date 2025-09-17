@@ -16,7 +16,13 @@ library(glue)
 sim_name <- "240124-pred-new-data"
 results_folder <- here("Results", "Database-extracts", sim_name)
 
-var_u <- readRDS(file = here(results_folder, "var_u.RDS"))
+var_u <- readRDS(file = here(results_folder, "var_u.RDS")) |> 
+    mutate(study_sample_size_train = factor(
+      study_sample_size_train,
+      levels = c(50, 200, 1000),
+      labels = c("Sample size: 50", "Sample size: 200", "Sample size: 1000")
+      )
+    )
 
 
 ```
@@ -60,13 +66,7 @@ max(n)
 ```{r zeros_plot, fig.height = 4}
 for(myR2 in c(0.4)){
   plot_data <- var_u |> 
-   filter(predict_method == "new0", R2 == myR2, ICC == 0.05) |> 
-    mutate(study_sample_size_train = factor(
-      study_sample_size_train,
-      levels = c(50, 200, 1000),
-      labels = c("Sample size: 50", "Sample size: 200", "Sample size: 1000")
-      )
-    )
+   filter(predict_method == "new0", R2 == myR2, ICC == 0.05) 
     plot <- plot_data |> 
     ProfacSims:::var_u_zeros_plot()
   
