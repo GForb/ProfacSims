@@ -129,7 +129,7 @@ var_u_zeros_plot <- function(sim_results) {
 
   plot <- sim_results_mod |>  ggplot2::ggplot(ggplot2::aes( y = n_zero, x = n_studies_mod, fill = model)) +
     ggplot2::geom_bar(stat="identity") +
-    ggplot2::facet_grid(cols = facet_cols, switch = "y", scales = "free_y", labeller = label_both) +
+    ggplot2::facet_grid(cols = facet_cols, switch = "y", scales = "free_y", labeller = label_value) +
     ggplot2::scale_x_continuous(trans='log2') +
     ggplot2::labs(
       x = "Number of studies (log scale)",

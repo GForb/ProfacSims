@@ -60,11 +60,20 @@ max(n)
 ```{r zeros_plot, fig.height = 4}
 for(myR2 in c(0.4)){
   plot_data <- var_u |> 
-   filter(predict_method == "new0", R2 == myR2, ICC == 0.05)
-  plot <- plot_data |> 
+   filter(predict_method == "new0", R2 == myR2, ICC == 0.05) |> 
+    mutate(study_sample_size_train = factor(
+      study_sample_size_train,
+      levels = c(50, 200, 1000),
+      labels = c("Sample size: 50", "Sample size: 200", "Sample size: 1000")
+      )
+    )
+    plot <- plot_data |> 
     ProfacSims:::var_u_zeros_plot()
   
-  plot <- plot + ggplot2::ggtitle(glue("Random intercept variance: R-squared = {myR2}, ICC = 0.05")) 
+  plot <- plot + ggplot2::ggtitle(glue("Random intercept variance: R-squared = {myR2}, ICC = 0.05")) +
+    ggplot2::labs(
+      y = "Proportion with random\n intercept variance estimated as 0",
+    )
     print(plot)
 }
 ```
